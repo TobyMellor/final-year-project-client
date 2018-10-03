@@ -1,0 +1,18 @@
+# enable Docker for your repository
+options:
+  docker: true
+
+pipelines:
+  default:
+    - step:
+        script: # Modify the commands below to build your repository.
+          # build and test the Node app
+          - npm install
+          - npm test
+          - export IMAGE_NAME=$DOCKER_HUB_USERNAME/$BITBUCKET_REPO_SLUG:$BITBUCKET_COMMIT
+          # build the Docker image (this will use the Dockerfile in the root of the repo)
+          - docker build -t $IMAGE_NAME .
+          # authenticate with the Docker Hub registry
+          - docker login --username $DOCKER_HUB_USERNAME --password $DOCKER_HUB_PASSWORD
+          # push the new Docker image to the Docker registry
+          - docker push $IMAGE_NAME
