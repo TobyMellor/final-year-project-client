@@ -18,6 +18,9 @@ pipelines:
           caches:
             - node
           script:
+          - npm install
+          - npm run lint
+          - npm test
           - export IMAGE_NAME=$DOCKER_HUB_USERNAME/$BITBUCKET_REPO_SLUG:latest
           - docker build -t $IMAGE_NAME .
           - docker login --username $DOCKER_HUB_USERNAME --password $DOCKER_HUB_PASSWORD
@@ -27,6 +30,9 @@ pipelines:
           caches:
             - node
           script:
+          - npm install
+          - npm run lint
+          - npm test
           - export IMAGE_NAME=$DOCKER_HUB_USERNAME/$BITBUCKET_REPO_SLUG:staging
           - docker build -t $IMAGE_NAME .
           - docker login --username $DOCKER_HUB_USERNAME --password $DOCKER_HUB_PASSWORD
