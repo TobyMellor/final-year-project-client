@@ -1,0 +1,52 @@
+{
+  "name": "final-year-project-client",
+  "version": "1.0.0",
+  "description": "The front-end for my Final Year Project at Loughborough University",
+  "main": "index.js",
+  "private": true,
+  "scripts": {
+    "watch": "npm run local",
+    "local": "webpack-dev-server --host 0.0.0.0 --port 80 --mode=\"development\" --watch --progress --colors",
+    "build": "npm run clean && npm run webpack",
+    "clean": "rm -rf dist && mkdir -p dist",
+    "lint": "node ./node_modules/.bin/tslint --config tslint.json --project tsconfig.json 'src/typescript/**/*.tsx'",
+    "test": "mocha --require ts-node/register --watch-extensions ts,tsx \"test/**/*.ts\""
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@bitbucket.org/TobyMellor/final-year-project-client.git"
+  },
+  "author": "Toby Mellor",
+  "license": "UNLICENSED",
+  "homepage": "https://bitbucket.org/TobyMellor/final-year-project-client#readme",
+  "devDependencies": {
+    "@types/chai": "^4.1.6",
+    "@types/mocha": "^5.2.5",
+    "awesome-typescript-loader": "^5.2.1",
+    "css-loader": "^1.0.0",
+    "html-webpack-plugin": "^3.2.0",
+    "mocha": "^5.2.0",
+    "node-sass": "^4.9.3",
+    "sass-loader": "^7.1.0",
+    "source-map-loader": "^0.2.4",
+    "style-loader": "^0.23.0",
+    "ts-node": "^7.0.1",
+    "tslint": "^5.11.0",
+    "tslint-config-airbnb": "^5.11.0",
+    "typescript": "^3.1.1",
+    "webpack": "^4.20.2",
+    "webpack-cli": "^3.1.2",
+    "webpack-dev-server": "^3.1.9",
+    "@types/react": "^16.4.14",
+    "@types/react-dom": "^16.0.8",
+    "chai": "^4.2.0",
+    "mocha-webpack": "^1.1.0",
+    "sinon": "^6.3.5",
+    "supertest": "^3.3.0",
+    "timekeeper": "^2.1.2"
+  },
+  "dependencies": {
+    "react": "^16.5.2",
+    "react-dom": "^16.5.2"
+  }
+}
