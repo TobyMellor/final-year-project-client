@@ -15,7 +15,7 @@ pipelines:
     master:
       - step:
           image:
-            name: 687073569799.dkr.ecr.eu-west-2.amazonaws.com/aws-cli:latest
+            name: $AWS_REGISTRY_DOMAIN
             aws:
               access-key: $AWS_ACCESS_KEY_ID
               secret-key: $AWS_SECRET_ACCESS_KEY
@@ -27,14 +27,15 @@ pipelines:
             - npm test
             - eval $(aws ecr get-login --region $AWS_DEFAULT_REGION --no-include-email)
             - export IMAGE_NAME=$BITBUCKET_REPO_SLUG:latest
-            - export UPLOAD_URL=$AWS_REGISTRY_URL/$IMAGE_NAME
+            - export UPLOAD_DOMAIN=$AWS_REGISTRY_DOMAIN/$IMAGE_NAME
+            - export UPLOAD_URL=https://$UPLOAD_DOMAIN
             - docker build -t $IMAGE_NAME .
-            - docker tag $IMAGE_NAME $UPLOAD_URL
+            - docker tag $IMAGE_NAME $UPLOAD_DOMAIN
             - docker push $UPLOAD_URL
     staging:
       - step:
           image:
-            name: 687073569799.dkr.ecr.eu-west-2.amazonaws.com/aws-cli:latest
+            name: $AWS_REGISTRY_DOMAIN
             aws:
               access-key: $AWS_ACCESS_KEY_ID
               secret-key: $AWS_SECRET_ACCESS_KEY
@@ -46,7 +47,8 @@ pipelines:
             - npm test
             - eval $(aws ecr get-login --region $AWS_DEFAULT_REGION --no-include-email)
             - export IMAGE_NAME=$BITBUCKET_REPO_SLUG:staging
-            - export UPLOAD_URL=$AWS_REGISTRY_URL/$IMAGE_NAME
+            - export UPLOAD_DOMAIN=$AWS_REGISTRY_DOMAIN/$IMAGE_NAME
+            - export UPLOAD_URL=https://$UPLOAD_DOMAIN
             - docker build -t $IMAGE_NAME .
-            - docker tag $IMAGE_NAME $UPLOAD_URL
+            - docker tag $IMAGE_NAME $UPLOAD_DOMAIN
             - docker push $UPLOAD_URL
