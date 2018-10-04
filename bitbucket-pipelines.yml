@@ -17,17 +17,17 @@ pipelines:
           image:
             name: 687073569799.dkr.ecr.eu-west-2.amazonaws.com/aws-cli:latest
             aws:
-              access-key: ${AWS_ACCESS_KEY_ID}
-              secret-key: ${AWS_SECRET_ACCESS_KEY}
+              access-key: $AWS_ACCESS_KEY_ID
+              secret-key: $AWS_SECRET_ACCESS_KEY
           caches:
             - node
           script:
             - npm install
             - npm run lint
             - npm test
-            - eval $(aws ecr get-login --region ${AWS_DEFAULT_REGION} --no-include-email)
-            - export IMAGE_NAME=${BITBUCKET_REPO_SLUG}:latest
-            - export UPLOAD_URL=${AWS_REGISTRY_URL}/$IMAGE_NAME
+            - eval $(aws ecr get-login --region $AWS_DEFAULT_REGION --no-include-email)
+            - export IMAGE_NAME=$BITBUCKET_REPO_SLUG:latest
+            - export UPLOAD_URL=$AWS_REGISTRY_URL/$IMAGE_NAME
             - docker build -t $IMAGE_NAME .
             - docker tag $IMAGE_NAME $UPLOAD_URL
             - docker push $UPLOAD_URL
@@ -36,17 +36,17 @@ pipelines:
           image:
             name: 687073569799.dkr.ecr.eu-west-2.amazonaws.com/aws-cli:latest
             aws:
-              access-key: ${AWS_ACCESS_KEY_ID}
-              secret-key: ${AWS_SECRET_ACCESS_KEY}
+              access-key: $AWS_ACCESS_KEY_ID
+              secret-key: $AWS_SECRET_ACCESS_KEY
           caches:
             - node
           script:
             - npm install
             - npm run lint
             - npm test
-            - eval $(aws ecr get-login --region ${AWS_DEFAULT_REGION} --no-include-email)
-            - export IMAGE_NAME=${BITBUCKET_REPO_SLUG}:staging
-            - export UPLOAD_URL=${AWS_REGISTRY_URL}/$IMAGE_NAME
+            - eval $(aws ecr get-login --region $AWS_DEFAULT_REGION --no-include-email)
+            - export IMAGE_NAME=$BITBUCKET_REPO_SLUG:staging
+            - export UPLOAD_URL=$AWS_REGISTRY_URL/$IMAGE_NAME
             - docker build -t $IMAGE_NAME .
             - docker tag $IMAGE_NAME $UPLOAD_URL
             - docker push $UPLOAD_URL
