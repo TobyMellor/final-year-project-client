@@ -14,31 +14,31 @@ pipelines:
   branches:
     master:
       - step:
-          image: $AWS_REGISTRY_URL/aws-cli:latest
+          image: ${AWS_REGISTRY_URL}/aws-cli:latest
           caches:
             - node
           script:
             - npm install
             - npm run lint
             - npm test
-            - eval $(aws ecr get-login --region $AWS_DEFAULT_REGION --no-include-email)
-            - export IMAGE_NAME=$BITBUCKET_REPO_SLUG:latest
-            - export UPLOAD_URL=$AWS_REGISTRY_URL/$IMAGE_NAME
+            - eval $(aws ecr get-login --region ${AWS_DEFAULT_REGION} --no-include-email)
+            - export IMAGE_NAME=${BITBUCKET_REPO_SLUG}:latest
+            - export UPLOAD_URL=${AWS_REGISTRY_URL}/$IMAGE_NAME
             - docker build -t $IMAGE_NAME .
             - docker tag $IMAGE_NAME $UPLOAD_URL
             - docker push $UPLOAD_URL
     staging:
       - step:
-          image: $AWS_REGISTRY_URL/aws-cli:latest
+          image: ${AWS_REGISTRY_URL}/aws-cli:latest
           caches:
             - node
           script:
             - npm install
             - npm run lint
             - npm test
-            - eval $(aws ecr get-login --region $AWS_DEFAULT_REGION --no-include-email)
-            - export IMAGE_NAME=$BITBUCKET_REPO_SLUG:staging
-            - export UPLOAD_URL=$AWS_REGISTRY_URL/$IMAGE_NAME
+            - eval $(aws ecr get-login --region ${AWS_DEFAULT_REGION} --no-include-email)
+            - export IMAGE_NAME=${BITBUCKET_REPO_SLUG}:staging
+            - export UPLOAD_URL=${AWS_REGISTRY_URL}/$IMAGE_NAME
             - docker build -t $IMAGE_NAME .
             - docker tag $IMAGE_NAME $UPLOAD_URL
             - docker push $UPLOAD_URL
