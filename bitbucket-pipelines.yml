@@ -18,7 +18,7 @@ pipelines:
             name: ${AWS_REGISTRY_URL}/aws-cli:latest
             aws:
               access-key: ${AWS_ACCESS_KEY_ID}
-              secret-ley: ${AWS_SECRET_ACCESS_KEY}
+              secret-key: ${AWS_SECRET_ACCESS_KEY}
           caches:
             - node
           script:
@@ -37,7 +37,7 @@ pipelines:
             name: ${AWS_REGISTRY_URL}/aws-cli:latest
             aws:
               access-key: ${AWS_ACCESS_KEY_ID}
-              secret-ley: ${AWS_SECRET_ACCESS_KEY}
+              secret-key: ${AWS_SECRET_ACCESS_KEY}
           caches:
             - node
           script:
