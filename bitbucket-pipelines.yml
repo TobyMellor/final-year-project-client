@@ -15,7 +15,7 @@ pipelines:
     master:
       - step:
           image:
-            name: $AWS_REGISTRY_DOMAIN
+            name: 687073569799.dkr.ecr.eu-west-2.amazonaws.com/aws-cli:latest
             aws:
               access-key: $AWS_ACCESS_KEY_ID
               secret-key: $AWS_SECRET_ACCESS_KEY
@@ -35,7 +35,7 @@ pipelines:
     staging:
       - step:
           image:
-            name: $AWS_REGISTRY_DOMAIN
+            name: 687073569799.dkr.ecr.eu-west-2.amazonaws.com/aws-cli:latest
             aws:
               access-key: $AWS_ACCESS_KEY_ID
               secret-key: $AWS_SECRET_ACCESS_KEY
