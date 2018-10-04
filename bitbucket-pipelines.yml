@@ -1,11 +1,10 @@
-image: node:10.11.0
-
 options:
   docker: true
 
 pipelines:
   default:
     - step:
+        image: node:10.11.0
         caches:
           - node
         script:
@@ -15,25 +14,31 @@ pipelines:
   branches:
     master:
       - step:
+          image: $AWS_REGISTRY_URL/aws-cli:latest
           caches:
             - node
           script:
-          - npm install
-          - npm run lint
-          - npm test
-          - export IMAGE_NAME=$DOCKER_HUB_USERNAME/$BITBUCKET_REPO_SLUG:latest
-          - docker build -t $IMAGE_NAME .
-          - docker login --username $DOCKER_HUB_USERNAME --password $DOCKER_HUB_PASSWORD
-          - docker push $IMAGE_NAME
+            - npm install
+            - npm run lint
+            - npm test
+            - eval $(aws ecr get-login --region $AWS_DEFAULT_REGION --no-include-email)
+            - export IMAGE_NAME=$BITBUCKET_REPO_SLUG:latest
+            - export UPLOAD_URL=$AWS_REGISTRY_URL/$IMAGE_NAME
+            - docker build -t $IMAGE_NAME .
+            - docker tag $IMAGE_NAME $UPLOAD_URL
+            - docker push $UPLOAD_URL
     staging:
       - step:
+          image: $AWS_REGISTRY_URL/aws-cli:latest
           caches:
             - node
           script:
-          - npm install
-          - npm run lint
-          - npm test
-          - export IMAGE_NAME=$DOCKER_HUB_USERNAME/$BITBUCKET_REPO_SLUG:staging
-          - docker build -t $IMAGE_NAME .
-          - docker login --username $DOCKER_HUB_USERNAME --password $DOCKER_HUB_PASSWORD
-          - docker push $IMAGE_NAME
+            - npm install
+            - npm run lint
+            - npm test
+            - eval $(aws ecr get-login --region $AWS_DEFAULT_REGION --no-include-email)
+            - export IMAGE_NAME=$BITBUCKET_REPO_SLUG:staging
+            - export UPLOAD_URL=$AWS_REGISTRY_URL/$IMAGE_NAME
+            - docker build -t $IMAGE_NAME .
+            - docker tag $IMAGE_NAME $UPLOAD_URL
+            - docker push $UPLOAD_URL
