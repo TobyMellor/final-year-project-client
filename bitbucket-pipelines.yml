@@ -28,10 +28,9 @@ pipelines:
             - eval $(aws ecr get-login --region $AWS_DEFAULT_REGION --no-include-email)
             - export IMAGE_NAME=$BITBUCKET_REPO_SLUG:latest
             - export UPLOAD_DOMAIN=$AWS_REGISTRY_DOMAIN/$IMAGE_NAME
-            - export UPLOAD_URL=https://$UPLOAD_DOMAIN
             - docker build -t $IMAGE_NAME .
             - docker tag $IMAGE_NAME $UPLOAD_DOMAIN
-            - docker push $UPLOAD_URL
+            - docker push $UPLOAD_DOMAIN
     staging:
       - step:
           image:
@@ -48,7 +47,6 @@ pipelines:
             - eval $(aws ecr get-login --region $AWS_DEFAULT_REGION --no-include-email)
             - export IMAGE_NAME=$BITBUCKET_REPO_SLUG:staging
             - export UPLOAD_DOMAIN=$AWS_REGISTRY_DOMAIN/$IMAGE_NAME
-            - export UPLOAD_URL=https://$UPLOAD_DOMAIN
             - docker build -t $IMAGE_NAME .
             - docker tag $IMAGE_NAME $UPLOAD_DOMAIN
-            - docker push $UPLOAD_URL
+            - docker push $UPLOAD_DOMAIN
