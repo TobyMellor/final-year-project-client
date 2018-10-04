@@ -14,7 +14,11 @@ pipelines:
   branches:
     master:
       - step:
-          image: ${AWS_REGISTRY_URL}/aws-cli:latest
+          image:
+            name: ${AWS_REGISTRY_URL}/aws-cli:latest
+            aws:
+              access-key: ${AWS_ACCESS_KEY_ID}
+              secret-ley: ${AWS_SECRET_ACCESS_KEY}
           caches:
             - node
           script:
@@ -29,7 +33,11 @@ pipelines:
             - docker push $UPLOAD_URL
     staging:
       - step:
-          image: ${AWS_REGISTRY_URL}/aws-cli:latest
+          image:
+            name: ${AWS_REGISTRY_URL}/aws-cli:latest
+            aws:
+              access-key: ${AWS_ACCESS_KEY_ID}
+              secret-ley: ${AWS_SECRET_ACCESS_KEY}
           caches:
             - node
           script:
