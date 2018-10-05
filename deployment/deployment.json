@@ -1,0 +1,30 @@
+{
+  "apiVersion": "extensions/v1beta1",
+  "kind": "Deployment",
+  "metadata": {
+    "name": "final-year-project-client-deployment"
+  },
+  "spec": {
+    "replicas": 3,
+    "template": {
+      "metadata": {
+        "labels": {
+          "app": "final-year-project-client"
+        }
+      },
+      "spec": {
+        "containers": [
+          {
+            "name": "final-year-project-client",
+            "image": "687073569799.dkr.ecr.eu-west-2.amazonaws.com/final-year-project-client:latest",
+            "ports": [
+              {
+                "containerPort": 80
+              }
+            ]
+          }
+        ]
+      }
+    }
+  }
+}
