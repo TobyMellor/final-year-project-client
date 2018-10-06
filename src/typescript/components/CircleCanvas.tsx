@@ -22,7 +22,7 @@ export default class CircleCanvas extends React.Component {
 
   render() {
     const canvasElement = (
-      <canvas width="1200" height="600" id={this.state.id}>
+      <canvas id={this.state.id}>
         Your browser does not support the HTML5 <code>&lt;canvas&gt;</code> element.
       </canvas>
     );
