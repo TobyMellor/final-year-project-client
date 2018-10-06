@@ -36,7 +36,7 @@ pipelines:
             # Configure kubectl
             - kubectl config set-cluster kubernetes.tobymellor.com --server=https://api.kubernetes.tobymellor.com --insecure-skip-tls-verify
             - kubectl config set-credentials kubernetes.tobymellor.com --username=$KUBERNETES_USERNAME --password=$KUBERNETES_PASSWORD
-            - kubectl config set-context kubernetes.tobymellor.com --cluster=kubernetes.tobymellor.com --user=$KUBERNETES_USERNAME
+            - kubectl config set-context kubernetes.tobymellor.com --cluster=kubernetes.tobymellor.com --user=kubernetes.tobymellor.com
             - kubectl config use-context kubernetes.tobymellor.com
             # Update the deployment to use the new Docker image
             - kubectl get all
@@ -63,9 +63,10 @@ pipelines:
             - docker tag $IMAGE_NAME $UPLOAD_DOMAIN
             - docker push $UPLOAD_DOMAIN
             # Configure kubectl
-            - kubectl config set-cluster kubernetes.tobymellor.com --server=kubernet --insecure-skip-tls-verify
+            - kubectl config set-cluster kubernetes.tobymellor.com --server=https://api.kubernetes.tobymellor.com --insecure-skip-tls-verify
             - kubectl config set-credentials kubernetes.tobymellor.com --username=$KUBERNETES_USERNAME --password=$KUBERNETES_PASSWORD
-            - kubectl config set-context kubernetes.tobymellor.com --cluster=kubernetes.tobymellor.com --user=$KUBERNETES_USERNAME
+            - kubectl config set-context kubernetes.tobymellor.com --cluster=kubernetes.tobymellor.com --user=kubernetes.tobymellor.com
             - kubectl config use-context kubernetes.tobymellor.com
             # Update the deployment to use the new Docker image
+            - kubectl get all
             - kubectl set image deployment/final-year-project-client-deployment final-year-project-client=$UPLOAD_DOMAIN
