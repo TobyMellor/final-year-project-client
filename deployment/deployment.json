@@ -5,7 +5,7 @@
     "name": "final-year-project-client-deployment"
   },
   "spec": {
-    "replicas": 3,
+    "replicas": 2,
     "template": {
       "metadata": {
         "labels": {

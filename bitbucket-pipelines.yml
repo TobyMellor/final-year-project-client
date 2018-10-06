@@ -39,7 +39,7 @@ pipelines:
             - kubectl config set-context kubernetes.tobymellor.com --cluster=kubernetes.tobymellor.com --user=$KUBERNETES_USERNAME
             - kubectl config use-context kubernetes.tobymellor.com
             # Update the deployment to use the new Docker image
-            - kubectl set image final-year-project-client final-year-project-client=$UPLOAD_DOMAIN
+            - kubectl set image deployment/final-year-project-client-deployment final-year-project-client=$UPLOAD_DOMAIN
     staging:
       - step:
           image:
