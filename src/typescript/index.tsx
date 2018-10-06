@@ -6,6 +6,6 @@ import { render } from 'react-dom';
 import App from './components/App';
 
 render(
-    <App message="Toby Mellor" />,
+    <App />,
     document.getElementById('root'),
 );
