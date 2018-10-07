@@ -1,14 +1,9 @@
 import * as React from 'react';
-import Nav from './Nav';
-import CircleCanvas from './CircleCanvas';
 
-interface AppProps {}
+interface AppProps {
+  message: string;
+}
 
-export default function ({}: AppProps) {
-  return (
-    <React.Fragment>
-      <Nav />
-      <CircleCanvas />
-    </React.Fragment>
-  );
+export default function ({ message }: AppProps) {
+  return <h1>Hey there, {message}</h1>;
 }

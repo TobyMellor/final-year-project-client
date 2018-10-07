@@ -7,7 +7,7 @@
   "scripts": {
     "build": "npm run clean && npm run webpack",
     "clean": "rm -rf dist && mkdir -p dist",
-    "lint": "node ./node_modules/.bin/tslint --config tslint.json --project tsconfig.json 'src/typescript/**/*.tsx'",
+    "lint": "node ./node_modules/.bin/tslint --config tslint.json --project tsconfig.json 'src/typescript/**/*.ts{,x}'",
     "local": "webpack-dev-server --host 0.0.0.0 --port 80 --mode=\"development\" --watch --progress --colors",
     "prod": "npm run webpack && npm start",
     "test": "mocha --require ts-node/register --watch-extensions ts,tsx \"test/**/*.ts\"",

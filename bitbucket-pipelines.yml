@@ -1,70 +1,15 @@
+image: node:10.11.0
+
 options:
   docker: true
 
 pipelines:
   default:
     - step:
-        image: node:10.11.0
-        caches:
-          - node
         script:
           - npm install
-          - npm run lint
           - npm test
-  branches:
-    master:
-      - step:
-          image:
-            name: 687073569799.dkr.ecr.eu-west-2.amazonaws.com/aws-cli:latest
-            aws:
-              access-key: $AWS_ACCESS_KEY_ID
-              secret-key: $AWS_SECRET_ACCESS_KEY
-          caches:
-            - node
-          script:
-            # Lint and run tests
-            - npm install
-            - npm run lint
-            - npm test
-            # Build and upload the new docker image to AWS
-            - eval $(aws ecr get-login --region $AWS_DEFAULT_REGION --no-include-email)
-            - export IMAGE_NAME=$BITBUCKET_REPO_SLUG:master-$BITBUCKET_COMMIT
-            - export UPLOAD_DOMAIN=$AWS_REGISTRY_DOMAIN/$IMAGE_NAME
-            - docker build -t $IMAGE_NAME .
-            - docker tag $IMAGE_NAME $UPLOAD_DOMAIN
-            - docker push $UPLOAD_DOMAIN
-            # Configure kubectl
-            - kubectl config set-cluster kubernetes.tobymellor.com --server=https://api.kubernetes.tobymellor.com --insecure-skip-tls-verify
-            - kubectl config set-credentials kubernetes.tobymellor.com --username=$KUBERNETES_USERNAME --password=$KUBERNETES_PASSWORD
-            - kubectl config set-context kubernetes.tobymellor.com --cluster=kubernetes.tobymellor.com --user=kubernetes.tobymellor.com
-            - kubectl config use-context kubernetes.tobymellor.com
-            # Update the deployment to use the new Docker image
-            - kubectl set image deployment/final-year-project-client-deployment final-year-project-client=$UPLOAD_DOMAIN
-    staging:
-      - step:
-          image:
-            name: 687073569799.dkr.ecr.eu-west-2.amazonaws.com/aws-cli:latest
-            aws:
-              access-key: $AWS_ACCESS_KEY_ID
-              secret-key: $AWS_SECRET_ACCESS_KEY
-          caches:
-            - node
-          script:
-            # Lint and run tests
-            - npm install
-            - npm run lint
-            - npm test
-            # Build and upload the new docker image to AWS
-            - eval $(aws ecr get-login --region $AWS_DEFAULT_REGION --no-include-email)
-            - export IMAGE_NAME=$BITBUCKET_REPO_SLUG:staging-$BITBUCKET_COMMIT
-            - export UPLOAD_DOMAIN=$AWS_REGISTRY_DOMAIN/$IMAGE_NAME
-            - docker build -t $IMAGE_NAME .
-            - docker tag $IMAGE_NAME $UPLOAD_DOMAIN
-            - docker push $UPLOAD_DOMAIN
-            # Configure kubectl
-            - kubectl config set-cluster kubernetes.tobymellor.com --server=https://api.kubernetes.tobymellor.com --insecure-skip-tls-verify
-            - kubectl config set-credentials kubernetes.tobymellor.com --username=$KUBERNETES_USERNAME --password=$KUBERNETES_PASSWORD
-            - kubectl config set-context kubernetes.tobymellor.com --cluster=kubernetes.tobymellor.com --user=kubernetes.tobymellor.com
-            - kubectl config use-context kubernetes.tobymellor.com
-            # Update the deployment to use the new Docker image
-            - kubectl set image deployment/final-year-project-client-deployment final-year-project-client=$UPLOAD_DOMAIN
+          - export IMAGE_NAME=$DOCKER_HUB_USERNAME/$BITBUCKET_REPO_SLUG:$BITBUCKET_COMMIT
+          - docker build -t $IMAGE_NAME .
+          - docker login --username $DOCKER_HUB_USERNAME --password $DOCKER_HUB_PASSWORD
+          - docker push $IMAGE_NAME
