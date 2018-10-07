@@ -1,8 +1,14 @@
 import * as glMatrix from 'gl-matrix';
 import vertexShaderSource from './shaders/vertex-shader-source';
 import fragmentShaderSource from './shaders/fragment-shader-source';
+import Drawable, { DrawInformation } from './Drawable';
+import SongCircle from './SongCircle';
+import DrawableBuilder from './DrawableBuilder';
+import Point from './Point';
 
 const mat4 = glMatrix.mat4;
+
+console.log(new Point(1, 1));
 
 interface ProgramInfo {
   program: WebGLProgram;
@@ -13,11 +19,6 @@ interface ProgramInfo {
     projectionMatrix: WebGLUniformLocation,
     cameraMatrix: WebGLUniformLocation,
   };
-}
-
-interface DrawInformation {
-  vertexBuffer: WebGLBuffer;
-  vertices: number[];
 }
 
 export function startCanvasService(canvas: HTMLCanvasElement) {
@@ -47,11 +48,25 @@ export function startCanvasService(canvas: HTMLCanvasElement) {
     },
   };
 
+  const circle1 = new SongCircle(gl,
+                                 Point.getPoint(0, 0),
+                                 10,
+                                 1);
+  const circle2 = new SongCircle(gl,
+                                 Point.getPointOnCircleFromPercentage(circle1,
+                                                                      100,
+                                                                      10 / 2),
+                                 5,
+                                 1);
+
   // Build the objects we need to draw
-  const drawInformation: DrawInformation = getDrawInformation(gl);
+  const drawInformationBatch: DrawInformation[] = new DrawableBuilder()
+    .add(circle1.getDrawInformation())
+    .add(circle2.getDrawInformation())
+    .build();
 
   // Draw the scene
-  drawCircle(gl, programInfo, drawInformation);
+  drawScene(gl, programInfo, drawInformationBatch);
 }
 
 function resizeCanvas(gl: WebGLRenderingContext) {
@@ -75,43 +90,10 @@ function resizeCanvas(gl: WebGLRenderingContext) {
   gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
 }
 
-function getDrawInformation(gl: WebGLRenderingContext): DrawInformation {
-  const vertexBuffer: WebGLBuffer = gl.createBuffer();
-  const vertices: number[] = [];
-
-  for (let i = 0.0; i <= 360; i += 1) {
-    const j = convertAngle(i, toRadiansFn); // Degrees to radians
-
-    // Point of line furthest from center (the edge of the circle)
-    const vertex1 = [
-      Math.sin(j),
-      Math.cos(j),
-    ];
-
-    // Point of line closest to center (center of the circle)
-    const vertex2 = [
-      Math.sin(j) * 0.9,
-      Math.cos(j) * 0.9,
-    ];
-
-    vertices.push(...vertex1, ...vertex2);
-  }
-
-  gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
-  gl.bufferData(gl.ARRAY_BUFFER,
-                new Float32Array(vertices),
-                gl.STATIC_DRAW);
-
-  return {
-    vertexBuffer,
-    vertices,
-  };
-}
-
-function drawCircle(
+function drawScene(
   gl: WebGLRenderingContext,
   programInfo: ProgramInfo,
-  drawInformation: DrawInformation,
+  drawInformationBatch: DrawInformation[],
 ) {
   gl.clearColor(1.0, 1.0, 1.0, 1.0);  // Clear to black, fully opaque
   gl.clearDepth(1.0);                 // Clear everything
@@ -122,7 +104,7 @@ function drawCircle(
 
   // Create a projection matrix that allows us to tweak the cameras
   // field of view, and whether circles will be rendered out of view
-  const fieldOfView = convertAngle(45, toRadiansFn);
+  const fieldOfView = Drawable.convert(45, Drawable.degreesToRadiansFn);
   const aspect = gl.canvas.clientWidth / gl.canvas.clientHeight;
   const zNear = 0.1;
   const zFar = 100.0;
@@ -143,28 +125,7 @@ function drawCircle(
 
   mat4.translate(cameraMatrix,      // destination matrix
                  cameraMatrix,      // matrix to translate
-                 [0.0, 0.0, -3.0]); // amount to translate
-
-  // Tell WebGL how to pull out the positions from the position
-  // buffer into the vertexPosition attribute.
-  {
-    const numComponents = 2;
-    const type = gl.FLOAT;
-    const normalize = false;
-    const stride = 0;
-    const offset = 0;
-
-    gl.bindBuffer(gl.ARRAY_BUFFER, drawInformation.vertexBuffer);
-    gl.vertexAttribPointer(
-        programInfo.attribLocations.vertexPosition,
-        numComponents,
-        type,
-        normalize,
-        stride,
-        offset);
-    gl.enableVertexAttribArray(
-        programInfo.attribLocations.vertexPosition);
-  }
+                 [0.0, 0.0, -30.0]); // amount to translate
 
   gl.useProgram(programInfo.program);
 
@@ -177,10 +138,29 @@ function drawCircle(
       false,
       cameraMatrix);
 
+  const numComponents = 2;
+  const type = gl.FLOAT;
+  const normalize = false;
+  const stride = 0;
   const offset = 0;
-  const stripVertexCount = drawInformation.vertices.length / 2;
 
-  gl.drawArrays(gl.TRIANGLE_STRIP, offset, stripVertexCount);
+  drawInformationBatch.forEach((drawInformation: DrawInformation) => {
+    gl.bindBuffer(gl.ARRAY_BUFFER, drawInformation.vertexBuffer);
+    gl.vertexAttribPointer(
+        programInfo.attribLocations.vertexPosition,
+        numComponents,
+        type,
+        normalize,
+        stride,
+        offset);
+
+    gl.enableVertexAttribArray(
+      programInfo.attribLocations.vertexPosition);
+
+    const stripVertexCount = drawInformation.vertices.length / 2;
+
+    gl.drawArrays(gl.TRIANGLE_STRIP, offset, stripVertexCount);
+  });
 }
 
 function initShaderProgram(
@@ -221,16 +201,4 @@ function loadShader(
   }
 
   return shader;
-}
-
-function convertAngle(angle: number, conversionFn: (angle: number) => number) {
-  return conversionFn(angle);
-}
-
-function toRadiansFn(degrees: number) {
-  return degrees * (Math.PI / 180);
-}
-
-function toDegreesFn(radians: number) {
-  return radians * (180 / Math.PI);
 }

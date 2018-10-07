@@ -1,9 +1,9 @@
 import * as React from 'react';
-import * as CanvasService from '../services/canvas/canvas-service';
+import * as CanvasService from '../services/canvas/main';
 
 interface CircleCanvasProps {}
 
-export default class CircleCanvas extends React.Component {
+class CircleCanvas extends React.Component {
   public state: {
     id: string, // e.g. canvas-4105
   };
@@ -36,3 +36,5 @@ export default class CircleCanvas extends React.Component {
     return `canvas-${canvasId}`;
   }
 }
+
+export default CircleCanvas;
