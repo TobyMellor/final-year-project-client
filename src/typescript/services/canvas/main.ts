@@ -51,13 +51,14 @@ export function startCanvasService(canvas: HTMLCanvasElement) {
   const circle1 = new SongCircle(gl,
                                  Point.getPoint(0, 0),
                                  10,
-                                 0.01);
+                                 0.5);
   const circle2 = new SongCircle(gl,
                                  Point.getPointOnCircleFromPercentage(circle1,
                                                                       100,
-                                                                      10 / 2),
+                                                                      10 / 2,
+                                                                      0.5),
                                  5,
-                                 0.01);
+                                 0.9);
 
   // Build the objects we need to draw
   const drawInformationBatch: DrawInformation[] = new DrawableBuilder()

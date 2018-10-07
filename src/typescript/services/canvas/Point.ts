@@ -18,23 +18,28 @@ class Point {
   }
 
   static getPointOnCircleFromPercentage(
-    circle: SongCircle,
+    parentCircle: SongCircle,
     percentage: number,
-    offsetRadius: number = 0,
+    ourCircleRadius: number = 0,
+    ourCircleLineWidth: number = 1,
   ) {
-    const circleCenter: Point = circle.getCenter();
-    const circleRadius: number = circle.getRadius();
+    // Details about the center (parent) circle that we want to "connect" to
+    const parentCircleCenter: Point = parentCircle.getCenter();
+    const parentCircleRadius: number = parentCircle.getRadius();
+    const parentCircleLineWidth: number = parentCircle.getLineWidth();
+
+    // Angle where our circle will sit from the parent's center point
     const angle: number = Drawable.convert(percentage, Drawable.percentageToRadiansFn);
 
-    console.log('ANGLE', angle);
-    console.log(circleCenter);
-    console.log(circleRadius)
+    // Distance from our circles center to the parent's center point
+    const centerToCenterDistance: number = parentCircleRadius +
+                                           ourCircleRadius +
+                                           ourCircleLineWidth +
+                                           parentCircleLineWidth;
 
     // TODO: Move parametric equation of a circle to it's own fn
-    const x = circleCenter.x + (circleRadius * Math.cos(angle));
-    const y = circleCenter.y + (circleRadius * Math.sin(angle));
-
-    console.log(x, y);
+    const x = parentCircleCenter.x + (centerToCenterDistance * Math.cos(angle));
+    const y = parentCircleCenter.y + (centerToCenterDistance * Math.sin(angle));
 
     // TODO: Change Z depth to cover main circle
     return new Point(x, y, 1);
