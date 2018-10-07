@@ -19,6 +19,8 @@ class SongCircle extends Drawable {
     super();
 
     const vertices: number[] = [];
+    const colours: number[] = [];
+    const exampleColor: number[] = [Math.random(), Math.random(), Math.random(), 1];
 
     for (let i = this.START_DEGREES; i <= this.END_DEGREES; i += this.RESOLUTION) {
       const j = Drawable.convert(i, Drawable.degreesToRadiansFn); // Degrees to radians
@@ -41,13 +43,14 @@ class SongCircle extends Drawable {
       ];
 
       vertices.push(...innerVertex, ...outerVertex);
+      colours.push(...exampleColor, ...exampleColor);
     }
 
     this.radius = radius;
     this.lineWidth = lineWidth;
     this.center = center;
 
-    super.setDrawInformation(gl, vertices);
+    super.setDrawInformation(gl, vertices, colours);
   }
 
   public getRadius(): number {

@@ -14,6 +14,7 @@ interface ProgramInfo {
   program: WebGLProgram;
   attribLocations: {
     vertexPosition: number,
+    vertexColour: number,
   };
   uniformLocations: {
     projectionMatrix: WebGLUniformLocation,
@@ -41,6 +42,7 @@ export function startCanvasService(canvas: HTMLCanvasElement) {
     program: shaderProgram,
     attribLocations: {
       vertexPosition: gl.getAttribLocation(shaderProgram, 'aModelMatrix'),
+      vertexColour: gl.getAttribLocation(shaderProgram, 'aVertexColor'),
     },
     uniformLocations: {
       projectionMatrix: gl.getUniformLocation(shaderProgram, 'uProjectionMatrix'),
@@ -134,7 +136,7 @@ function drawScene(
 
   mat4.translate(cameraMatrix,      // destination matrix
                  cameraMatrix,      // matrix to translate
-                 [0.0, 0.0, -60.0]); // amount to translate
+                 [0.0, 0.0, -30.0]); // amount to translate
 
   gl.useProgram(programInfo.program);
 
@@ -147,7 +149,8 @@ function drawScene(
       false,
       cameraMatrix);
 
-  const numComponents = 2;
+  const numVertexComponents = 2;
+  const numColorComponents = 4;
   const type = gl.FLOAT;
   const normalize = false;
   const stride = 0;
@@ -155,16 +158,22 @@ function drawScene(
 
   drawInformationBatch.forEach((drawInformation: DrawInformation) => {
     gl.bindBuffer(gl.ARRAY_BUFFER, drawInformation.vertexBuffer);
-    gl.vertexAttribPointer(
-        programInfo.attribLocations.vertexPosition,
-        numComponents,
-        type,
-        normalize,
-        stride,
-        offset);
+    gl.vertexAttribPointer(programInfo.attribLocations.vertexPosition,
+                           numVertexComponents,
+                           type,
+                           normalize,
+                           stride,
+                           offset);
+    gl.enableVertexAttribArray(programInfo.attribLocations.vertexPosition);
 
-    gl.enableVertexAttribArray(
-      programInfo.attribLocations.vertexPosition);
+    gl.bindBuffer(gl.ARRAY_BUFFER, drawInformation.colourBuffer);
+    gl.vertexAttribPointer(programInfo.attribLocations.vertexColour,
+                           numColorComponents,
+                           type,
+                           normalize,
+                           stride,
+                           offset);
+    gl.enableVertexAttribArray(programInfo.attribLocations.vertexColour);
 
     const stripVertexCount = drawInformation.vertices.length / 2;
 

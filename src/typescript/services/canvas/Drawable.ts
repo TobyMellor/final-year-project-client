@@ -1,5 +1,6 @@
 export interface DrawInformation {
   vertexBuffer: WebGLBuffer;
+  colourBuffer: WebGLBuffer;
   vertices: number[];
 }
 
@@ -13,7 +14,9 @@ class Drawable {
     return this.drawInformation;
   }
 
-  setDrawInformation(gl: WebGLRenderingContext, vertices: number[]) {
+  setDrawInformation(gl: WebGLRenderingContext, vertices: number[], colours: number[]) {
+
+    // TODO: Move creating buffers into separate function
     const vertexBuffer: WebGLBuffer = gl.createBuffer();
 
     gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
@@ -21,9 +24,17 @@ class Drawable {
                   new Float32Array(vertices),
                   gl.STATIC_DRAW);
 
+    const colourBuffer: WebGLBuffer = gl.createBuffer();
+
+    gl.bindBuffer(gl.ARRAY_BUFFER, colourBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER,
+                  new Float32Array(colours),
+                  gl.STATIC_DRAW);
+
     this.drawInformation = {
-      vertices,
       vertexBuffer,
+      colourBuffer,
+      vertices,
     };
   }
 
