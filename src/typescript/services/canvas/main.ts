@@ -64,7 +64,7 @@ export function startCanvasService(canvas: HTMLCanvasElement) {
                                  Point.getPointOnCircleFromPercentage(circle1,
                                                                       circle2Percentage,
                                                                       circle1Radius / 2,
-                                                                      circle1LineWidth),
+                                                                      circle2LineWidth),
                                  5,
                                  circle2LineWidth);
 

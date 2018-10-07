@@ -26,7 +26,6 @@ class Point {
     // Details about the center (parent) circle that we want to "connect" to
     const parentCircleCenter: Point = parentCircle.getCenter();
     const parentCircleRadius: number = parentCircle.getRadius();
-    const parentCircleLineWidth: number = parentCircle.getLineWidth();
 
     // Angle where our circle will sit from the parent's center point
     const angle: number = Drawable.convert(percentage, Drawable.percentageToRadiansFn);
@@ -34,8 +33,7 @@ class Point {
     // Distance from our circles center to the parent's center point
     const centerToCenterDistance: number = parentCircleRadius +
                                            ourCircleRadius +
-                                           ourCircleLineWidth +
-                                           parentCircleLineWidth;
+                                           ourCircleLineWidth;
 
     // TODO: Move parametric equation of a circle to it's own fn
     const x = parentCircleCenter.x + (centerToCenterDistance * Math.cos(angle));
