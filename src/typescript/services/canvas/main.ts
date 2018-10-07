@@ -48,17 +48,25 @@ export function startCanvasService(canvas: HTMLCanvasElement) {
     },
   };
 
+  const circle1Radius = 10;
+  const circle1LineWidth = 0.5;
+
   const circle1 = new SongCircle(gl,
                                  Point.getPoint(0, 0),
-                                 10,
-                                 0.5);
+                                 circle1Radius,
+                                 circle1LineWidth);
+
+  const circle2Radius = 0.9;
+  const circle2LineWidth = 0.9;
+  const circle2Percentage = 25;
+
   const circle2 = new SongCircle(gl,
                                  Point.getPointOnCircleFromPercentage(circle1,
-                                                                      100,
-                                                                      10 / 2,
-                                                                      0.5),
+                                                                      circle2Percentage,
+                                                                      circle1Radius / 2,
+                                                                      circle1LineWidth),
                                  5,
-                                 0.9);
+                                 circle2LineWidth);
 
   // Build the objects we need to draw
   const drawInformationBatch: DrawInformation[] = new DrawableBuilder()
@@ -126,7 +134,7 @@ function drawScene(
 
   mat4.translate(cameraMatrix,      // destination matrix
                  cameraMatrix,      // matrix to translate
-                 [0.0, 0.0, -30.0]); // amount to translate
+                 [0.0, 0.0, -60.0]); // amount to translate
 
   gl.useProgram(programInfo.program);
 

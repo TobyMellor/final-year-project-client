@@ -45,7 +45,13 @@ class Drawable {
 
   static percentageToDegreesFn(percentage: number) {
     const decimal = percentage / 100;
-    const degrees = decimal * 360;
+
+    // Inverse so percentage is clockwise, to make
+    // 25% appear on the right of the circle instead of the left
+    const inversedDecimal = 1 - decimal;
+    const degrees = inversedDecimal * 360;
+
+    // How many degrees we need to rotate circles so "0%" appears at the top
     const degreesOffset = degrees + Drawable.OFFSET_AMOUNT_DEGREES;
 
     return degreesOffset % 360;
