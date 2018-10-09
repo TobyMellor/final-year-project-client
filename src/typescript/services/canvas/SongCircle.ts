@@ -31,34 +31,36 @@ class SongCircle extends Drawable {
         center.x,
         center.y,
       ],
-      (j: number) => [
-        radius * Math.sin(j) + center.x,
-        radius * Math.sin(j) + center.y,
+      (radians: number) => [
+        radius * Math.sin(radians) + center.x,
+        radius * Math.cos(radians) + center.y,
       ],
       'dist/cover_example_1.png',
     );
     const circleDrawInformationInput2: DrawableInput = this.getCircleDrawInformationInput(
-      (j: number) => [
-        radius * Math.sin(j) + center.x,
-        radius * Math.sin(j) + center.y,
+      (radians: number) => [
+        radius * Math.sin(radians) + center.x,
+        radius * Math.cos(radians) + center.y,
       ],
-      (j: number) => [
-        (radius + lineWidth) * Math.sin(j) + center.x,
-        (radius + lineWidth) * Math.sin(j) + center.y,
+      (radians: number) => [
+        (radius + lineWidth) * Math.sin(radians) + center.x,
+        (radius + lineWidth) * Math.cos(radians) + center.y,
       ],
-      'dist/cover_example_1.png',
     );
+
+    super.setDrawInformationBatch(gl, [
+      circleDrawInformationInput1,
+      circleDrawInformationInput2,
+    ]);
 
     this.radius = radius;
     this.lineWidth = lineWidth;
     this.center = center;
-
-    super.setDrawInformationBatch(gl, [circleDrawInformationInput1, circleDrawInformationInput2]);
   }
 
   private getCircleDrawInformationInput(
-    insideVertexFn: (j: number) => number[],  // The inner vertex (closest to the center)
-    outsideVertexFn: (j: number) => number[], // The outer vertex (furthest from the center)
+    insideVertexFn: (radians: number) => number[],  // The inner vertex (closest to the center)
+    outsideVertexFn: (radians: number) => number[], // The outer vertex (furthest from the center)
     textureURL?: string,
   ): DrawableInput {
     const vertices: number[] = [];
@@ -66,11 +68,15 @@ class SongCircle extends Drawable {
     const exampleColour1: number[] = [Math.random(), Math.random(), Math.random(), 1];
     const exampleColour2: number[] = [Math.random(), Math.random(), Math.random(), 1];
 
-    for (let i = this.START_DEGREES; i <= this.END_DEGREES; i += this.RESOLUTION) {
-      const j = Drawable.convert(i, Drawable.degreesToRadiansFn); // Degrees to radians
+    for (
+      let degrees = this.START_DEGREES;
+      degrees <= this.END_DEGREES;
+      degrees += this.RESOLUTION
+    ) {
+      const radians = Drawable.convert(degrees, Drawable.degreesToRadiansFn); // Degrees to radians
 
-      const insideVertex: number[] = insideVertexFn(j);
-      const outsideVertex: number[] = outsideVertexFn(j);
+      const insideVertex: number[] = insideVertexFn(radians);
+      const outsideVertex: number[] = outsideVertexFn(radians);
 
       vertices.push(...insideVertex, ...outsideVertex);
       colours.push(...exampleColour1, ...exampleColour2);

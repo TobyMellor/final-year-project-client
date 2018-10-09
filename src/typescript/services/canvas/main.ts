@@ -122,10 +122,11 @@ function drawScene(
   programInfo: ProgramInfo,
   drawInformationBatch: DrawInformation[],
 ) {
-  gl.clearColor(1.0, 1.0, 1.0, 1.0);  // Clear to black, fully opaque
-  gl.clearDepth(1.0);                 // Clear everything
-  gl.enable(gl.DEPTH_TEST);           // Enable depth testing
-  gl.depthFunc(gl.LEQUAL);            // Near things obscure far things
+  gl.clearColor(1.0, 1.0, 1.0, 1.0);         // Clear to black, fully opaque
+  gl.clearDepth(1.0);                        // Clear everything
+  gl.enable(gl.DEPTH_TEST);                  // Enable depth testing
+  gl.depthFunc(gl.LEQUAL);                   // Near things obscure far things
+  gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 1); // Flip textures to the correct orientation
 
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
@@ -150,8 +151,8 @@ function drawScene(
   // Now move the drawing position a bit to where we want to
   // start drawing the square.
 
-  mat4.translate(cameraMatrix,      // destination matrix
-                 cameraMatrix,      // matrix to translate
+  mat4.translate(cameraMatrix,       // destination matrix
+                 cameraMatrix,       // matrix to translate
                  [0.0, 0.0, -30.0]); // amount to translate
 
   gl.useProgram(programInfo.program);
