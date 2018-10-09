@@ -3,8 +3,8 @@ import { DrawInformation } from './Drawable';
 class DrawableBuilder {
   private drawInformationBatch: DrawInformation[] = [];
 
-  add(drawInformation: DrawInformation): DrawableBuilder {
-    this.drawInformationBatch.push(drawInformation);
+  add(drawInformationBatch: DrawInformation[]): DrawableBuilder {
+    this.drawInformationBatch.push(...drawInformationBatch);
     return this;
   }
 

@@ -4,25 +4,19 @@ import * as CanvasService from '../services/canvas/main';
 interface CircleCanvasProps {}
 
 class CircleCanvas extends React.Component {
-  public state: {
-    id: string, // e.g. canvas-4105
-  };
-
   constructor(props: CircleCanvasProps) {
     super(props);
-    this.state = {
-      id: this.getRandomCanvasId(),
-    };
   }
 
   componentDidMount() {
-    const canvas: HTMLCanvasElement = document.querySelector(`#${this.state.id}`);
+    const canvas: HTMLCanvasElement = this.getCanvas();
+
     CanvasService.startCanvasService(canvas);
   }
 
   render() {
     const canvasElement = (
-      <canvas id={this.state.id}>
+      <canvas>
         Your browser does not support the HTML5 <code>&lt;canvas&gt;</code> element.
       </canvas>
     );
@@ -30,10 +24,8 @@ class CircleCanvas extends React.Component {
     return canvasElement;
   }
 
-  getRandomCanvasId() {
-    const canvasId = Math.floor(1000 + Math.random() * 9000);
-
-    return `canvas-${canvasId}`;
+  private getCanvas(): HTMLCanvasElement {
+    return document.querySelector('canvas');
   }
 }
 

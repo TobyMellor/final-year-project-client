@@ -8,17 +8,17 @@ import Point from './Point';
 
 const mat4 = glMatrix.mat4;
 
-console.log(new Point(1, 1));
-
 interface ProgramInfo {
   program: WebGLProgram;
   attribLocations: {
     vertexPosition: number,
     vertexColour: number,
+    textureCoord: number,
   };
   uniformLocations: {
     projectionMatrix: WebGLUniformLocation,
     cameraMatrix: WebGLUniformLocation,
+    uSampler: WebGLUniformLocation,
   };
 }
 
@@ -43,10 +43,12 @@ export function startCanvasService(canvas: HTMLCanvasElement) {
     attribLocations: {
       vertexPosition: gl.getAttribLocation(shaderProgram, 'aModelMatrix'),
       vertexColour: gl.getAttribLocation(shaderProgram, 'aVertexColor'),
+      textureCoord: gl.getAttribLocation(shaderProgram, 'aTextureCoord'),
     },
     uniformLocations: {
       projectionMatrix: gl.getUniformLocation(shaderProgram, 'uProjectionMatrix'),
       cameraMatrix: gl.getUniformLocation(shaderProgram, 'uCameraMatrix'),
+      uSampler: gl.getUniformLocation(shaderProgram, 'uSampler'),
     },
   };
 
@@ -72,12 +74,26 @@ export function startCanvasService(canvas: HTMLCanvasElement) {
 
   // Build the objects we need to draw
   const drawInformationBatch: DrawInformation[] = new DrawableBuilder()
-    .add(circle1.getDrawInformation())
-    .add(circle2.getDrawInformation())
+    .add(circle1.getDrawInformationBatch())
+    .add(circle2.getDrawInformationBatch())
     .build();
 
-  // Draw the scene
-  drawScene(gl, programInfo, drawInformationBatch);
+  console.log(drawInformationBatch);
+
+  let then = 0;
+
+  // Draw the scene repeatedly
+  function render(now: number) {
+    const nowSeconds = now * 0.001;  // convert to seconds
+    const deltaTime = nowSeconds - then;
+    then = nowSeconds;
+
+    drawScene(gl, programInfo, drawInformationBatch);
+
+    requestAnimationFrame(render);
+  }
+
+  requestAnimationFrame(render);
 }
 
 function resizeCanvas(gl: WebGLRenderingContext) {
@@ -88,13 +104,13 @@ function resizeCanvas(gl: WebGLRenderingContext) {
   // Lookup the size the browser is displaying the canvas in CSS pixels
   // and compute a size needed to make our drawingbuffer match it in
   // device pixels
-  const displayWidth: number  = Math.floor(gl.canvas.clientWidth * physicalToCSSPixels);
+  const displayWidth: number = Math.floor(gl.canvas.clientWidth * physicalToCSSPixels);
   const displayHeight: number = Math.floor(gl.canvas.clientHeight * physicalToCSSPixels);
 
   if (gl.canvas.width  !== displayWidth ||
       gl.canvas.height !== displayHeight) {
 
-    gl.canvas.width  = displayWidth;
+    gl.canvas.width = displayWidth;
     gl.canvas.height = displayHeight;
   }
 
@@ -175,8 +191,36 @@ function drawScene(
                            offset);
     gl.enableVertexAttribArray(programInfo.attribLocations.vertexColour);
 
-    const stripVertexCount = drawInformation.vertices.length / 2;
+    // Tell WebGL how to pull out the texture coordinates from
+    // the texture coordinate buffer into the textureCoord attribute.
+    {
+      const numComponents = 2;
+      const type = gl.FLOAT;
+      const normalize = false;
+      const stride = 0;
+      const offset = 0;
+      gl.bindBuffer(gl.ARRAY_BUFFER, drawInformation.textureInformation.textureCoordsBuffer);
+      gl.vertexAttribPointer(
+          programInfo.attribLocations.textureCoord,
+          numComponents,
+          type,
+          normalize,
+          stride,
+          offset);
+      gl.enableVertexAttribArray(
+          programInfo.attribLocations.textureCoord);
+    }
 
+    // Tell WebGL we want to affect texture unit 0
+    gl.activeTexture(gl.TEXTURE0);
+
+    // Bind the texture to texture unit 0
+    gl.bindTexture(gl.TEXTURE_2D, drawInformation.textureInformation.texture);
+
+    // Tell the shader we bound the texture to texture unit 0
+    gl.uniform1i(programInfo.uniformLocations.uSampler, 0);
+
+    const stripVertexCount = drawInformation.vertices.length / 2;
     gl.drawArrays(gl.TRIANGLE_STRIP, offset, stripVertexCount);
   });
 }
