@@ -12,7 +12,6 @@ interface ProgramInfo {
   program: WebGLProgram;
   attribLocations: {
     vertexPosition: number,
-    vertexColour: number,
     textureCoord: number,
   };
   uniformLocations: {
@@ -42,7 +41,6 @@ export function startCanvasService(canvas: HTMLCanvasElement) {
     program: shaderProgram,
     attribLocations: {
       vertexPosition: gl.getAttribLocation(shaderProgram, 'aModelMatrix'),
-      vertexColour: gl.getAttribLocation(shaderProgram, 'aVertexColor'),
       textureCoord: gl.getAttribLocation(shaderProgram, 'aTextureCoord'),
     },
     uniformLocations: {
@@ -166,8 +164,7 @@ function drawScene(
       false,
       cameraMatrix);
 
-  const numVertexComponents = 2;
-  const numColorComponents = 4;
+  const numComponents = 2;
   const type = gl.FLOAT;
   const normalize = false;
   const stride = 0;
@@ -176,21 +173,12 @@ function drawScene(
   drawInformationBatch.forEach((drawInformation: DrawInformation) => {
     gl.bindBuffer(gl.ARRAY_BUFFER, drawInformation.vertexBuffer);
     gl.vertexAttribPointer(programInfo.attribLocations.vertexPosition,
-                           numVertexComponents,
+                           numComponents,
                            type,
                            normalize,
                            stride,
                            offset);
     gl.enableVertexAttribArray(programInfo.attribLocations.vertexPosition);
-
-    gl.bindBuffer(gl.ARRAY_BUFFER, drawInformation.colourBuffer);
-    gl.vertexAttribPointer(programInfo.attribLocations.vertexColour,
-                           numColorComponents,
-                           type,
-                           normalize,
-                           stride,
-                           offset);
-    gl.enableVertexAttribArray(programInfo.attribLocations.vertexColour);
 
     // Tell WebGL how to pull out the texture coordinates from
     // the texture coordinate buffer into the textureCoord attribute.

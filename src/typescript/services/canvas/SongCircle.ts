@@ -84,7 +84,6 @@ class SongCircle extends Drawable {
 
     return {
       vertices,
-      colours,
       textureURL,
     };
   }

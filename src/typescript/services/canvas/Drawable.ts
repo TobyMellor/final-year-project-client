@@ -1,13 +1,11 @@
 export type Input = {
   vertices: number[];
-  colours: number[];
   textureURL: string;
 };
 export type InputBatch = Input[];
 
 export interface DrawInformation {
   vertexBuffer: WebGLBuffer;
-  colourBuffer: WebGLBuffer;
   vertices: number[];
   textureInformation: {
     texture: WebGLTexture,
@@ -29,10 +27,9 @@ class Drawable {
     gl: WebGLRenderingContext,
     drawInformationInput: Input,
   ): DrawInformation {
-    const { vertices, colours, textureURL } = drawInformationInput;
+    const { vertices, textureURL } = drawInformationInput;
 
     const vertexBuffer: WebGLBuffer = this.createBuffer(gl, vertices);
-    const colourBuffer: WebGLBuffer = this.createBuffer(gl, colours);
 
     const texture: WebGLTexture = this.createTexture(gl, textureURL);
 
@@ -47,7 +44,6 @@ class Drawable {
 
     return {
       vertexBuffer,
-      colourBuffer,
       vertices,
       textureInformation: {
         texture,
@@ -105,27 +101,20 @@ class Drawable {
       gl.texImage2D(gl.TEXTURE_2D, level, internalFormat,
                     srcFormat, srcType, image);
 
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+
+      // Prevents s-coordinate wrapping (repeating).
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+
+      // Prevents t-coordinate wrapping (repeating).
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+
       // WebGL1 has different requirements for power of 2 images
       // vs non power of 2 images so check if the image is a
       // power of 2 in both dimensions.
       if (this.isPowerOf2(image.width) && this.isPowerOf2(image.height)) {
-        console.log(image.width);
-        console.log(image.height);
-        // gl.NEAREST is also allowed, instead of gl.LINEAR, as neither mipmap.
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-        // Prevents s-coordinate wrapping (repeating).
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-        // Prevents t-coordinate wrapping (repeating).
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-        // Yes, it's a power of 2. Generate mips.
         gl.generateMipmap(gl.TEXTURE_2D);
-      } else {
-        // No, it's not a power of 2. Turn of mips and set
-        // wrapping to clamp to edge
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
       }
     };
     image.src = textureURL;
