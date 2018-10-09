@@ -51,23 +51,23 @@ export function startCanvasService(canvas: HTMLCanvasElement) {
   };
 
   const circle1Radius = 10;
-  const circle1LineWidth = 0.5;
+  const circle1LineWidth = 1;
 
   const circle1 = new SongCircle(gl,
                                  Point.getPoint(0, 0),
                                  circle1Radius,
                                  circle1LineWidth);
 
-  const circle2Radius = 0.9;
-  const circle2LineWidth = 0.9;
+  const circle2Radius = 8;
+  const circle2LineWidth = 0.7;
   const circle2Percentage = 25;
 
   const circle2 = new SongCircle(gl,
                                  Point.getPointOnCircleFromPercentage(circle1,
                                                                       circle2Percentage,
-                                                                      circle1Radius / 2,
+                                                                      circle2Radius,
                                                                       circle2LineWidth),
-                                 5,
+                                 circle2Radius,
                                  circle2LineWidth);
 
   // Build the objects we need to draw
@@ -76,16 +76,8 @@ export function startCanvasService(canvas: HTMLCanvasElement) {
     .add(circle2.getDrawInformationBatch())
     .build();
 
-  console.log(drawInformationBatch);
-
-  let then = 0;
-
   // Draw the scene repeatedly
   function render(now: number) {
-    const nowSeconds = now * 0.001;  // convert to seconds
-    const deltaTime = nowSeconds - then;
-    then = nowSeconds;
-
     drawScene(gl, programInfo, drawInformationBatch);
 
     requestAnimationFrame(render);

@@ -1,6 +1,9 @@
+import SongCircle from './SongCircle';
+
 export type Input = {
   vertices: number[];
   textureURL: string;
+  songCircle: SongCircle;
 };
 export type InputBatch = Input[];
 
@@ -27,18 +30,51 @@ class Drawable {
     gl: WebGLRenderingContext,
     drawInformationInput: Input,
   ): DrawInformation {
-    const { vertices, textureURL } = drawInformationInput;
+    const { vertices, textureURL, songCircle } = drawInformationInput;
 
     const vertexBuffer: WebGLBuffer = this.createBuffer(gl, vertices);
-
     const texture: WebGLTexture = this.createTexture(gl, textureURL);
 
-    const radius = 10;
-    const lineWidth = 0.5;
-
     const textureCoordsBuffer: WebGLBuffer = this.createBuffer(gl, vertices.map(
-      (vertex: number) => {
-        return ((vertex) / ((radius + lineWidth) * 2) + 0.5);
+      (position: number, index: number) => {
+        const songCircleCenter = songCircle.getCenter();
+        const songCircleRadius = songCircle.getRadius();
+        const songCircleLineWidth = songCircle.getLineWidth();
+
+        /**
+         * Translate the image to the center of the circle
+         */
+        function translateToCircle(position: number): number {
+          const amountOriginToCenter = index % 2 === 0
+                                       ? songCircleCenter.x
+                                       : songCircleCenter.y;
+
+          return position - amountOriginToCenter;
+        }
+
+        /**
+         * Scale image size to size of circle
+         *
+         * x2 to get full circumference of the circle, including the line width
+         */
+        function scaleToFit(position: number): number {
+          const scaleFactor = (songCircleRadius + songCircleLineWidth) * 2;
+
+          return position / scaleFactor;
+        }
+
+        /**
+         * + 0.5 to translate bottom-left of image to bottom-left of circle
+         */
+        function translateToBottomLeftCorner(position: number): number {
+          const amountAlignBottomLeftCorner = 0.5;
+
+          return position + amountAlignBottomLeftCorner;
+        }
+
+        return translateToBottomLeftCorner(
+          scaleToFit(
+            translateToCircle(position)));
       },
     ));
 

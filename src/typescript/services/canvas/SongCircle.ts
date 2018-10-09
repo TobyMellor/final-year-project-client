@@ -22,6 +22,10 @@ class SongCircle extends Drawable {
   ) {
     super();
 
+    this.radius = radius;
+    this.lineWidth = lineWidth;
+    this.center = center;
+
     // Parametric Equation of a circle:
     //   x = r cos(t)
     //   y = r cos(t)
@@ -52,10 +56,6 @@ class SongCircle extends Drawable {
       circleDrawInformationInput1,
       circleDrawInformationInput2,
     ]);
-
-    this.radius = radius;
-    this.lineWidth = lineWidth;
-    this.center = center;
   }
 
   private getCircleDrawInformationInput(
@@ -85,6 +85,7 @@ class SongCircle extends Drawable {
     return {
       vertices,
       textureURL,
+      songCircle: this,
     };
   }
 
