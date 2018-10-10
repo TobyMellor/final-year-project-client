@@ -1,6 +1,6 @@
 import { mat4 } from 'gl-matrix';
 import Drawable, { DrawInformation } from './Drawable';
-import { ProgramInfo } from '../main';
+import { ProgramInfo } from '../CanvasService';
 
 class Scene {
   private BUFFER_NUM_COMPONENTS: number = 2;
