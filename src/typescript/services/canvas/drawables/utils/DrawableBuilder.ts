@@ -1,4 +1,4 @@
-import { DrawInformation } from './Drawable';
+import { DrawInformation } from '../Drawable';
 
 class DrawableBuilder {
   private drawInformationBatch: DrawInformation[] = [];

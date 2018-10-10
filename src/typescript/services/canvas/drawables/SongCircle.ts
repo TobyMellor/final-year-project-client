@@ -1,9 +1,7 @@
 import Drawable, {
-  DrawInformation,
   Input as DrawableInput,
-  InputBatch as DrawableInputBatch,
 } from './Drawable';
-import Point from './Point';
+import Point from './utils/Point';
 
 class SongCircle extends Drawable {
   private RESOLUTION: number = 1;      // A lower number gives a higher resolution
@@ -39,7 +37,7 @@ class SongCircle extends Drawable {
         radius * Math.sin(radians) + center.x,
         radius * Math.cos(radians) + center.y,
       ],
-      'dist/cover_example_1.png',
+      Math.random() <= 0.5 ? 'dist/cover_example_1.png' : 'dist/cover_example_2.png',
     );
     const circleDrawInformationInput2: DrawableInput = this.getCircleDrawInformationInput(
       (radians: number) => [

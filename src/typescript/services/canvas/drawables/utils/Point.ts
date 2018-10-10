@@ -1,5 +1,5 @@
-import SongCircle from './SongCircle';
-import Drawable from './Drawable';
+import SongCircle from '../SongCircle';
+import Drawable from '../Drawable';
 
 // tslint:disable:variable-name
 class Point {

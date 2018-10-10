@@ -1,14 +1,16 @@
-import * as glMatrix from 'gl-matrix';
+/**
+ * Initial Canvas/WebGL Setup
+ */
+
 import vertexShaderSource from './shaders/vertex-shader-source';
 import fragmentShaderSource from './shaders/fragment-shader-source';
-import Drawable, { DrawInformation } from './Drawable';
-import SongCircle from './SongCircle';
-import DrawableBuilder from './DrawableBuilder';
-import Point from './Point';
+import SongCircle from './drawables/SongCircle';
+import { DrawInformation } from './drawables/Drawable';
+import DrawableBuilder from './drawables/utils/DrawableBuilder';
+import Point from './drawables/utils/Point';
+import Scene from './drawables/Scene';
 
-const mat4 = glMatrix.mat4;
-
-interface ProgramInfo {
+export interface ProgramInfo {
   program: WebGLProgram;
   attribLocations: {
     vertexPosition: number,
@@ -19,6 +21,7 @@ interface ProgramInfo {
     cameraMatrix: WebGLUniformLocation,
     uSampler: WebGLUniformLocation,
   };
+  drawInformationBatch: DrawInformation[];
 }
 
 export function startCanvasService(canvas: HTMLCanvasElement) {
@@ -48,6 +51,7 @@ export function startCanvasService(canvas: HTMLCanvasElement) {
       cameraMatrix: gl.getUniformLocation(shaderProgram, 'uCameraMatrix'),
       uSampler: gl.getUniformLocation(shaderProgram, 'uSampler'),
     },
+    drawInformationBatch: [],
   };
 
   const circle1Radius = 10;
@@ -78,7 +82,7 @@ export function startCanvasService(canvas: HTMLCanvasElement) {
 
   // Draw the scene repeatedly
   function render(now: number) {
-    drawScene(gl, programInfo, drawInformationBatch);
+    new Scene(gl, programInfo, drawInformationBatch);
 
     requestAnimationFrame(render);
   }
@@ -105,105 +109,6 @@ function resizeCanvas(gl: WebGLRenderingContext) {
   }
 
   gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
-}
-
-function drawScene(
-  gl: WebGLRenderingContext,
-  programInfo: ProgramInfo,
-  drawInformationBatch: DrawInformation[],
-) {
-  gl.clearColor(1.0, 1.0, 1.0, 1.0);         // Clear to black, fully opaque
-  gl.clearDepth(1.0);                        // Clear everything
-  gl.enable(gl.DEPTH_TEST);                  // Enable depth testing
-  gl.depthFunc(gl.LEQUAL);                   // Near things obscure far things
-  gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 1); // Flip textures to the correct orientation
-
-  gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-
-  // Create a projection matrix that allows us to tweak the cameras
-  // field of view, and whether circles will be rendered out of view
-  const fieldOfView = Drawable.convert(45, Drawable.degreesToRadiansFn);
-  const aspect = gl.canvas.clientWidth / gl.canvas.clientHeight;
-  const zNear = 0.1;
-  const zFar = 100.0;
-  const projectionMatrix = mat4.create();
-
-  mat4.perspective(projectionMatrix,
-                   fieldOfView,
-                   aspect,
-                   zNear,
-                   zFar);
-
-  // Set the drawing position to the "identity" point, which is
-  // the center of the scene
-  const cameraMatrix = mat4.create();
-
-  // Now move the drawing position a bit to where we want to
-  // start drawing the square.
-
-  mat4.translate(cameraMatrix,       // destination matrix
-                 cameraMatrix,       // matrix to translate
-                 [0.0, 0.0, -30.0]); // amount to translate
-
-  gl.useProgram(programInfo.program);
-
-  gl.uniformMatrix4fv(
-      programInfo.uniformLocations.projectionMatrix,
-      false,
-      projectionMatrix);
-  gl.uniformMatrix4fv(
-      programInfo.uniformLocations.cameraMatrix,
-      false,
-      cameraMatrix);
-
-  const numComponents = 2;
-  const type = gl.FLOAT;
-  const normalize = false;
-  const stride = 0;
-  const offset = 0;
-
-  drawInformationBatch.forEach((drawInformation: DrawInformation) => {
-    gl.bindBuffer(gl.ARRAY_BUFFER, drawInformation.vertexBuffer);
-    gl.vertexAttribPointer(programInfo.attribLocations.vertexPosition,
-                           numComponents,
-                           type,
-                           normalize,
-                           stride,
-                           offset);
-    gl.enableVertexAttribArray(programInfo.attribLocations.vertexPosition);
-
-    // Tell WebGL how to pull out the texture coordinates from
-    // the texture coordinate buffer into the textureCoord attribute.
-    {
-      const numComponents = 2;
-      const type = gl.FLOAT;
-      const normalize = false;
-      const stride = 0;
-      const offset = 0;
-      gl.bindBuffer(gl.ARRAY_BUFFER, drawInformation.textureInformation.textureCoordsBuffer);
-      gl.vertexAttribPointer(
-          programInfo.attribLocations.textureCoord,
-          numComponents,
-          type,
-          normalize,
-          stride,
-          offset);
-      gl.enableVertexAttribArray(
-          programInfo.attribLocations.textureCoord);
-    }
-
-    // Tell WebGL we want to affect texture unit 0
-    gl.activeTexture(gl.TEXTURE0);
-
-    // Bind the texture to texture unit 0
-    gl.bindTexture(gl.TEXTURE_2D, drawInformation.textureInformation.texture);
-
-    // Tell the shader we bound the texture to texture unit 0
-    gl.uniform1i(programInfo.uniformLocations.uSampler, 0);
-
-    const stripVertexCount = drawInformation.vertices.length / 2;
-    gl.drawArrays(gl.TRIANGLE_STRIP, offset, stripVertexCount);
-  });
 }
 
 function initShaderProgram(
