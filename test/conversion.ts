@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 import 'mocha';
 
-import Drawable from '../src/typescript/services/canvas/Drawable';
+import Drawable from '../src/typescript/services/canvas/drawables/Drawable';
 
 describe('Conversions', () => {
 
