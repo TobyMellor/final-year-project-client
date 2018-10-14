@@ -1,11 +1,10 @@
-import Album from './Album';
-import Artist from './Artist';
+import Album, { Input as AlbumInput } from './Album';
+import Artist, { Input as ArtistInput } from './Artist';
 import AudioFeatures from './AudioFeatures';
 
 export type Input = {
-  album: Album;
-  artist: Artist;
-  audioFeatures: AudioFeatures;
+  album: Album | AlbumInput;
+  audioFeatures?: AudioFeatures;
   duration_ms: number;
   explicit: boolean;
   id: string;
@@ -15,7 +14,6 @@ export type Input = {
 
 class Track {
   private album: Album;
-  private artist: Artist;
   private audioFeatures: AudioFeatures;
   private durationMs: number;
   private explicit: boolean;
@@ -23,10 +21,9 @@ class Track {
   private name: string;
   private URI: string;
 
-  constructor({ album, artist, audioFeatures, duration_ms, explicit, id, name, uri }: Input) {
-    this.album = album;
-    this.artist = artist;
-    this.audioFeatures = audioFeatures;
+  constructor({ album, audioFeatures, duration_ms, explicit, id, name, uri }: Input) {
+    this.album = album instanceof Album ? album : new Album(album);
+    this.audioFeatures = audioFeatures || null;
     this.durationMs = duration_ms;
     this.explicit = explicit;
     this.ID = id;
@@ -36,10 +33,6 @@ class Track {
 
   public getAlbum() {
     return this.album;
-  }
-
-  public getArtist() {
-    return this.artist;
   }
 
   public getAudioFeatures() {

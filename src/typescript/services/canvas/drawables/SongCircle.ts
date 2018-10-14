@@ -2,6 +2,7 @@ import Drawable, {
   Input as DrawableInput,
 } from './Drawable';
 import Point from './utils/Point';
+import Track from '../../../models/Track';
 
 class SongCircle extends Drawable {
   private RESOLUTION: number = 1;      // A lower number gives a higher resolution
@@ -12,7 +13,10 @@ class SongCircle extends Drawable {
   private lineWidth: number;
   private center: Point;
 
+  private track: Track;
+
   constructor(
+    track: Track,
     gl: WebGLRenderingContext,
     center: Point,
     radius: number,
@@ -20,9 +24,10 @@ class SongCircle extends Drawable {
   ) {
     super();
 
+    this.track = track;
+    this.center = center;
     this.radius = radius;
     this.lineWidth = lineWidth;
-    this.center = center;
 
     // Parametric Equation of a circle:
     //   x = r cos(t)
@@ -97,6 +102,10 @@ class SongCircle extends Drawable {
 
   public getCenter(): Point {
     return this.center;
+  }
+
+  public getTrack(): Track {
+    return this.track;
   }
 }
 

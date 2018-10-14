@@ -7,7 +7,6 @@ import fragmentShaderSource from './shaders/fragment-shader-source';
 import SongCircle from './drawables/SongCircle';
 import { DrawInformation } from './drawables/Drawable';
 import DrawableBuilder from './drawables/utils/DrawableBuilder';
-import Point from './drawables/utils/Point';
 import Scene from './drawables/Scene';
 import Translator from '../../../translations/Translator';
 
@@ -31,6 +30,8 @@ class CanvasService {
   private drawInformationBatch: DrawInformation[] = [];
   private gl: WebGLRenderingContext;
   private programInfo: ProgramInfo;
+
+  private parentSongCircle: SongCircle = null;
 
   private constructor(canvas: HTMLCanvasElement) {
     const gl = this.gl = canvas.getContext('webgl');
@@ -79,6 +80,14 @@ class CanvasService {
     }
 
     return this._instance = new this(canvas);
+  }
+
+  public getParentSongCircle(): SongCircle {
+    return this.parentSongCircle;
+  }
+
+  public setParentSongCircle(songCircle: SongCircle) {
+    this.parentSongCircle = songCircle;
   }
 
   public getGL(): WebGLRenderingContext {

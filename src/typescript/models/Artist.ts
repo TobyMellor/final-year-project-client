@@ -1,19 +1,21 @@
+import Image, { Input as ImageInput } from './Image';
+
 export type Input = {
   id: string;
-  images: string[];
+  images: ImageInput[];
   name: string;
   uri: string;
 };
 
 class Artist {
   private ID: string;   // The Spotify ID for the artist
-  private images: string[];
+  private images: Image[];
   private name: string;
   private URI: string;
 
   constructor({ id, images, name, uri }: Input) {
     this.ID = id;
-    this.images = images;
+    this.images = images.map(image => new Image(image));
     this.name = name;
     this.URI = uri;
   }

@@ -60,7 +60,7 @@ interface SimplifiedAlbum extends SimplifiedObjectModel {
 /**
  * |-------------------------------------------------------------------|
  * |                                                                   |
- * |   Type's representing endpoints from the Spotify Web API          |
+ * |   Type's representing responses from the Spotify Web API          |
  * |   https://developer.spotify.com/documentation/web-api/reference   |
  * |                                                                   |
  * |-------------------------------------------------------------------|
@@ -97,7 +97,7 @@ interface SimplifiedAlbum extends SimplifiedObjectModel {
  *  }
  */
 
-export interface GetAnArtist extends SimplifiedArtist {
+export interface GetAnArtistResponse extends SimplifiedArtist {
   followers: {
     href: string;
     total: number;
@@ -187,7 +187,7 @@ export interface GetAnArtist extends SimplifiedArtist {
  *  }
  */
 
-export interface GetAnAlbum extends SimplifiedAlbum {
+export interface GetAnAlbumResponse extends SimplifiedAlbum {
   copyrights: Copyright[];
   genres: string[];
   popularity: number;
@@ -274,7 +274,7 @@ export interface GetAnAlbum extends SimplifiedAlbum {
  *  }
  */
 
-export interface GetATrack extends SimplifiedTrack {
+export interface GetATrackResponse extends SimplifiedTrack {
   album: SimplifiedAlbum;
   external_ids: ExternalIdentifiers;
   is_local: boolean;
