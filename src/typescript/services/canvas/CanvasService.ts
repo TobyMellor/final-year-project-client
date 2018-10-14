@@ -9,6 +9,9 @@ import { DrawInformation } from './drawables/Drawable';
 import DrawableBuilder from './drawables/utils/DrawableBuilder';
 import Scene from './drawables/Scene';
 import Translator from '../../../translations/Translator';
+import Dispatcher from '../../events/Dispatcher';
+import Track from '../../models/Track';
+import * as DrawableFactory from './drawables/drawable-factory';
 
 export interface ProgramInfo {
   program: WebGLProgram;
@@ -32,6 +35,8 @@ class CanvasService {
   private programInfo: ProgramInfo;
 
   private parentSongCircle: SongCircle = null;
+  private childSongCircles: SongCircle[] = [];
+  private random = Math.random();
 
   private constructor(canvas: HTMLCanvasElement) {
     const gl = this.gl = canvas.getContext('webgl');
@@ -61,6 +66,8 @@ class CanvasService {
       drawInformationBatch: [],
     };
 
+    Dispatcher.getInstance().on('PlayingTrackChanged', this, this.setSongCircles);
+
     const render = (now: number) => {
       new Scene(this.gl, this.programInfo, this.drawInformationBatch);
 
@@ -86,8 +93,25 @@ class CanvasService {
     return this.parentSongCircle;
   }
 
-  public setParentSongCircle(songCircle: SongCircle) {
-    this.parentSongCircle = songCircle;
+  public setSongCircles(
+    { playingTrack, childTracks }: { playingTrack: Track, childTracks: Track[] },
+  ) {
+    const parentSongCircle = DrawableFactory.createParentSongCircle(playingTrack);
+    const childSongCircles = childTracks.map((childTrack) => {
+      const percentage = Math.round(Math.random() * 100);
+
+      return DrawableFactory.createChildSongCircle(parentSongCircle, childTrack, percentage);
+    });
+    const allSongCircles = [parentSongCircle, ...childSongCircles];
+    const drawInformationBatch: DrawInformation[] = [];
+
+    allSongCircles.forEach((songCircle) => {
+      drawInformationBatch.push(...songCircle.getDrawInformationBatch());
+    });
+
+    this.parentSongCircle = parentSongCircle;
+    this.childSongCircles = childSongCircles;
+    this.drawInformationBatch = drawInformationBatch;
   }
 
   public getGL(): WebGLRenderingContext {

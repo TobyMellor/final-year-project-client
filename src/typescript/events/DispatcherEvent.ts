@@ -2,10 +2,12 @@ export type CallbackFn = (data: any) => void;
 
 class DispatcherEvent {
   private eventName: string;
+  private context: Object;
   private callbackFns: CallbackFn[];
 
-  constructor(eventName: string) {
+  constructor(eventName: string, context: Object) {
     this.eventName = eventName;
+    this.context = context;
     this.callbackFns = [];
   }
 
@@ -22,9 +24,16 @@ class DispatcherEvent {
   }
 
   fire(data: any) {
+    const context = this.context;
     const callbacksFn = this.callbackFns.copyWithin(0, 0);
 
-    callbacksFn.forEach((callbackFn: CallbackFn) => callbackFn(data));
+    // Bind the callbacks to their context (so 'this' works inside the callback),
+    // and run the callback
+    callbacksFn.forEach((callbackFn: CallbackFn) => {
+      const bindedCallbackFn = callbackFn.bind(context);
+
+      return bindedCallbackFn(data);
+    });
   }
 }
 

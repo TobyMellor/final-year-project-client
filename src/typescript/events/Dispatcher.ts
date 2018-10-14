@@ -6,9 +6,14 @@ interface Events {
 
 class Dispatcher {
   private events: Events;
+  private static _instance: Dispatcher = null;
 
-  constructor() {
+  private constructor() {
     this.events = {};
+  }
+
+  public static getInstance(): Dispatcher {
+    return this._instance || (this._instance = new this());
   }
 
   dispatch(eventName: string, data: any) {
@@ -19,9 +24,9 @@ class Dispatcher {
     }
   }
 
-  on(eventName: string, callbackFn: CallbackFn) {
+  on(eventName: string, context: Object, callbackFn: CallbackFn) {
     if (!this.events[eventName]) {
-      this.events[eventName] = new DispatcherEvent(eventName);
+      this.events[eventName] = new DispatcherEvent(eventName, context);
     }
 
     const event = this.events[eventName];

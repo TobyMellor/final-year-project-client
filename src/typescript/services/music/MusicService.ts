@@ -3,6 +3,7 @@ import Track from '../../models/Track';
 import { GetAnAlbum } from '../api/spotify/albums';
 import { GetAnArtist } from '../api/spotify/artists';
 import { GetATrack } from '../api/spotify/tracks';
+import Dispatcher from '../../events/Dispatcher';
 
 /**
  * Initial Music Setup
@@ -11,39 +12,84 @@ import { GetATrack } from '../api/spotify/tracks';
 class MusicService {
   private static _instance: MusicService;
 
-  public static getInstance(): MusicService {
-    return this._instance || (this._instance = new this());
-  }
+  private tracks: Track[] = [];
+  private playingTrackID: string = null;
+  private childTrackIDs: Set<string> = new Set<string>();
 
   private constructor() {
     // AJAX requests for spotify data
     // Analyse beats and bars
-    // Render the circles in the correct places
 
-    GetATrack.request(1).then(console.log);
+    const trackIDs: string[] = [
+      '4RVbK6cV0VqWdpCDcx3hiT',
+      '3aUFrxO1B8EW63QchEl3wX',
+      '2hmHlBM0kPBm17Y7nVIW9f',
+      '6wVWJl64yoTzU27EI8ep20',
+      '3O8NlPh2LByMU9lSRSHedm',
+      '0wwPcA6wtMf6HUMpIRdeP7',
+    ];
+    const trackRequests: Promise<Track>[] = trackIDs.map(ID => GetATrack.request(ID));
 
-    // const canvasService = CanvasService.getInstance();
+    Promise
+      .all(trackRequests)
+      .then((tracks) => {
+        const childTrackIDs = tracks.map(track => track.getID());
+        const playingTrackID = tracks[0].getID();
 
-    // canvasService.setParentSongCircle(track);
+        this.tracks = tracks;
+        this.addChildTracks(...childTrackIDs);
+        this.setPlayingTrack(playingTrackID);
+      });
+  }
 
-    // const parentSongCircle = drawableFactory.createParentSongCircle();
-    // const childSongCircle1 = drawableFactory.createChildSongCircle(parentSongCircle,
-    //                                                                25,
-    //                                                                8,
-    //                                                                0.7);
-    // const childSongCircle2 = drawableFactory.createChildSongCircle(parentSongCircle,
-    //                                                               67,
-    //                                                               3,
-    //                                                               0.3);
+  public static getInstance(): MusicService {
+    return this._instance || (this._instance = new this());
+  }
 
-    // // Build the objects we need to draw
-    // const drawableBuilder: DrawableBuilder = new DrawableBuilder()
-    //   .add(parentSongCircle.getDrawInformationBatch())
-    //   .add(childSongCircle1.getDrawInformationBatch())
-    //   .add(childSongCircle2.getDrawInformationBatch());
+  public addChildTracks(...trackIDs: string[]) {
+    trackIDs.forEach(ID => this.childTrackIDs.add(ID));
+  }
 
-    // CanvasService.getInstance()
-    //              .setDrawInformationBatch(drawableBuilder);
+  public getTracks(): Track[] {
+    return this.tracks;
+  }
+
+  public getTrack(ID: string): Track {
+    const tracks = this.tracks;
+
+    return tracks.find(track => track.getID() === ID);
+  }
+
+  public getPlayingTrack(): Track | null {
+    const tracks = this.tracks;
+    const playingTrackID = this.playingTrackID;
+    const playingTrack = tracks.find(track => track.getID() === playingTrackID) || null;
+
+    return playingTrack;
+  }
+
+  public setPlayingTrack(ID: string) {
+    const previousPlayingTrack: Track | null = this.getPlayingTrack();
+
+    if (previousPlayingTrack) {
+      this.childTrackIDs.add(previousPlayingTrack.getID());
+    }
+
+    this.childTrackIDs.delete(ID);
+    this.playingTrackID = ID;
+
+    Dispatcher.getInstance().dispatch('PlayingTrackChanged', {
+      playingTrack: this.getPlayingTrack(),
+      childTracks: this.getChildTracks(),
+    });
+  }
+
+  public getChildTracks() {
+    const tracks = this.tracks;
+    const childTrackIDs = this.childTrackIDs;
+    const childTracks = tracks.filter(track => childTrackIDs.has(track.getID()));
+
+    return childTracks;
   }
 }
 

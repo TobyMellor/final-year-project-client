@@ -12,7 +12,7 @@ class Scene {
   private CAMERA_FOV_DEGREES: number = 45;
   private CAMERA_Z_CLIP_NEAR: number = 0.1;
   private CAMERA_Z_CLIP_FAR: number = 100.0;
-  private CAMERA_POSITION: number[] = [0.0, 0.0, -30.0];
+  private CAMERA_POSITION: number[] = [0.0, 0.0, -5.0];
 
   constructor(
     gl: WebGLRenderingContext,
