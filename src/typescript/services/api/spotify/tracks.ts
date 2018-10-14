@@ -4,17 +4,17 @@ import { GetATrackResponse } from '../../../types/spotify-responses';
 import Track from '../../../models/Track';
 
 export class GetATrack extends Request {
-  private id: number;
+  private ID: string;
 
-  constructor(id: number) {
+  constructor(ID: string) {
     super();
 
-    this.id = id;
+    this.ID = ID;
   }
 
-  static async request(id: number): Promise<Track> {
+  static async request(ID: string): Promise<Track> {
     const response = <GetATrackResponse> await SpotifyAPI.get(
-      new GetATrack(id),
+      new GetATrack(ID),
     );
 
     return new Track(response);
@@ -25,6 +25,6 @@ export class GetATrack extends Request {
   }
 
   getEndpoint() {
-    return `tracks/${this.id}`;
+    return `tracks/${this.ID}`;
   }
 }

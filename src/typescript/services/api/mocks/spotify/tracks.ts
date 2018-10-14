@@ -2,7 +2,7 @@
 
 import { sample } from '../mocker';
 
-export function getATrackMock() {
+export function getATrackMock(ID?: string) {
   const mocks = [
     // KIDS SEE GHOSTS
     //     - Reborn
@@ -25,6 +25,13 @@ export function getATrackMock() {
     //     - Hotling Bling
     '{"album":{"album_type":"album","artists":[{"external_urls":{"spotify":"https://open.spotify.com/artist/3TVXtAsR1Inumwj472S9r4"},"href":"https://api.spotify.com/v1/artists/3TVXtAsR1Inumwj472S9r4","id":"3TVXtAsR1Inumwj472S9r4","name":"Drake","type":"artist","uri":"spotify:artist:3TVXtAsR1Inumwj472S9r4"}],"available_markets":["AD","AR","AT","AU","BE","BG","BO","BR","CA","CH","CL","CO","CR","CY","CZ","DE","DK","DO","EC","EE","ES","FI","FR","GB","GR","GT","HK","HN","HU","ID","IE","IL","IS","IT","JP","LI","LT","LU","LV","MC","MT","MX","MY","NI","NL","NO","NZ","PA","PE","PH","PL","PT","PY","RO","SE","SG","SK","SV","TH","TR","TW","US","UY","VN","ZA"],"external_urls":{"spotify":"https://open.spotify.com/album/40GMAhriYJRO1rsY4YdrZb"},"href":"https://api.spotify.com/v1/albums/40GMAhriYJRO1rsY4YdrZb","id":"40GMAhriYJRO1rsY4YdrZb","images":[{"height":640,"url":"https://i.scdn.co/image/e73c706e842eb5233eab7afd3404218a2696d568","width":640},{"height":300,"url":"https://i.scdn.co/image/90f080afbec29a0c58509875a6dd59b3c380e353","width":300},{"height":64,"url":"https://i.scdn.co/image/260c2e74e67a15cf61ac72f8264cc6caec5f7a66","width":64}],"name":"Views","release_date":"2016-05-06","release_date_precision":"day","total_tracks":20,"type":"album","uri":"spotify:album:40GMAhriYJRO1rsY4YdrZb"},"artists":[{"external_urls":{"spotify":"https://open.spotify.com/artist/3TVXtAsR1Inumwj472S9r4"},"href":"https://api.spotify.com/v1/artists/3TVXtAsR1Inumwj472S9r4","id":"3TVXtAsR1Inumwj472S9r4","name":"Drake","type":"artist","uri":"spotify:artist:3TVXtAsR1Inumwj472S9r4"}],"available_markets":["AD","AR","AT","AU","BE","BG","BO","BR","CA","CH","CL","CO","CR","CY","CZ","DE","DK","DO","EC","EE","ES","FI","FR","GB","GR","GT","HK","HN","HU","ID","IE","IL","IS","IT","JP","LI","LT","LU","LV","MC","MT","MX","MY","NI","NL","NO","NZ","PA","PE","PH","PL","PT","PY","RO","SE","SG","SK","SV","TH","TR","TW","US","UY","VN","ZA"],"disc_number":1,"duration_ms":267066,"explicit":false,"external_ids":{"isrc":"USCM51500238"},"external_urls":{"spotify":"https://open.spotify.com/track/0wwPcA6wtMf6HUMpIRdeP7"},"href":"https://api.spotify.com/v1/tracks/0wwPcA6wtMf6HUMpIRdeP7","id":"0wwPcA6wtMf6HUMpIRdeP7","is_local":false,"name":"Hotline Bling","popularity":79,"preview_url":"https://p.scdn.co/mp3-preview/4b0f1e81d1d671aaf21018721ae9a4236aafa155?cid=774b29d4f13844c495f206cafdad9c86","track_number":20,"type":"track","uri":"spotify:track:0wwPcA6wtMf6HUMpIRdeP7"}',
   ];
+
+  if (ID) {
+    const mockObjects = mocks.map(mock => JSON.parse(mock));
+    const mockByID = mockObjects.find(mockObject => mockObject.id === ID) || null;
+
+    return mockByID;
+  }
 
   return sample(mocks);
 }
