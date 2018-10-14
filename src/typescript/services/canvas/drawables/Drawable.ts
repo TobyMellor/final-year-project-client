@@ -132,6 +132,7 @@ class Drawable {
                   pixel);
 
     const image = new Image();
+    image.crossOrigin = 'anonymous';
     image.onload = () => {
       gl.bindTexture(gl.TEXTURE_2D, texture);
       gl.texImage2D(gl.TEXTURE_2D, level, internalFormat,

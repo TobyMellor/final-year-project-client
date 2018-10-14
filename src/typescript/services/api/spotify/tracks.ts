@@ -21,7 +21,7 @@ export class GetATrack extends Request {
   }
 
   async mockResponse(): Promise<Track> {
-    return require('../mocks/spotify/tracks').getATrackMock();
+    return require('../mocks/spotify/tracks').getATrackMock(this.ID);
   }
 
   getEndpoint() {

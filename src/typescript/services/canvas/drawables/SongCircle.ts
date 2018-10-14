@@ -42,7 +42,7 @@ class SongCircle extends Drawable {
         radius * Math.sin(radians) + center.x,
         radius * Math.cos(radians) + center.y,
       ],
-      Math.random() <= 0.5 ? 'dist/cover_example_1.png' : 'dist/cover_example_2.png',
+      track.getBestImageURL(),
     );
     const circleDrawInformationInput2: DrawableInput = this.getCircleDrawInformationInput(
       (radians: number) => [

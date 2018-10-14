@@ -47,6 +47,17 @@ class Track {
     return this.explicit;
   }
 
+  public getBestImageURL(): string | null {
+    const album = this.album;
+    const images = album.getImages();
+
+    if (images.length > 0) {
+      return images[0].getUrl();
+    }
+
+    return null;
+  }
+
   public getID() {
     return this.ID;
   }
