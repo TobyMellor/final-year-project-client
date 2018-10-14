@@ -29,6 +29,12 @@ class SongCircle extends Drawable {
     this.radius = radius;
     this.lineWidth = lineWidth;
 
+    // Make smaller circles (songs with a smaller durations) appear in front
+    // So, give smaller circles a smaller Z
+    // One trillion isn't special here, it's just making Z small
+    const oneTrillion = 1000000000;
+    const z = 1 - track.getDurationMs() / oneTrillion;
+
     // Parametric Equation of a circle:
     //   x = r cos(t)
     //   y = r cos(t)
@@ -37,10 +43,12 @@ class SongCircle extends Drawable {
       (_: number) => [
         center.x,
         center.y,
+        z,
       ],
       (radians: number) => [
         radius * Math.sin(radians) + center.x,
         radius * Math.cos(radians) + center.y,
+        z,
       ],
       track.getBestImageURL(),
     );
@@ -48,10 +56,12 @@ class SongCircle extends Drawable {
       (radians: number) => [
         radius * Math.sin(radians) + center.x,
         radius * Math.cos(radians) + center.y,
+        z,
       ],
       (radians: number) => [
         (radius + lineWidth) * Math.sin(radians) + center.x,
         (radius + lineWidth) * Math.cos(radians) + center.y,
+        z,
       ],
     );
 

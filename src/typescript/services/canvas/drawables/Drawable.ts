@@ -1,4 +1,5 @@
 import SongCircle from './SongCircle';
+import Scene from './Scene';
 
 export type Input = {
   vertices: number[];
@@ -32,10 +33,10 @@ class Drawable {
   ): DrawInformation {
     const { vertices, textureURL, songCircle } = drawInformationInput;
 
-    const vertexBuffer: WebGLBuffer = this.createBuffer(gl, vertices);
-    const texture: WebGLTexture = this.createTexture(gl, textureURL);
+    const vertexBuffer = this.createBuffer(gl, vertices);
+    const texture = this.createTexture(gl, textureURL);
 
-    const textureCoordsBuffer: WebGLBuffer = this.createBuffer(gl, vertices.map(
+    const textureCoordsBuffer = this.createBuffer(gl, vertices.map(
       (position: number, index: number) => {
         const songCircleCenter = songCircle.getCenter();
         const songCircleRadius = songCircle.getRadius();
@@ -45,7 +46,7 @@ class Drawable {
          * Translate the image to the center of the circle
          */
         function translateToCircle(position: number): number {
-          const amountOriginToCenter = index % 2 === 0
+          const amountOriginToCenter = index % Scene.BUFFER_NUM_COMPONENTS === 0
                                        ? songCircleCenter.x
                                        : songCircleCenter.y;
 
@@ -100,7 +101,7 @@ class Drawable {
   }
 
   private createBuffer(gl: WebGLRenderingContext, array: number[]): WebGLBuffer {
-    const buffer: WebGLBuffer = gl.createBuffer();
+    const buffer = gl.createBuffer();
 
     gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
     gl.bufferData(gl.ARRAY_BUFFER,
@@ -111,7 +112,7 @@ class Drawable {
   }
 
   private createTexture(gl: WebGLRenderingContext, textureURL: string): WebGLTexture {
-    const texture: WebGLTexture = gl.createTexture();
+    const texture = gl.createTexture();
     gl.bindTexture(gl.TEXTURE_2D, texture);
 
     // Because images have to be download over the internet

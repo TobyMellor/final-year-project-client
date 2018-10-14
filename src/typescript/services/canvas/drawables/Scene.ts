@@ -3,16 +3,17 @@ import Drawable, { DrawInformation } from './Drawable';
 import { ProgramInfo } from '../CanvasService';
 
 class Scene {
-  private BUFFER_NUM_COMPONENTS: number = 2;
-  private BUFFER_TYPE = WebGLRenderingContext.FLOAT;
-  private BUFFER_SHOULD_NORMALIZE: boolean = false;
-  private BUFFER_STRIDE: number = 0;
-  private BUFFER_OFFSET: number = 0;
+  public static BUFFER_NUM_COMPONENTS: number = 3; // How many dimensions?
 
-  private CAMERA_FOV_DEGREES: number = 45;
-  private CAMERA_Z_CLIP_NEAR: number = 0.1;
-  private CAMERA_Z_CLIP_FAR: number = 100.0;
-  private CAMERA_POSITION: number[] = [0.0, 0.0, -5.0];
+  private static BUFFER_TYPE = WebGLRenderingContext.FLOAT;
+  private static BUFFER_SHOULD_NORMALIZE: boolean = false;
+  private static BUFFER_STRIDE: number = 0;
+  private static BUFFER_OFFSET: number = 0;
+
+  private static CAMERA_FOV_DEGREES: number = 45;
+  private static CAMERA_Z_CLIP_NEAR: number = 0.1;
+  private static CAMERA_Z_CLIP_FAR: number = 100.0;
+  private static CAMERA_POSITION: number[] = [0.0, 0.0, -5.0];
 
   constructor(
     gl: WebGLRenderingContext,
@@ -37,7 +38,7 @@ class Scene {
     this.registerMatrix(gl, cameraMatrix, uniformLocations.cameraMatrix);
 
     drawInformationBatch.forEach((drawInformation: DrawInformation) => {
-      const stripVertexCount = drawInformation.vertices.length / 2;
+      const stripVertexCount = drawInformation.vertices.length / Scene.BUFFER_NUM_COMPONENTS;
 
       // Tell WebGL how to pull out the vertex coordinates from
       // the vertex position buffer into the vertexPosition attribute
@@ -55,7 +56,7 @@ class Scene {
                        drawInformation.textureInformation.texture,
                        uniformLocations.uSampler);
 
-      gl.drawArrays(gl.TRIANGLE_STRIP, this.BUFFER_OFFSET, stripVertexCount);
+      gl.drawArrays(gl.TRIANGLE_STRIP, Scene.BUFFER_OFFSET, stripVertexCount);
     });
   }
 
@@ -64,15 +65,16 @@ class Scene {
    * field of view, and whether circles will be rendered out of view
    */
   private getProjectionMatrix(gl: WebGLRenderingContext): mat4 {
-    const cameraFOVRadians = Drawable.convert(this.CAMERA_FOV_DEGREES, Drawable.degreesToRadiansFn);
+    const cameraFOVRadians = Drawable.convert(Scene.CAMERA_FOV_DEGREES,
+                                              Drawable.degreesToRadiansFn);
     const aspectRatio = gl.canvas.clientWidth / gl.canvas.clientHeight;
     const projectionMatrix = mat4.create();
 
     mat4.perspective(projectionMatrix,
                      cameraFOVRadians,
                      aspectRatio,
-                     this.CAMERA_Z_CLIP_NEAR,
-                     this.CAMERA_Z_CLIP_FAR);
+                     Scene.CAMERA_Z_CLIP_NEAR,
+                     Scene.CAMERA_Z_CLIP_FAR);
 
     return projectionMatrix;
   }
@@ -88,7 +90,7 @@ class Scene {
     // start drawing the square
     mat4.translate(cameraMatrix,          // destination matrix
                    cameraMatrix,          // matrix to translate
-                   this.CAMERA_POSITION); // amount to translate
+                   Scene.CAMERA_POSITION); // amount to translate
 
     return cameraMatrix;
   }
@@ -111,11 +113,11 @@ class Scene {
   ) {
     gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
     gl.vertexAttribPointer(attribLocation,
-                           this.BUFFER_NUM_COMPONENTS,
-                           this.BUFFER_TYPE,
-                           this.BUFFER_SHOULD_NORMALIZE,
-                           this.BUFFER_STRIDE,
-                           this.BUFFER_OFFSET);
+                           Scene.BUFFER_NUM_COMPONENTS,
+                           Scene.BUFFER_TYPE,
+                           Scene.BUFFER_SHOULD_NORMALIZE,
+                           Scene.BUFFER_STRIDE,
+                           Scene.BUFFER_OFFSET);
     gl.enableVertexAttribArray(attribLocation);
   }
 
