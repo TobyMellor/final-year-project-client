@@ -12,7 +12,9 @@ export function createParentSongCircle(track: Track): SongCircle {
                                           gl,
                                           pointOnCircle,
                                           1,
-                                          lineWidth);
+                                          lineWidth,
+                                          new Uint8Array([255, 255, 255, 255]),
+                                          [1, 1, 1, 1]);
 
   return parentSongCircle;
 }

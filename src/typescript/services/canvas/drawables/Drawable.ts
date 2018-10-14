@@ -3,7 +3,8 @@ import Scene from './Scene';
 
 export type Input = {
   vertices: number[];
-  textureURL: string;
+  texture: string | Uint8Array;
+  textureOverlay: number[];
   songCircle: SongCircle;
 };
 export type InputBatch = Input[];
@@ -14,6 +15,7 @@ export interface DrawInformation {
   textureInformation: {
     texture: WebGLTexture,
     textureCoordsBuffer: WebGLBuffer,
+    textureOverlayBuffer: WebGLBuffer,
   };
 }
 
@@ -31,10 +33,10 @@ class Drawable {
     gl: WebGLRenderingContext,
     drawInformationInput: Input,
   ): DrawInformation {
-    const { vertices, textureURL, songCircle } = drawInformationInput;
+    const { vertices, texture, textureOverlay, songCircle } = drawInformationInput;
 
     const vertexBuffer = this.createBuffer(gl, vertices);
-    const texture = this.createTexture(gl, textureURL);
+    const webGLTexture = this.createTexture(gl, texture);
 
     const textureCoordsBuffer = this.createBuffer(gl, vertices.map(
       (position: number, index: number) => {
@@ -78,13 +80,17 @@ class Drawable {
             translateToCircle(position)));
       },
     ));
+    const textureOverlayBuffer = this.createBuffer(gl, vertices.map((_, i) => {
+      return textureOverlay[i % 3];
+    }));
 
     return {
       vertexBuffer,
       vertices,
       textureInformation: {
-        texture,
         textureCoordsBuffer,
+        textureOverlayBuffer,
+        texture: webGLTexture,
       },
     };
   }
@@ -111,9 +117,9 @@ class Drawable {
     return buffer;
   }
 
-  private createTexture(gl: WebGLRenderingContext, textureURL: string): WebGLTexture {
-    const texture = gl.createTexture();
-    gl.bindTexture(gl.TEXTURE_2D, texture);
+  private createTexture(gl: WebGLRenderingContext, texture: string | Uint8Array): WebGLTexture {
+    const webGLTexture = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, webGLTexture);
 
     // Because images have to be download over the internet
     // they might take a moment until they are ready.
@@ -127,15 +133,19 @@ class Drawable {
     const border = 0;
     const srcFormat = gl.RGBA;
     const srcType = gl.UNSIGNED_BYTE;
-    const pixel = new Uint8Array([0, 0, 0, 255]);
+    const pixel = texture instanceof Uint8Array ? texture : new Uint8Array([0, 0, 0, 255]);
     gl.texImage2D(gl.TEXTURE_2D, level, internalFormat,
                   width, height, border, srcFormat, srcType,
                   pixel);
 
+    if (texture instanceof Uint8Array) {
+      return webGLTexture;
+    }
+
     const image = new Image();
     image.crossOrigin = 'anonymous';
     image.onload = () => {
-      gl.bindTexture(gl.TEXTURE_2D, texture);
+      gl.bindTexture(gl.TEXTURE_2D, webGLTexture);
       gl.texImage2D(gl.TEXTURE_2D, level, internalFormat,
                     srcFormat, srcType, image);
 
@@ -155,9 +165,9 @@ class Drawable {
         gl.generateMipmap(gl.TEXTURE_2D);
       }
     };
-    image.src = textureURL;
+    image.src = texture;
 
-    return texture;
+    return webGLTexture;
   }
 
   isPowerOf2(value: number) {

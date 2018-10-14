@@ -52,6 +52,12 @@ class Scene {
                                    drawInformation.textureInformation.textureCoordsBuffer,
                                    attribLocations.textureCoord);
 
+      // Tell WebGL how to pull out the texture overlay from
+      // the texture overlay buffer into the overlay attribute
+      this.enableVertexAttribArray(gl,
+                                   drawInformation.textureInformation.textureOverlayBuffer,
+                                   attribLocations.textureOverlay);
+
       this.bindTexture(gl,
                        drawInformation.textureInformation.texture,
                        uniformLocations.uSampler);

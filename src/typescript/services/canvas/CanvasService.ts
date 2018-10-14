@@ -18,6 +18,7 @@ export interface ProgramInfo {
   attribLocations: {
     vertexPosition: number,
     textureCoord: number,
+    textureOverlay: number,
   };
   uniformLocations: {
     projectionMatrix: WebGLUniformLocation,
@@ -57,6 +58,7 @@ class CanvasService {
       attribLocations: {
         vertexPosition: gl.getAttribLocation(shaderProgram, 'aModelMatrix'),
         textureCoord: gl.getAttribLocation(shaderProgram, 'aTextureCoord'),
+        textureOverlay: gl.getAttribLocation(shaderProgram, 'aTextureOverlay'),
       },
       uniformLocations: {
         projectionMatrix: gl.getUniformLocation(shaderProgram, 'uProjectionMatrix'),
