@@ -1,14 +1,11 @@
 import Drawable, {
-  Input as DrawableInput,
+  Input as DrawableInput, TextInformation,
 } from './Drawable';
 import Point from './utils/Point';
 import Track from '../../../models/Track';
+import Circle from './utils/Circle';
 
 class SongCircle extends Drawable {
-  private static RESOLUTION: number = 1;      // A lower number gives a higher resolution
-  private static START_DEGREES: number = 0.0; // Where in the circle we should start drawing from
-  private static END_DEGREES: number = 360.0; // Where in the circle we should stop drawing to
-
   private static WHITE_COLOUR: Uint8Array = new Uint8Array([255, 255, 255, 255]);
   private static BLACK_COLOUR: Uint8Array = new Uint8Array([0, 0, 0, 255]);
   private static TRANSPARENT_OVERLAY: number[] = [1, 1, 1, 1]; // Colour to overlay textures with
@@ -27,7 +24,7 @@ class SongCircle extends Drawable {
     radius: number,
     lineWidth: number,
     backgroundColour?: Uint8Array,
-    textureOverlayVector?: number[],
+    textureOverlayVector: number[] = SongCircle.DARKEN_OVERLAY,
   ) {
     super();
 
@@ -42,72 +39,24 @@ class SongCircle extends Drawable {
     const oneTrillion = 1000000000;
     const z = 1 - track.getDurationMs() / oneTrillion;
 
-    // Parametric Equation of a circle:
-    //   x = r cos(t)
-    //   y = r cos(t)
-    // Where r is the radius of the circle, and t is some angle
-    const circleDrawInformationInput1: DrawableInput = this.getCircleDrawInformationInput(
-      (_: number) => [
-        center.x,
-        center.y,
-        z,
-      ],
-      (radians: number) => [
-        radius * Math.sin(radians) + center.x,
-        radius * Math.cos(radians) + center.y,
-        z,
-      ],
-      backgroundColour || track.getBestImageURL(),
+    const circleDrawableInput = {
       textureOverlayVector,
-    );
-    const circleDrawInformationInput2: DrawableInput = this.getCircleDrawInformationInput(
-      (radians: number) => [
-        radius * Math.sin(radians) + center.x,
-        radius * Math.cos(radians) + center.y,
-        z,
-      ],
-      (radians: number) => [
-        (radius + lineWidth) * Math.sin(radians) + center.x,
-        (radius + lineWidth) * Math.cos(radians) + center.y,
-        z,
-      ],
-      SongCircle.BLACK_COLOUR,
-      textureOverlayVector,
-    );
-
-    super.setDrawInformationBatch(gl, [
-      circleDrawInformationInput1,
-      circleDrawInformationInput2,
-    ]);
-  }
-
-  private getCircleDrawInformationInput(
-    insideVertexFn: (radians: number) => number[],  // The inner vertex (closest to the center)
-    outsideVertexFn: (radians: number) => number[], // The outer vertex (furthest from the center)
-    texture?: string | Uint8Array,
-    textureOverlayVector?: number[],
-  ): DrawableInput {
-    const vertices: number[] = [];
-
-    for (
-      let degrees = SongCircle.START_DEGREES;
-      degrees <= SongCircle.END_DEGREES;
-      degrees += SongCircle.RESOLUTION
-    ) {
-      const radians = Drawable.convert(degrees, Drawable.degreesToRadiansFn); // Degrees to radians
-
-      const insideVertex: number[] = insideVertexFn(radians);
-      const outsideVertex: number[] = outsideVertexFn(radians);
-
-      vertices.push(...insideVertex, ...outsideVertex);
-    }
-
-    return {
-      vertices,
-      texture,
-      textureOverlay: textureOverlayVector || SongCircle.DARKEN_OVERLAY,
+      vertices: new Circle(center.x, center.y, z, 0, radius).generateVertices(),
+      texture: backgroundColour || track.getBestImageURL(),
       songCircle: this,
     };
+
+    const circleEdgeDrawableInput = {
+      textureOverlayVector,
+      vertices: new Circle(center.x, center.y, z, radius, radius + lineWidth).generateVertices(),
+      texture: SongCircle.BLACK_COLOUR,
+      songCircle: this,
+    };
+
+    super.setDrawInformationBatch(gl, [
+      circleDrawableInput,
+      circleEdgeDrawableInput,
+    ]);
   }
 
   public getRadius(): number {

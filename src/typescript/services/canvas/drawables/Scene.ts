@@ -1,6 +1,7 @@
 import { mat4 } from 'gl-matrix';
 import Drawable, { DrawInformation } from './Drawable';
 import { ProgramInfo } from '../CanvasService';
+import * as conversions from './utils/conversions';
 
 class Scene {
   public static BUFFER_NUM_COMPONENTS: number = 3; // How many dimensions?
@@ -71,8 +72,7 @@ class Scene {
    * field of view, and whether circles will be rendered out of view
    */
   private getProjectionMatrix(gl: WebGLRenderingContext): mat4 {
-    const cameraFOVRadians = Drawable.convert(Scene.CAMERA_FOV_DEGREES,
-                                              Drawable.degreesToRadiansFn);
+    const cameraFOVRadians = conversions.degreesToRadians(Scene.CAMERA_FOV_DEGREES);
     const aspectRatio = gl.canvas.clientWidth / gl.canvas.clientHeight;
     const projectionMatrix = mat4.create();
 

@@ -1,10 +1,18 @@
 import SongCircle from './SongCircle';
 import Scene from './Scene';
 
+export type TextInformation = {
+  heading: string,
+  subheading: string,
+  positionX: number,
+  positionY: number,
+};
+
 export type Input = {
   vertices: number[];
   texture: string | Uint8Array;
-  textureOverlay: number[];
+  textureOverlayVector: number[];
+  textInformation?: TextInformation;
   songCircle: SongCircle;
 };
 export type InputBatch = Input[];
@@ -17,12 +25,10 @@ export interface DrawInformation {
     textureCoordsBuffer: WebGLBuffer,
     textureOverlayBuffer: WebGLBuffer,
   };
+  textInformation?: TextInformation;
 }
 
 class Drawable {
-  // How many degrees we need to rotate circles so "0%" appears at the top
-  private static OFFSET_AMOUNT_DEGREES: number = 90;
-
   protected drawInformationBatch: DrawInformation[];
 
   public getDrawInformationBatch(): DrawInformation[] {
@@ -33,7 +39,13 @@ class Drawable {
     gl: WebGLRenderingContext,
     drawInformationInput: Input,
   ): DrawInformation {
-    const { vertices, texture, textureOverlay, songCircle } = drawInformationInput;
+    const {
+      vertices,
+      texture,
+      textureOverlayVector,
+      textInformation,
+      songCircle,
+    } = drawInformationInput;
 
     const vertexBuffer = this.createBuffer(gl, vertices);
     const webGLTexture = this.createTexture(gl, texture);
@@ -81,12 +93,13 @@ class Drawable {
       },
     ));
     const textureOverlayBuffer = this.createBuffer(gl, vertices.map((_, i) => {
-      return textureOverlay[i % 3];
+      return textureOverlayVector[i % 3];
     }));
 
     return {
       vertexBuffer,
       vertices,
+      textInformation,
       textureInformation: {
         textureCoordsBuffer,
         textureOverlayBuffer,
@@ -172,43 +185,6 @@ class Drawable {
 
   isPowerOf2(value: number) {
     return (value & (value - 1)) === 0;
-  }
-
-  static convert(number: number, conversionFn: (number: number) => number) {
-    return conversionFn(number);
-  }
-
-  static degreesToRadiansFn(degrees: number) {
-    const radians = degrees * (Math.PI / 180);
-
-    return radians % (2 * Math.PI);
-  }
-
-  static radiansToDegreesFn(radians: number) {
-    const degrees = radians * (180 / Math.PI);
-
-    return degrees % 360;
-  }
-
-  static percentageToDegreesFn(percentage: number) {
-    const decimal = percentage / 100;
-
-    // Inverse so percentage is clockwise, to make
-    // 25% appear on the right of the circle instead of the left
-    const inversedDecimal = 1 - decimal;
-    const degrees = inversedDecimal * 360;
-
-    // How many degrees we need to rotate circles so "0%" appears at the top
-    const degreesOffset = degrees + Drawable.OFFSET_AMOUNT_DEGREES;
-
-    return degreesOffset % 360;
-  }
-
-  static percentageToRadiansFn(percentage: number) {
-    const degrees = Drawable.convert(percentage, Drawable.percentageToDegreesFn);
-    const radians = Drawable.convert(degrees, Drawable.degreesToRadiansFn);
-
-    return radians;
   }
 }
 

@@ -1,5 +1,6 @@
 import SongCircle from '../SongCircle';
 import Drawable from '../Drawable';
+import * as conversions from './conversions';
 
 // tslint:disable:variable-name
 class Point {
@@ -28,7 +29,7 @@ class Point {
     const parentCircleRadius: number = parentCircle.getRadius();
 
     // Angle where our circle will sit from the parent's center point
-    const angle: number = Drawable.convert(percentage, Drawable.percentageToRadiansFn);
+    const angle: number = conversions.percentageToRadians(percentage);
 
     // Distance from our circles center to the parent's center point
     const centerToCenterDistance: number = parentCircleRadius +
