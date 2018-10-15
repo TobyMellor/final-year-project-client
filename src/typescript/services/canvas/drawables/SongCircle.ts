@@ -24,7 +24,7 @@ class SongCircle extends Drawable {
     radius: number,
     lineWidth: number,
     backgroundColour?: Uint8Array,
-    textureOverlayVector: number[] = SongCircle.DARKEN_OVERLAY,
+    textureOverlayVector?: number[],
   ) {
     super();
 
@@ -37,26 +37,38 @@ class SongCircle extends Drawable {
     // So, give smaller circles a smaller Z
     // One trillion isn't special here, it's just making Z small
     const oneTrillion = 1000000000;
-    const z = 1 - track.getDurationMs() / oneTrillion;
+    center.z = 1 - track.getDurationMs() / oneTrillion;
 
-    const circleDrawableInput = {
+    const circleDrawableInput = this.getDrawableInput(
+      new Circle(center, 0, radius),
+      backgroundColour || track.getBestImageURL(),
       textureOverlayVector,
-      vertices: new Circle(center.x, center.y, z, 0, radius).generateVertices(),
-      texture: backgroundColour || track.getBestImageURL(),
-      songCircle: this,
-    };
-
-    const circleEdgeDrawableInput = {
+    );
+    const circleEdgeDrawableInput = this.getDrawableInput(
+      new Circle(center, radius, radius + lineWidth),
+      SongCircle.BLACK_COLOUR,
       textureOverlayVector,
-      vertices: new Circle(center.x, center.y, z, radius, radius + lineWidth).generateVertices(),
-      texture: SongCircle.BLACK_COLOUR,
-      songCircle: this,
-    };
+    );
 
     super.setDrawInformationBatch(gl, [
       circleDrawableInput,
       circleEdgeDrawableInput,
     ]);
+  }
+
+  private getDrawableInput(
+    circle: Circle,
+    texture: string | Uint8Array,
+    textureOverlayVector?: number[],
+  ): DrawableInput {
+    const vertices: number[] = circle.generateVertices();
+
+    return {
+      vertices,
+      texture,
+      textureOverlayVector: textureOverlayVector || SongCircle.DARKEN_OVERLAY,
+      songCircle: this,
+    };
   }
 
   public getRadius(): number {

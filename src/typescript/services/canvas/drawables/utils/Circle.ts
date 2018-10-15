@@ -1,28 +1,22 @@
 import { number } from 'prop-types';
 import * as conversions from './conversions';
+import Point from './Point';
 
 class Circle {
   private static RESOLUTION: number = 1;      // A lower number gives a higher resolution
   private static START_DEGREES: number = 0.0; // Where in the circle we should start drawing from
   private static END_DEGREES: number = 360.0; // Where in the circle we should stop drawing to
 
-  private centerX: number;
-  private centerY: number;
-  private centerZ: number;
+  private center: Point;
   private innerRadius: number;
   private outerRadius: number;
 
   constructor(
-    centerX: number,
-    centerY: number,
-    centerZ: number,
+    center: Point,
     innerRadius: number,
     outerRadius: number,
   ) {
-    // TODO: Use point instead of centerX, centerY and centerZ
-    this.centerX = centerX;
-    this.centerY = centerY;
-    this.centerZ = centerZ;
+    this.center = center;
     this.innerRadius = innerRadius;
     this.outerRadius = outerRadius;
   }
@@ -33,9 +27,9 @@ class Circle {
   // Where r is the radius of the circle, and t is some angle
   private vertexEquation(radians: number, radius: number) {
     return [
-      radius * Math.sin(radians) + this.centerX,
-      radius * Math.cos(radians) + this.centerY,
-      this.centerZ,
+      radius * Math.sin(radians) + this.center.x,
+      radius * Math.cos(radians) + this.center.y,
+      this.center.z,
     ];
   }
 

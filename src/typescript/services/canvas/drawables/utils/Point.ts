@@ -36,11 +36,9 @@ class Point {
                                            ourCircleRadius +
                                            ourCircleLineWidth;
 
-    // TODO: Move parametric equation of a circle to it's own fn
     const x = parentCircleCenter.x + (centerToCenterDistance * Math.cos(angle));
     const y = parentCircleCenter.y + (centerToCenterDistance * Math.sin(angle));
 
-    // TODO: Change Z depth to cover main circle
     return new Point(x, y, 1);
   }
 
@@ -54,6 +52,10 @@ class Point {
 
   get z() {
     return this._z;
+  }
+
+  set z(z: number) {
+    this._z = z;
   }
 }
 

@@ -37,7 +37,6 @@ class CanvasService {
 
   private parentSongCircle: SongCircle = null;
   private childSongCircles: SongCircle[] = [];
-  private random = Math.random();
 
   private constructor(canvas: HTMLCanvasElement) {
     const gl = this.gl = canvas.getContext('webgl');
