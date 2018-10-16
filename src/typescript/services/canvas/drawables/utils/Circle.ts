@@ -62,6 +62,10 @@ class Circle {
 
     return vertices;
   }
+
+  public getCircumference(): number {
+    return this.outerRadius * 2;
+  }
 }
 
 export default Circle;

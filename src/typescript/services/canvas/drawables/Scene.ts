@@ -1,7 +1,8 @@
 import { mat4 } from 'gl-matrix';
-import Drawable, { DrawInformation } from './Drawable';
+import Drawable, { DrawInformation, TextInformation } from './Drawable';
 import { ProgramInfo } from '../CanvasService';
 import * as conversions from './utils/conversions';
+import Point from './utils/Point';
 
 class Scene {
   public static BUFFER_NUM_COMPONENTS: number = 3; // How many dimensions?
@@ -14,7 +15,7 @@ class Scene {
   private static CAMERA_FOV_DEGREES: number = 45;
   private static CAMERA_Z_CLIP_NEAR: number = 0.1;
   private static CAMERA_Z_CLIP_FAR: number = 100.0;
-  private static CAMERA_POSITION: number[] = [0.0, 0.0, -5.0];
+  public static CAMERA_POSITION: number[] = [0.0, 0.0, -5.0];
 
   constructor(
     gl: WebGLRenderingContext,
@@ -64,6 +65,21 @@ class Scene {
                        uniformLocations.uSampler);
 
       gl.drawArrays(gl.TRIANGLE_STRIP, Scene.BUFFER_OFFSET, stripVertexCount);
+
+      if (drawInformation.textInformation) {
+
+        // console.log(projectionMatrix);
+
+        // divide X and Y by W just like the GPU does.
+        // clipspace[0] /= clipspace[3];
+        // clipspace[1] /= clipspace[3];
+
+        // // convert from clipspace to pixels
+        // var pixelX = (clipspace[0] *  0.5 + 0.5) * gl.canvas.width;
+        // var pixelY = (clipspace[1] * -0.5 + 0.5) * gl.canvas.height;
+
+        this.renderText(gl, drawInformation.textInformation);
+      }
     });
   }
 
@@ -140,6 +156,50 @@ class Scene {
 
     // Tell the shader we bound the texture to texture unit 0
     gl.uniform1i(samplerLocation, 0);
+  }
+
+  private renderText(gl: WebGLRenderingContext, textInformation: TextInformation) {
+    const container: HTMLElement = document.getElementById('song-descriptions');
+    const existingLabels = container.querySelector(
+      `div[data-unique-identifier="${textInformation.uniqueIdentifier}"]`,
+    );
+
+    if (existingLabels) { return; }
+
+    const {
+      containerLocalWidth,
+      heading,
+      localPoint,
+      uniqueIdentifier,
+    } = textInformation;
+    const div: HTMLDivElement = document.createElement('div');
+    const textNode: Text = document.createTextNode(heading);
+
+    div.appendChild(textNode);
+    container.appendChild(div);
+
+    const absolutePoint = conversions.localPointToAbsolutePoint(gl, localPoint);
+    const absoluteCircleWidth = conversions.localWidthToAbsoluteWidth(
+      gl,
+      containerLocalWidth,
+    );
+
+    // Make the font smaller than the width of the circle
+    const fontSize = absoluteCircleWidth / 10;
+
+    div.className = 'song-circle-text';
+    div.style.display = 'block';
+    div.style.fontSize = `${fontSize}px`;
+    div.setAttribute('data-unique-identifier', uniqueIdentifier);
+
+    // Translate so div is centered on the desired point
+    absolutePoint.translate(
+      -(div.clientWidth / 2),
+      -(div.clientHeight / 2),
+    );
+
+    div.style.left = `${Math.floor(absolutePoint.x)}px`;
+    div.style.top = `${Math.floor(absolutePoint.y)}px`;
   }
 }
 

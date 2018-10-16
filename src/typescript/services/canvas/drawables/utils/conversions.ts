@@ -1,3 +1,6 @@
+import Point from './Point';
+import Scene from '../Scene';
+
 export function degreesToRadians(degrees: number) {
   const radians = degrees * (Math.PI / 180);
 
@@ -31,4 +34,44 @@ export function percentageToRadians(percentage: number) {
   const radians = degreesToRadians(degrees);
 
   return radians;
+}
+
+export function clipspacePointToLocalPoint(
+  gl: WebGLRenderingContext,
+  clipspacePoint: Point,
+): Point {
+  // tslint:disable-next-line:variable-name How many CSS pixels in one physical
+  const CSSPixelsToPhysical = 1 / window.devicePixelRatio;
+  const canvasWidth = gl.canvas.width * CSSPixelsToPhysical;
+  const canvasHeight = gl.canvas.height * CSSPixelsToPhysical;
+  const x = (clipspacePoint.x * 0.5 + 0.5) * canvasWidth;
+  const y = (clipspacePoint.y * -0.5 + 0.5) * canvasHeight;
+
+  return Point.getPoint(x, y);
+}
+
+export function localPointToAbsolutePoint(
+  gl: WebGLRenderingContext,
+  localPoint: Point,
+): Point {
+  const canvas: HTMLCanvasElement = gl.canvas;
+  const { offsetTop, offsetLeft } = canvas;
+
+  return localPoint.translate(offsetLeft, offsetTop);
+}
+
+export function localWidthToAbsoluteWidth(
+  gl: WebGLRenderingContext,
+  maxWidth: number,
+) {
+  // Width of the entire canvas in local coordinates
+  const localCanvasWidth = -Scene.CAMERA_POSITION[2];
+
+  // Width of the circle in local coordinates
+  const localCircleWidth = maxWidth / localCanvasWidth;
+
+  // Width of the circle in pixels
+  const absoluteCircleWidth = localCircleWidth * gl.canvas.width / window.devicePixelRatio;
+
+  return absoluteCircleWidth;
 }

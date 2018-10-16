@@ -1,11 +1,13 @@
 import SongCircle from './SongCircle';
 import Scene from './Scene';
+import Point from './utils/Point';
 
 export type TextInformation = {
   heading: string,
   subheading: string,
-  positionX: number,
-  positionY: number,
+  localPoint: Point,
+  containerLocalWidth: number;
+  uniqueIdentifier: string;
 };
 
 export type Input = {

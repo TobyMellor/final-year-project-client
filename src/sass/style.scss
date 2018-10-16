@@ -1,13 +1,17 @@
+@import 'colours';
+
 body {
-  background-color: grey;
+  background-color: $cloudy-white;
+  font-family: -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 canvas {
-  width: 1200px;
-  height: 600px;
+  width: 100%;
+  height: 100%;
 }
 
 .song-circle-text {
   position: absolute;
-  color: blue;
+  color: $black;
+  font-weight: 600;
 }

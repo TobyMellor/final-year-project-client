@@ -57,6 +57,14 @@ class Point {
   set z(z: number) {
     this._z = z;
   }
+
+  public translate(addX: number, addY: number, addZ: number = 0): Point {
+    this._x = this.x + addX;
+    this._y = this.y + addY;
+    this._z = this.z + addZ;
+
+    return this;
+  }
 }
 
 export default Point;

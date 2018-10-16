@@ -4,6 +4,7 @@ import Drawable, {
 import Point from './utils/Point';
 import Track from '../../../models/Track';
 import Circle from './utils/Circle';
+import * as conversions from './utils/conversions';
 
 class SongCircle extends Drawable {
   private static WHITE_COLOUR: Uint8Array = new Uint8Array([255, 255, 255, 255]);
@@ -39,16 +40,19 @@ class SongCircle extends Drawable {
     const oneTrillion = 1000000000;
     center.z = 1 - track.getDurationMs() / oneTrillion;
 
-    const circleDrawableInput = this.getDrawableInput(
-      new Circle(center, 0, radius),
-      backgroundColour || track.getBestImageURL(),
-      textureOverlayVector,
-    );
-    const circleEdgeDrawableInput = this.getDrawableInput(
-      new Circle(center, radius, radius + lineWidth),
-      SongCircle.BLACK_COLOUR,
-      textureOverlayVector,
-    );
+    const circleDrawableInput = this.getDrawableInput(gl,
+                                                      new Circle(center,
+                                                                 0,
+                                                                 radius),
+                                                      backgroundColour || track.getBestImageURL(),
+                                                      textureOverlayVector,
+                                                      track);
+    const circleEdgeDrawableInput = this.getDrawableInput(gl,
+                                                          new Circle(center,
+                                                                     radius,
+                                                                     radius + lineWidth),
+                                                          SongCircle.BLACK_COLOUR,
+                                                          textureOverlayVector);
 
     super.setDrawInformationBatch(gl, [
       circleDrawableInput,
@@ -57,18 +61,32 @@ class SongCircle extends Drawable {
   }
 
   private getDrawableInput(
+    gl: WebGLRenderingContext,
     circle: Circle,
     texture: string | Uint8Array,
     textureOverlayVector?: number[],
+    trackForLabelling?: Track,
   ): DrawableInput {
     const vertices: number[] = circle.generateVertices();
 
-    return {
+    const drawableInput: DrawableInput = {
       vertices,
       texture,
       textureOverlayVector: textureOverlayVector || SongCircle.DARKEN_OVERLAY,
       songCircle: this,
     };
+
+    if (trackForLabelling) {
+      drawableInput.textInformation = {
+        heading: trackForLabelling.getName(),
+        subheading: trackForLabelling.getAlbum().getName(),
+        localPoint: conversions.clipspacePointToLocalPoint(gl, this.center),
+        containerLocalWidth: circle.getCircumference(),
+        uniqueIdentifier: trackForLabelling.getID(),
+      };
+    }
+
+    return drawableInput;
   }
 
   public getRadius(): number {

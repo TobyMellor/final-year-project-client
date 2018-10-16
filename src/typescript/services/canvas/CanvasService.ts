@@ -40,6 +40,7 @@ class CanvasService {
 
   private constructor(canvas: HTMLCanvasElement) {
     const gl = this.gl = canvas.getContext('webgl');
+
     this.resizeCanvas();
 
     if (!gl) {
