@@ -78,7 +78,7 @@ class Scene {
         // var pixelX = (clipspace[0] *  0.5 + 0.5) * gl.canvas.width;
         // var pixelY = (clipspace[1] * -0.5 + 0.5) * gl.canvas.height;
 
-        this.renderText(gl, drawInformation.textInformation);
+        this.renderText(gl, drawInformation.textInformation, projectionMatrix, cameraMatrix);
       }
     });
   }
@@ -158,7 +158,12 @@ class Scene {
     gl.uniform1i(samplerLocation, 0);
   }
 
-  private renderText(gl: WebGLRenderingContext, textInformation: TextInformation) {
+  private renderText(
+    gl: WebGLRenderingContext,
+    textInformation: TextInformation,
+    projectionMatrix: mat4,
+    cameraMatrix: mat4,
+  ) {
     const container: HTMLElement = document.getElementById('song-descriptions');
     const existingLabels = container.querySelector(
       `div[data-unique-identifier="${textInformation.uniqueIdentifier}"]`,
@@ -167,9 +172,9 @@ class Scene {
     if (existingLabels) { return; }
 
     const {
-      containerLocalWidth,
+      containerWorldWidth,
       heading,
-      localPoint,
+      worldPoint,
       uniqueIdentifier,
     } = textInformation;
     const div: HTMLDivElement = document.createElement('div');
@@ -178,14 +183,18 @@ class Scene {
     div.appendChild(textNode);
     container.appendChild(div);
 
-    const absolutePoint = conversions.localPointToAbsolutePoint(gl, localPoint);
-    const absoluteCircleWidth = conversions.localWidthToAbsoluteWidth(
+    const clipspacePoint = conversions.worldPointToClipspacePoint(projectionMatrix,
+                                                                  cameraMatrix,
+                                                                  worldPoint);
+    const canvasPoint = conversions.clipspacePointToCanvasPoint(gl, clipspacePoint);
+    const absolutePoint = conversions.canvasPointToAbsolutePoint(gl, canvasPoint);
+    const absoluteContainerWidth = conversions.worldWidthToAbsoluteWidth(
       gl,
-      containerLocalWidth,
+      containerWorldWidth,
     );
 
-    // Make the font smaller than the width of the circle
-    const fontSize = absoluteCircleWidth / 10;
+    // Make the font smaller than the width of the container
+    const fontSize = absoluteContainerWidth / 10;
 
     div.className = 'song-circle-text';
     div.style.display = 'block';

@@ -128,13 +128,13 @@ class CanvasService {
     const gl = this.gl;
 
     // How many of the screen's actual pixels should be drawn for each CSS pixel
-    const physicalToCSSPixels: number = window.devicePixelRatio;
+    const physicalToCSSPixels = window.devicePixelRatio;
 
     // Lookup the size the browser is displaying the canvas in CSS pixels
     // and compute a size needed to make our drawingbuffer match it in
     // device pixels
-    const displayWidth: number = Math.floor(gl.canvas.clientWidth * physicalToCSSPixels);
-    const displayHeight: number = Math.floor(gl.canvas.clientHeight * physicalToCSSPixels);
+    const displayWidth = Math.floor(gl.canvas.clientWidth * physicalToCSSPixels);
+    const displayHeight = Math.floor(gl.canvas.clientHeight * physicalToCSSPixels);
 
     if (gl.canvas.width  !== displayWidth ||
         gl.canvas.height !== displayHeight) {

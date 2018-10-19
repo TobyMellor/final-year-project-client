@@ -5,8 +5,8 @@ import Point from './utils/Point';
 export type TextInformation = {
   heading: string,
   subheading: string,
-  localPoint: Point,
-  containerLocalWidth: number;
+  worldPoint: Point,
+  containerWorldWidth: number;
   uniqueIdentifier: string;
 };
 

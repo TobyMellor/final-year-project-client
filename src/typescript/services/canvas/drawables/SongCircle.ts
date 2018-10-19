@@ -40,13 +40,14 @@ class SongCircle extends Drawable {
     const oneTrillion = 1000000000;
     center.z = 1 - track.getDurationMs() / oneTrillion;
 
+    const isParentSongCircle: boolean = center.x === 0 && center.y === 0;
     const circleDrawableInput = this.getDrawableInput(gl,
                                                       new Circle(center,
                                                                  0,
                                                                  radius),
                                                       backgroundColour || track.getBestImageURL(),
                                                       textureOverlayVector,
-                                                      track);
+                                                      !isParentSongCircle ? track : null);
     const circleEdgeDrawableInput = this.getDrawableInput(gl,
                                                           new Circle(center,
                                                                      radius,
@@ -80,8 +81,8 @@ class SongCircle extends Drawable {
       drawableInput.textInformation = {
         heading: trackForLabelling.getName(),
         subheading: trackForLabelling.getAlbum().getName(),
-        localPoint: conversions.clipspacePointToLocalPoint(gl, this.center),
-        containerLocalWidth: circle.getCircumference(),
+        worldPoint: this.center,
+        containerWorldWidth: circle.getCircumference(),
         uniqueIdentifier: trackForLabelling.getID(),
       };
     }

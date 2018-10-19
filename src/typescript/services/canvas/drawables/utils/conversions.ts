@@ -1,5 +1,6 @@
 import Point from './Point';
 import Scene from '../Scene';
+import { mat4 } from 'gl-matrix';
 
 export function degreesToRadians(degrees: number) {
   const radians = degrees * (Math.PI / 180);
@@ -36,7 +37,40 @@ export function percentageToRadians(percentage: number) {
   return radians;
 }
 
-export function clipspacePointToLocalPoint(
+/**
+ * Clipspace Point: A point between [-1, 1]
+ * Local Point: An objects point is independent of others
+ * World Point: Universal coordinates that objects share, independent from the camera
+ * Canvas Point: A pixel on the Canvas. (0, 0) to (gl.canvas.width, gl.canvas.height)
+ * Absolute Point: A pixel in the users browser. It's a canvas point,
+ *                 plus the offset of the canvas itself
+ */
+
+export function worldPointToClipspacePoint(
+  projectionMatrix: mat4,
+  cameraMatrix: mat4,
+  worldPoint: Point,
+) {
+  const worldPointMatrix = mat4.create();
+  mat4.translate(worldPointMatrix, worldPointMatrix, [worldPoint.x, worldPoint.y, worldPoint.z]);
+
+  const cameraTransformation = mat4.create();
+  mat4.multiply(cameraTransformation, cameraMatrix, worldPointMatrix);
+
+  const projectionTransformation = mat4.create();
+  mat4.multiply(projectionTransformation, projectionMatrix, cameraTransformation);
+
+  const w = projectionTransformation[15];
+  const clipspacePoint = Point.getPoint(
+    projectionTransformation[12] / w,
+    projectionTransformation[13] / w,
+    projectionTransformation[14] / w,
+  );
+
+  return clipspacePoint;
+}
+
+export function clipspacePointToCanvasPoint(
   gl: WebGLRenderingContext,
   clipspacePoint: Point,
 ): Point {
@@ -50,28 +84,28 @@ export function clipspacePointToLocalPoint(
   return Point.getPoint(x, y);
 }
 
-export function localPointToAbsolutePoint(
+export function canvasPointToAbsolutePoint(
   gl: WebGLRenderingContext,
-  localPoint: Point,
+  canvasPoint: Point,
 ): Point {
   const canvas: HTMLCanvasElement = gl.canvas;
   const { offsetTop, offsetLeft } = canvas;
 
-  return localPoint.translate(offsetLeft, offsetTop);
+  return canvasPoint.translate(offsetLeft, offsetTop);
 }
 
-export function localWidthToAbsoluteWidth(
+export function worldWidthToAbsoluteWidth(
   gl: WebGLRenderingContext,
   maxWidth: number,
 ) {
-  // Width of the entire canvas in local coordinates
-  const localCanvasWidth = -Scene.CAMERA_POSITION[2];
+  // Width of the entire canvas in world coordinates
+  const worldCanvasWidth = -Scene.CAMERA_POSITION[2];
 
-  // Width of the circle in local coordinates
-  const localCircleWidth = maxWidth / localCanvasWidth;
+  // Width of the circle in world coordinates
+  const worldCircleWidth = maxWidth / worldCanvasWidth;
 
   // Width of the circle in pixels
-  const absoluteCircleWidth = localCircleWidth * gl.canvas.width / window.devicePixelRatio;
+  const absoluteCircleWidth = worldCircleWidth * gl.canvas.width / window.devicePixelRatio;
 
   return absoluteCircleWidth;
 }
