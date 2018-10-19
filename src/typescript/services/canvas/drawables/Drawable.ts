@@ -1,11 +1,11 @@
 import SongCircle from './SongCircle';
 import Scene from './Scene';
-import Point from './utils/Point';
+import WorldPoint from './points/WorldPoint';
 
 export type TextInformation = {
   heading: string,
   subheading: string,
-  worldPoint: Point,
+  worldPoint: WorldPoint,
   containerWorldWidth: number;
   uniqueIdentifier: string;
 };

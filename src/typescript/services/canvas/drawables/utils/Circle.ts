@@ -1,18 +1,17 @@
-import { number } from 'prop-types';
 import * as conversions from './conversions';
-import Point from './Point';
+import WorldPoint from '../points/WorldPoint';
 
 class Circle {
   private static RESOLUTION: number = 1;      // A lower number gives a higher resolution
   private static START_DEGREES: number = 0.0; // Where in the circle we should start drawing from
   private static END_DEGREES: number = 360.0; // Where in the circle we should stop drawing to
 
-  private center: Point;
+  private center: WorldPoint;
   private innerRadius: number;
   private outerRadius: number;
 
   constructor(
-    center: Point,
+    center: WorldPoint,
     innerRadius: number,
     outerRadius: number,
   ) {

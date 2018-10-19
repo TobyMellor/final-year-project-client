@@ -2,7 +2,7 @@ import { mat4 } from 'gl-matrix';
 import Drawable, { DrawInformation, TextInformation } from './Drawable';
 import { ProgramInfo } from '../CanvasService';
 import * as conversions from './utils/conversions';
-import Point from './utils/Point';
+import Point from './points/Point';
 
 class Scene {
   public static BUFFER_NUM_COMPONENTS: number = 3; // How many dimensions?
@@ -183,14 +183,14 @@ class Scene {
     div.appendChild(textNode);
     container.appendChild(div);
 
-    const clipspacePoint = conversions.worldPointToClipspacePoint(projectionMatrix,
-                                                                  cameraMatrix,
-                                                                  worldPoint);
-    const canvasPoint = conversions.clipspacePointToCanvasPoint(gl, clipspacePoint);
-    const absolutePoint = conversions.canvasPointToAbsolutePoint(gl, canvasPoint);
+    const absolutePoint = worldPoint
+      .toClipspacePoint(projectionMatrix, cameraMatrix)
+      .toCanvasPoint(gl)
+      .toAbsolutePoint(gl);
+
     const absoluteContainerWidth = conversions.worldWidthToAbsoluteWidth(
-      gl,
       containerWorldWidth,
+      gl,
     );
 
     // Make the font smaller than the width of the container

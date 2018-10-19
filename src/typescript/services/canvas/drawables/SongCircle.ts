@@ -1,10 +1,7 @@
-import Drawable, {
-  Input as DrawableInput, TextInformation,
-} from './Drawable';
-import Point from './utils/Point';
+import Drawable, { Input as DrawableInput } from './Drawable';
 import Track from '../../../models/Track';
 import Circle from './utils/Circle';
-import * as conversions from './utils/conversions';
+import WorldPoint from './points/WorldPoint';
 
 class SongCircle extends Drawable {
   private static WHITE_COLOUR: Uint8Array = new Uint8Array([255, 255, 255, 255]);
@@ -14,14 +11,14 @@ class SongCircle extends Drawable {
 
   private radius: number;
   private lineWidth: number;
-  private center: Point;
+  private center: WorldPoint;
 
   private track: Track;
 
   constructor(
     track: Track,
     gl: WebGLRenderingContext,
-    center: Point,
+    center: WorldPoint,
     radius: number,
     lineWidth: number,
     backgroundColour?: Uint8Array,
@@ -98,7 +95,7 @@ class SongCircle extends Drawable {
     return this.lineWidth;
   }
 
-  public getCenter(): Point {
+  public getCenter(): WorldPoint {
     return this.center;
   }
 

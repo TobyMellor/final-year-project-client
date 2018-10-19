@@ -1,11 +1,11 @@
 import CanvasService from '../CanvasService';
-import Point from './utils/Point';
 import SongCircle from './SongCircle';
 import Track from '../../../models/Track';
+import WorldPoint from './points/WorldPoint';
 
 export function createParentSongCircle(track: Track): SongCircle {
   const gl: WebGLRenderingContext = getGL();
-  const pointOnCircle = Point.getPoint(0, 0);
+  const pointOnCircle = WorldPoint.getPoint(0, 0);
   const radius = 1;
   const lineWidth = getLineWidthForSong(radius);
   const parentSongCircle = new SongCircle(track,
@@ -28,10 +28,10 @@ export function createChildSongCircle(
   const radius = getRadiusForSong(parentSongCircle, track);
   const lineWidth = getLineWidthForSong(radius);
 
-  const pointOnCircle = Point.getPointOnCircleFromPercentage(parentSongCircle,
-                                                             percentage,
-                                                             radius,
-                                                             lineWidth);
+  const pointOnCircle = WorldPoint.getPointOnCircleFromPercentage(parentSongCircle,
+                                                                  percentage,
+                                                                  radius,
+                                                                  lineWidth);
   const childSongCircle = new SongCircle(track,
                                          gl,
                                          pointOnCircle,
