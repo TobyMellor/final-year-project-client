@@ -1,5 +1,8 @@
 import CanvasService from '../CanvasService';
-import { Drawable } from './SongCircle';
+
+export type Drawable = {
+  meshes: THREE.Mesh[];
+};
 
 class Scene {
   private static _instance: Scene = null;

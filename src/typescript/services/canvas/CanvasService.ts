@@ -4,7 +4,7 @@
 
 import Dispatcher from '../../events/Dispatcher';
 import Track from '../../models/Track';
-import SongCircle, { Drawable } from '../canvas/drawables/SongCircle';
+import SongCircle from '../canvas/drawables/SongCircle';
 import Scene from '../canvas/drawables/Scene';
 import * as DrawableFactory from './drawables/drawable-factory';
 
@@ -43,6 +43,9 @@ class CanvasService {
     { playingTrack, childTracks }: { playingTrack: Track, childTracks: Track[] },
   ) {
     const parentSongCircle = DrawableFactory.renderParentSongCircle(this.scene, playingTrack);
+
+    DrawableFactory.renderBranches(this.scene, parentSongCircle);
+
     childTracks.forEach((childTrack) => {
       const percentage = Math.round(Math.random() * 100);
 

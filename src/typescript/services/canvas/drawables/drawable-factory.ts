@@ -1,7 +1,8 @@
 import SongCircle from './SongCircle';
 import Track from '../../../models/Track';
 import WorldPoint from './points/WorldPoint';
-import Scene from '../../canvas/drawables/Scene';
+import Scene from './Scene';
+import Branch from './Branch';
 
 export function renderParentSongCircle(scene: Scene, track: Track): SongCircle {
   const pointOnCircle = WorldPoint.getPoint(0, 0);
@@ -12,7 +13,7 @@ export function renderParentSongCircle(scene: Scene, track: Track): SongCircle {
                                           pointOnCircle,
                                           1,
                                           lineWidth,
-                                          0xffffff);
+                                          0xFFFFFF);
   return parentSongCircle;
 }
 
@@ -35,6 +36,12 @@ export function renderChildSongCircle(
                                          lineWidth);
 
   return childSongCircle;
+}
+
+export function renderBranches(scene: Scene, parentSongCircle: SongCircle): Branch[] {
+  const bezierCurve = new Branch(scene, parentSongCircle, 40, 60, 1);
+
+  return [];
 }
 
 function getRadiusForSong(parentSongCircle: SongCircle, childTrack: Track): number {

@@ -1,12 +1,7 @@
 import Track from '../../../models/Track';
-import WorldPoint from '../../canvas/drawables/points/WorldPoint';
+import WorldPoint from './points/WorldPoint';
 import Scene from './Scene';
 import * as conversions from './utils/conversions';
-import { TetrahedronGeometry } from 'three';
-
-export type Drawable = {
-  meshes: THREE.Mesh[];
-};
 
 class SongCircle {
   private static WHITE_COLOUR: Uint8Array = new Uint8Array([255, 255, 255, 255]);
@@ -39,7 +34,7 @@ class SongCircle {
     // So, give smaller circles a smaller Z
     // One trillion isn't special here, it's just making Z small
     const oneTrillion = 1000000000;
-    center.z = Scene.Z_BASE_DISTANCE - track.getDurationMs() / oneTrillion;
+    this.center.z = Scene.Z_BASE_DISTANCE - track.getDurationMs() / oneTrillion;
 
     this.renderCircle(scene, track, center, radius, backgroundColour);
     this.renderCircleOutline(scene, center, radius, lineWidth);
