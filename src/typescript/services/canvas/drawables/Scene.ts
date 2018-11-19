@@ -50,36 +50,20 @@ class Scene {
     return this._instance = new this(whereToDraw);
   }
 
-  public add(...drawables: Drawable[]): this {
-    if (drawables.length === 0) {
-      return this;
-    }
-
-    const meshes = this.getMeshesFromDrawables(drawables);
+  public add(...meshes: THREE.Mesh[]): this {
     this.scene.add(...meshes);
 
     return this;
   }
 
-  public delete(...drawables: Drawable[]): this {
-    if (drawables.length === 0) {
-      return this;
-    }
-
-    const meshes = this.getMeshesFromDrawables(drawables);
+  public delete(...meshes: THREE.Mesh[]): this {
     this.scene.remove(...meshes);
 
     return this;
   }
 
   public render() {
-    // console.log("RENDER NUM OF MESHES:", this.scene.)
     this.renderer.render(this.scene, this.camera);
-  }
-
-  private getMeshesFromDrawables(drawables: Drawable[]) {
-    return drawables.map(drawable => drawable.meshes)
-                    .reduce((a, b) => a.concat(b));
   }
 }
 

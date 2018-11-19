@@ -11,21 +11,18 @@ import * as DrawableFactory from './drawables/drawable-factory';
 class CanvasService {
   private static _instance: CanvasService = null;
 
-  private drawables: Drawable[] = [];
-
-  private parentSongCircle: SongCircle = null;
-  private childSongCircles: SongCircle[] = [];
+  private scene: Scene = null;
 
   private constructor(canvas: HTMLCanvasElement) {
+    const scene = this.scene = Scene.getInstance(canvas);
+
     // Once we've loaded the first songs from Spotify, display the song circles
     Dispatcher.getInstance()
               .on('PlayingTrackChanged', this, this.setSongCircles);
 
     const render = (now: number) => {
       if (Math.random() < 0.05) {
-        Scene.getInstance(canvas)
-             .add(...this.drawables)
-             .render();
+        scene.render();
       }
 
       requestAnimationFrame(render);
@@ -42,29 +39,18 @@ class CanvasService {
     return this._instance = new this(canvas);
   }
 
-  public getParentSongCircle(): SongCircle {
-    return this.parentSongCircle;
-  }
-
   public setSongCircles(
     { playingTrack, childTracks }: { playingTrack: Track, childTracks: Track[] },
   ) {
-    const parentSongCircle = DrawableFactory.createParentSongCircle(playingTrack);
-    const childSongCircles = childTracks.map((childTrack) => {
+    const parentSongCircle = DrawableFactory.renderParentSongCircle(this.scene, playingTrack);
+    childTracks.forEach((childTrack) => {
       const percentage = Math.round(Math.random() * 100);
 
-      return DrawableFactory.createChildSongCircle(parentSongCircle, childTrack, percentage);
+      return DrawableFactory.renderChildSongCircle(this.scene,
+                                                   parentSongCircle,
+                                                   childTrack,
+                                                   percentage);
     });
-    const allSongCircles = [parentSongCircle, ...childSongCircles];
-    const drawables: Drawable[] = [];
-
-    allSongCircles.forEach((songCircle) => {
-      drawables.push(songCircle.getDrawable());
-    });
-
-    this.parentSongCircle = parentSongCircle;
-    this.childSongCircles = childSongCircles;
-    this.drawables = drawables;
   }
 }
 

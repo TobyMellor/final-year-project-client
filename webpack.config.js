@@ -6,6 +6,9 @@ module.exports = {
         extensions: ['.js', '.json', '.ts', '.tsx'],
     },
     devtool: 'source-map',
+    output: {
+        publicPath: '/dist/',
+    },
     module: {
         rules: [
             {
