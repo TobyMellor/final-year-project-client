@@ -2,18 +2,20 @@ import CanvasService from '../CanvasService';
 import SongCircle from './SongCircle';
 import Track from '../../../models/Track';
 import WorldPoint from './points/WorldPoint';
-import Scene from '../../canvas/drawables/Scene';
 
 export function createParentSongCircle(track: Track): SongCircle {
+  const gl: WebGLRenderingContext = getGL();
   const pointOnCircle = WorldPoint.getPoint(0, 0);
   const radius = 1;
   const lineWidth = getLineWidthForSong(radius);
-  const parentSongCircle = new SongCircle(Scene.THREE,
-                                          track,
+  const parentSongCircle = new SongCircle(track,
+                                          gl,
                                           pointOnCircle,
                                           1,
                                           lineWidth,
-                                          0xffffff);
+                                          new Uint8Array([255, 255, 255, 255]),
+                                          [1, 1, 1, 1]);
+
   return parentSongCircle;
 }
 
@@ -22,14 +24,16 @@ export function createChildSongCircle(
   track: Track,
   percentage: number,
 ): SongCircle {
+  const gl: WebGLRenderingContext = getGL();
   const radius = getRadiusForSong(parentSongCircle, track);
   const lineWidth = getLineWidthForSong(radius);
+
   const pointOnCircle = WorldPoint.getPointOnCircleFromPercentage(parentSongCircle,
                                                                   percentage,
                                                                   radius,
                                                                   lineWidth);
-  const childSongCircle = new SongCircle(Scene.THREE,
-                                         track,
+  const childSongCircle = new SongCircle(track,
+                                         gl,
                                          pointOnCircle,
                                          radius,
                                          lineWidth);
@@ -46,4 +50,11 @@ function getRadiusForSong(parentSongCircle: SongCircle, childTrack: Track): numb
 
 function getLineWidthForSong(radius: number): number {
   return radius * 0.1;
+}
+
+function getGL(): WebGLRenderingContext {
+  const canvasService = CanvasService.getInstance();
+  const gl: WebGLRenderingContext = canvasService.getGL();
+
+  return gl;
 }

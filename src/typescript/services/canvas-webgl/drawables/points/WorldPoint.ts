@@ -2,6 +2,7 @@ import Point from './Point';
 import * as conversions from '../utils/conversions';
 import SongCircle from '../SongCircle';
 import { mat4 } from 'gl-matrix';
+import ClipspacePoint from './ClipspacePoint';
 
 /**
  * World Point
@@ -40,6 +41,26 @@ class WorldPoint extends Point {
     const y = parentCircleCenter.y + (centerToCenterDistance * Math.sin(angle));
 
     return new WorldPoint(x, y, 1);
+  }
+
+  toClipspacePoint(projectionMatrix: mat4, cameraMatrix: mat4): ClipspacePoint {
+    const worldPointMatrix = mat4.create();
+    mat4.translate(worldPointMatrix, worldPointMatrix, [this.x, this.y, this.z]);
+
+    const cameraTransformation = mat4.create();
+    mat4.multiply(cameraTransformation, cameraMatrix, worldPointMatrix);
+
+    const projectionTransformation = mat4.create();
+    mat4.multiply(projectionTransformation, projectionMatrix, cameraTransformation);
+
+    const w = projectionTransformation[15];
+    const clipspacePoint = ClipspacePoint.getPoint(
+      projectionTransformation[12] / w,
+      projectionTransformation[13] / w,
+      projectionTransformation[14] / w,
+    );
+
+    return clipspacePoint;
   }
 }
 

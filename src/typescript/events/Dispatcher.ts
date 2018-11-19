@@ -1,4 +1,5 @@
 import DispatcherEvent, { CallbackFn } from './DispatcherEvent';
+import config from '../config';
 
 interface Events {
   [key: string]: DispatcherEvent;
@@ -25,6 +26,8 @@ class Dispatcher {
   }
 
   on(eventName: string, context: Object, callbackFn: CallbackFn) {
+    if (config.fyp.debug) { console.debug('EVENT FIRED:', eventName); }
+
     if (!this.events[eventName]) {
       this.events[eventName] = new DispatcherEvent(eventName, context);
     }
