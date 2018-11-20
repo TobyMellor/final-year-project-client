@@ -1,6 +1,6 @@
 import Track from '../../models/audio-analysis/Track';
-import { GetATrack } from '../api/spotify/tracks';
 import Dispatcher from '../../events/Dispatcher';
+import * as trackFactory from '../../factories/track';
 
 /**
  * Initial Music Setup
@@ -10,8 +10,8 @@ class MusicService {
   private static _instance: MusicService;
 
   private tracks: Track[] = [];
-  private playingTrackID: string = null;
-  private childTrackIDs: Set<string> = new Set<string>();
+  private playingTrack: Track = null;
+  private childTracks: Set<Track> = new Set<Track>();
 
   private constructor() {
     // AJAX requests for spotify data
@@ -25,17 +25,17 @@ class MusicService {
       '3O8NlPh2LByMU9lSRSHedm',
       '0wwPcA6wtMf6HUMpIRdeP7',
     ];
-    const trackRequests: Promise<Track>[] = trackIDs.map(ID => GetATrack.request(ID));
+    const trackRequests: Promise<Track>[] = trackIDs.map(ID => trackFactory.createTrack(ID));
 
     Promise
       .all(trackRequests)
       .then((tracks) => {
-        const childTrackIDs = tracks.map(track => track.getID());
-        const playingTrackID = tracks[0].getID();
+        const childTracks = tracks;
+        const playingTrack = childTracks.shift();
 
         this.tracks = tracks;
-        this.addChildTracks(...childTrackIDs);
-        this.setPlayingTrack(playingTrackID);
+        this.addChildTracks(...childTracks);
+        this.setPlayingTrack(playingTrack);
       });
   }
 
@@ -43,8 +43,8 @@ class MusicService {
     return this._instance || (this._instance = new this());
   }
 
-  public addChildTracks(...trackIDs: string[]) {
-    trackIDs.forEach(ID => this.childTrackIDs.add(ID));
+  public addChildTracks(...tracks: Track[]) {
+    tracks.forEach(track => this.childTracks.add(track));
   }
 
   public getTracks(): Track[] {
@@ -58,35 +58,33 @@ class MusicService {
   }
 
   public getPlayingTrack(): Track | null {
-    const tracks = this.tracks;
-    const playingTrackID = this.playingTrackID;
-    const playingTrack = tracks.find(track => track.getID() === playingTrackID) || null;
-
-    return playingTrack;
+    return this.playingTrack;
   }
 
-  public setPlayingTrack(ID: string) {
+  public async setPlayingTrack(track: Track) {
     const previousPlayingTrack: Track | null = this.getPlayingTrack();
 
+    // Load in the AudioAnalysis and AudioFeatures for the track we're
+    // about to play
+    await trackFactory.addAudioAnalysis(track);
+    await trackFactory.addAudioFeatures(track);
+
     if (previousPlayingTrack) {
-      this.childTrackIDs.add(previousPlayingTrack.getID());
+      this.childTracks.add(previousPlayingTrack);
     }
 
-    this.childTrackIDs.delete(ID);
-    this.playingTrackID = ID;
+    this.childTracks.delete(track);
+    this.playingTrack = track;
 
-    Dispatcher.getInstance().dispatch('PlayingTrackChanged', {
-      playingTrack: this.getPlayingTrack(),
-      childTracks: this.getChildTracks(),
-    });
+    Dispatcher.getInstance()
+              .dispatch('PlayingTrackChanged', {
+                playingTrack: this.getPlayingTrack(),
+                childTracks: this.getChildTracks(),
+              });
   }
 
   public getChildTracks() {
-    const tracks = this.tracks;
-    const childTrackIDs = this.childTrackIDs;
-    const childTracks = tracks.filter(track => childTrackIDs.has(track.getID()));
-
-    return childTracks;
+    return this.childTracks;
   }
 }
 

@@ -1,13 +1,22 @@
 import Track from '../models/audio-analysis/Track';
+import { GetATrack } from '../services/api/spotify/tracks';
+import { GetAnAudioAnalysis } from '../services/api/spotify/audio-analysis';
 
-export function createTrack() {
-  //
+export async function createTrack(ID: string): Promise<Track> {
+  return GetATrack.request(ID);
 }
 
-export function addAudioAnalysis(track: Track) {
+export async function addAudioAnalysis(track: Track): Promise<Track> {
+  if (!track.getAudioAnalysis()) {
+    const audioAnalysis = await GetAnAudioAnalysis.request(track.getID());
 
+    track.setAudioAnalysis(audioAnalysis);
+  }
+
+  return track;
 }
 
-export function addAudioFeatures(track: Track) {
-
+// TODO: Implement
+export async function addAudioFeatures(track: Track) {
+  return track;
 }

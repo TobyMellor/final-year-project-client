@@ -51,8 +51,16 @@ class Track {
     return this.audioFeatures;
   }
 
+  public setAudioFeatures(audioFeatures: AudioFeatures) {
+    this.audioFeatures = audioFeatures;
+  }
+
   public getAudioAnalysis() {
     return this.audioAnalysis;
+  }
+
+  public setAudioAnalysis(audioAnalysis: AudioAnalysis) {
+    this.audioAnalysis = audioAnalysis;
   }
 
   public getDurationMs() {
