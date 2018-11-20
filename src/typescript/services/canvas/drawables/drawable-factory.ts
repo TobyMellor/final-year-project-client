@@ -39,7 +39,7 @@ export function renderChildSongCircle(
 }
 
 export function renderBranches(scene: Scene, parentSongCircle: SongCircle): Branch[] {
-  const bezierCurve = new Branch(scene, parentSongCircle, 40, 60, 1);
+  const bezierCurve = new Branch(scene, parentSongCircle, 20, 60, 1);
 
   return [];
 }

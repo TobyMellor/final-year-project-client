@@ -67,9 +67,6 @@ class Scene {
       gl.drawArrays(gl.TRIANGLE_STRIP, Scene.BUFFER_OFFSET, stripVertexCount);
 
       if (drawInformation.textInformation) {
-
-        // console.log(projectionMatrix);
-
         // divide X and Y by W just like the GPU does.
         // clipspace[0] /= clipspace[3];
         // clipspace[1] /= clipspace[3];
@@ -192,8 +189,6 @@ class Scene {
       containerWorldWidth,
       gl,
     );
-
-    console.log(absoluteContainerWidth);
 
     // Make the font smaller than the width of the container
     const fontSize = absoluteContainerWidth / 10;

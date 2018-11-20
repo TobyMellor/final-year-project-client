@@ -32,27 +32,27 @@ class Branch {
     lineWidth: number,
   ) {
     const THREE = Scene.THREE;
-
-    // TODO: Probably a problem with the Z... is it being set by SongCircle.ts?
     const fromPoint = WorldPoint.getPointOnCircleFromPercentage(songCircle,
                                                                 fromPercentage);
     const centerPoint = songCircle.getCenter();
     const toPoint = WorldPoint.getPointOnCircleFromPercentage(songCircle,
                                                               toPercentage);
-    const curve = new THREE.CubicBezierCurve3(
-      new THREE.Vector3(fromPoint.x,   fromPoint.y,   centerPoint.z),
-      new THREE.Vector3(centerPoint.x, centerPoint.y, centerPoint.z),
-      new THREE.Vector3(centerPoint.x, centerPoint.y, centerPoint.z),
-      new THREE.Vector3(toPoint.x,   toPoint.y,   centerPoint.z),
+
+    const curve = new THREE.CubicBezierCurve(
+      new THREE.Vector2(fromPoint.x / 2,   fromPoint.y / 2),
+      new THREE.Vector2(centerPoint.x,     centerPoint.y),
+      new THREE.Vector2(centerPoint.x,     centerPoint.y),
+      new THREE.Vector2(toPoint.x / 2,     toPoint.y / 2),
     );
 
     const points = curve.getPoints(50);
     const geometry = new THREE.BufferGeometry().setFromPoints(points);
 
-    const material = new THREE.LineBasicMaterial({ color : 0xff0000 });
+    const material = new THREE.LineBasicMaterial({ color : 0x2F3640 });
 
     // Create the final object to add to the scene
     const bezierCurve = new THREE.Line(geometry, material);
+    bezierCurve.position.set(0, 0, centerPoint.z + 0.0001);
 
     scene.add(bezierCurve);
   }
