@@ -1,6 +1,6 @@
 import CanvasService from '../CanvasService';
 import SongCircle from './SongCircle';
-import Track from '../../../models/Track';
+import Track from '../../../models/audio-analysis/Track';
 import WorldPoint from './points/WorldPoint';
 
 export function createParentSongCircle(track: Track): SongCircle {

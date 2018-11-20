@@ -1,4 +1,4 @@
-import Track from '../../../models/Track';
+import Track from '../../../models/audio-analysis/Track';
 import WorldPoint from './points/WorldPoint';
 import Scene from './Scene';
 import * as conversions from './utils/conversions';

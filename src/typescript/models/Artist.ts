@@ -8,7 +8,7 @@ export type Input = {
 };
 
 class Artist {
-  private ID: string;   // The Spotify ID for the artist
+  private ID: string; // The Spotify ID for the artist
   private images: Image[];
   private name: string;
   private URI: string;

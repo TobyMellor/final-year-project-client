@@ -10,7 +10,7 @@ import DrawableBuilder from './drawables/utils/DrawableBuilder';
 import Scene from './drawables/Scene';
 import Translator from '../../../translations/Translator';
 import Dispatcher from '../../events/Dispatcher';
-import Track from '../../models/Track';
+import Track from '../../models/audio-analysis/Track';
 import * as DrawableFactory from './drawables/drawable-factory';
 
 export interface ProgramInfo {

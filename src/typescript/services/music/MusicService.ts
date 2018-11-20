@@ -1,7 +1,4 @@
-import CanvasService from '../canvas/CanvasService';
-import Track from '../../models/Track';
-import { GetAnAlbum } from '../api/spotify/albums';
-import { GetAnArtist } from '../api/spotify/artists';
+import Track from '../../models/audio-analysis/Track';
 import { GetATrack } from '../api/spotify/tracks';
 import Dispatcher from '../../events/Dispatcher';
 

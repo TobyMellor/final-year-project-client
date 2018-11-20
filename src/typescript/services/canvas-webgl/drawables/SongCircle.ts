@@ -1,5 +1,5 @@
 import Drawable, { Input as DrawableInput } from './Drawable';
-import Track from '../../../models/Track';
+import Track from '../../../models/audio-analysis/Track';
 import Circle from './utils/Circle';
 import WorldPoint from './points/WorldPoint';
 

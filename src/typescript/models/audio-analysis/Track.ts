@@ -1,6 +1,5 @@
-import Album, { Input as AlbumInput } from './Album';
-import Artist, { Input as ArtistInput } from './Artist';
-import AudioFeatures from './AudioFeatures';
+import Album, { Input as AlbumInput } from '../Album';
+import AudioFeatures from '../audio-features/AudioFeatures';
 
 export type Input = {
   album: Album | AlbumInput;

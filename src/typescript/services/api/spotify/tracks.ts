@@ -1,7 +1,7 @@
 import SpotifyAPI from './SpotifyAPI';
 import Request from '../Request';
 import { GetATrackResponse } from '../../../types/spotify-responses';
-import Track from '../../../models/Track';
+import Track from '../../../models/audio-analysis/Track';
 
 export class GetATrack extends Request {
   private ID: string;

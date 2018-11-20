@@ -3,7 +3,7 @@
  */
 
 import Dispatcher from '../../events/Dispatcher';
-import Track from '../../models/Track';
+import Track from '../../models/audio-analysis/Track';
 import SongCircle from '../canvas/drawables/SongCircle';
 import Scene from '../canvas/drawables/Scene';
 import * as DrawableFactory from './drawables/drawable-factory';
