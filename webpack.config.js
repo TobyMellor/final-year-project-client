@@ -2,9 +2,12 @@ var HtmlWebpackPlugin = require('html-webpack-plugin');
 
 module.exports = {
     entry: './src/typescript/index.tsx',
-    devtool: 'source-map',
     resolve: {
         extensions: ['.js', '.json', '.ts', '.tsx'],
+    },
+    devtool: 'source-map',
+    output: {
+        publicPath: '/dist/',
     },
     module: {
         rules: [
@@ -26,13 +29,13 @@ module.exports = {
                     {
                         loader: 'css-loader',
                         options: {
-                            sourceMap: true,
+                            sourceMap: false,
                         },
                     },
                     {
                         loader: 'sass-loader',
                         options: {
-                            sourceMap: true,
+                            sourceMap: false,
                         },
                     },
                 ],
