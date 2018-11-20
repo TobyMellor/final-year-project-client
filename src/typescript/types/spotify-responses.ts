@@ -57,6 +57,38 @@ interface SimplifiedAlbum extends SimplifiedObjectModel {
   release_date_precision: string;
 }
 
+export type GetAnAudioAnalysisResponseTimeInterval = {
+  start: number,
+  duration: number,
+  confidence: number,
+};
+
+export type GetAnAudioAnalysisResponseSection = {
+  start: number,
+  duration: number,
+  confidence: number,
+  tempo: number,
+  tempo_confidence: number,
+  key: number,
+  key_confidence: number,
+  mode: number,
+  mode_confidence: number,
+  time_signature: number,
+  time_signature_confidence: number,
+};
+
+export type GetAnAudioAnalysisResponseSegment = {
+  start: number,
+  duration: number,
+  confidence: number,
+  loudness_start: number,
+  loudness_max_time: number,
+  loudness_max: number,
+  loudness_end: number,
+  pitches: number[],
+  timbre: number[],
+};
+
 /**
  * |-------------------------------------------------------------------|
  * |                                                                   |
@@ -279,4 +311,150 @@ export interface GetATrackResponse extends SimplifiedTrack {
   external_ids: ExternalIdentifiers;
   is_local: boolean;
   popularity: number;
+}
+
+/**
+ * GET https://api.spotify.com/v1/audio-analysis/{id}
+ *
+ * EXAMPLE:
+
+ * {
+ *  "meta": {
+ *    "analyzer_version": "4.0.0",
+ *    "platform": "Linux",
+ *    "detailed_status": "OK",
+ *    "status_code": 0,
+ *    "timestamp": 1456010389,
+ *    "analysis_time": 9.1394,
+ *   "input_process": "libvorbisfile L+R 44100->22050"
+ *  },
+ *  "track": {
+ *    "num_samples": 5630445,
+ *    "duration": 255.34898,
+ *    "sample_md5": "",
+ *    "offset_seconds": 0,
+ *    "window_seconds": 0,
+ *    "analysis_sample_rate": 22050,
+ *    "analysis_channels": 1,
+ *    "end_of_fade_in": 0,
+ *    "start_of_fade_out": 251.73333,
+ *    "loudness": -11.84,
+ *    "tempo": 98.002,
+ *    "tempo_confidence": 0.423,
+ *    "time_signature": 4,
+ *    "time_signature_confidence": 1,
+ *    "key": 5,
+ *    "key_confidence": 0.36,
+ *    "mode": 0,
+ *    "mode_confidence": 0.414,
+ *    "codestring": "[REMOVED]",
+ *    "code_version": 3.15,
+ *    "echoprintstring": "[REMOVED]",
+ *    "echoprint_version": 4.12,
+ *    "synchstring": "[REMOVED]",
+ *    "synch_version": 1,
+ *    "rhythmstring": "[REMOVED]",
+ *    "rhythm_version": 1
+ *  },
+ *  "bars": [
+ *    {
+ *      "start": 0.06443,
+ *      "duration": 2.44911,
+ *      "confidence": 0.057
+ *    },
+ *    ...
+ *  ],
+ *  "beats": [
+ *    {
+ *      "start": 0.06443,
+ *      "duration": 2.44911,
+ *      "confidence": 0.057
+ *    },
+ *    ...
+ *  ],
+ *  "tatums": [
+ *    {
+ *      "start": 0.06443,
+ *      "duration": 2.44911,
+ *      "confidence": 0.057
+ *    },
+ *    ...
+ *  ],
+ *  "sections": [
+ *    {
+ *      "start": 237.02356,
+ *      "duration": 18.32542,
+ *      "confidence": 1,
+ *      "loudness": -20.074,
+ *      "tempo": 98.253,
+ *      "tempo_confidence": 0.767,
+ *      "key": 5,
+ *      "key_confidence": 0.327,
+ *      "mode": 1,
+ *      "mode_confidence": 0.566,
+ *      "time_signature": 4,
+ *      "time_signature_confidence": 1
+ *    },
+ *    ...
+ *  ],
+ *  "segments": [
+ *    {
+ *      "start": 252.15601,
+ *      "duration": 3.19297,
+ *      "confidence": 0.522,
+ *      "loudness_start": -23.356,
+ *      "loudness_max_time": 0.06971,
+ *      "loudness_max": -18.121,
+ *      "loudness_end": -60,
+ *      "pitches": [
+ *        0.709,
+ *        0.092,
+ *        0.196,
+ *        0.084,
+ *        0.352,
+ *        0.134,
+ *        0.161,
+ *        1,
+ *        0.17,
+ *        0.161,
+ *        0.211,
+ *        0.15
+ *      ],
+ *      "timbre": [
+ *        23.312,
+ *        -7.374,
+ *        -45.719,
+ *        294.874,
+ *        51.869,
+ *        -79.384,
+ *        -89.048,
+ *        143.322,
+ *        -4.676,
+ *        -51.303,
+ *        -33.274,
+ *        -19.037
+ *      ]
+ *    }
+ *  ]
+ * }
+ */
+
+export interface GetAnAudioAnalysisResponse {
+  track: {
+    end_of_fade_in: number,
+    start_of_fade_out: number,
+    tempo: number,
+    tempo_confidence: number,
+    time_signature: number,
+    time_signature_confidence: number,
+    key: number,
+    key_confidence: number,
+    mode: number,
+    mode_confidence: number,
+  };
+  bars: GetAnAudioAnalysisResponseTimeInterval[];
+  beats: GetAnAudioAnalysisResponseTimeInterval[];
+  tatums: GetAnAudioAnalysisResponseTimeInterval[];
+  sections: GetAnAudioAnalysisResponseSection[];
+  segments: GetAnAudioAnalysisResponseSegment[];
 }

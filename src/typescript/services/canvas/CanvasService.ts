@@ -6,7 +6,7 @@ import Dispatcher from '../../events/Dispatcher';
 import Track from '../../models/audio-analysis/Track';
 import SongCircle from '../canvas/drawables/SongCircle';
 import Scene from '../canvas/drawables/Scene';
-import * as DrawableFactory from './drawables/drawable-factory';
+import * as DrawableFactory from '../../factories/drawable';
 
 class CanvasService {
   private static _instance: CanvasService = null;

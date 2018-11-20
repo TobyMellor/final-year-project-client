@@ -1,9 +1,11 @@
 import Album, { Input as AlbumInput } from '../Album';
 import AudioFeatures from '../audio-features/AudioFeatures';
+import AudioAnalysis from './AudioAnalysis';
 
 export type Input = {
   album: Album | AlbumInput;
   audioFeatures?: AudioFeatures;
+  audioAnalysis?: AudioAnalysis;
   duration_ms: number;
   explicit: boolean;
   id: string;
@@ -13,16 +15,27 @@ export type Input = {
 
 class Track {
   private album: Album;
-  private audioFeatures: AudioFeatures;
+  private audioFeatures: AudioFeatures | null; // Loaded in when it becomes parent song
+  private audioAnalysis: AudioAnalysis | null; // ditto ^
   private durationMs: number;
   private explicit: boolean;
   private ID: string;
   private name: string;
   private URI: string;
 
-  constructor({ album, audioFeatures, duration_ms, explicit, id, name, uri }: Input) {
+  constructor({
+    album,
+    audioFeatures,
+    audioAnalysis,
+    duration_ms,
+    explicit,
+    id,
+    name,
+    uri,
+  }: Input) {
     this.album = album instanceof Album ? album : new Album(album);
     this.audioFeatures = audioFeatures || null;
+    this.audioAnalysis = audioAnalysis || null;
     this.durationMs = duration_ms;
     this.explicit = explicit;
     this.ID = id;
@@ -36,6 +49,10 @@ class Track {
 
   public getAudioFeatures() {
     return this.audioFeatures;
+  }
+
+  public getAudioAnalysis() {
+    return this.audioAnalysis;
   }
 
   public getDurationMs() {

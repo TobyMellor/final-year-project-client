@@ -1,7 +1,8 @@
-import TimeInterval, { Input as TimeIntervalInput } from './TimeInterval';
+import { GetAnAudioAnalysisResponseTimeInterval } from '../../types/spotify-responses';
+import TimeInterval from './TimeInterval';
 
 class Beat extends TimeInterval {
-  constructor(input: TimeIntervalInput) {
+  constructor(input: GetAnAudioAnalysisResponseTimeInterval) {
     super(input);
   }
 }

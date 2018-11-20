@@ -1,14 +1,4 @@
-type Input = {
-  start: number;
-  duration: number;
-  confidence: number;
-  loudness_start: number;
-  loudness_max_time: number;
-  loudness_max: number;
-  loudness_end: number;
-  pitches: number[];
-  timbre: number[];
-};
+import { GetAnAudioAnalysisResponseSegment } from '../../types/spotify-responses';
 
 class Segment {
   // The starting point (in seconds) of the segment.
@@ -60,7 +50,7 @@ class Segment {
     loudness_end,
     pitches,
     timbre,
-  }: Input) {
+  }: GetAnAudioAnalysisResponseSegment) {
     this.start = start;
     this.duration = duration;
     this.confidence = confidence;

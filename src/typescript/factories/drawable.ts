@@ -1,8 +1,8 @@
-import SongCircle from './SongCircle';
-import Track from '../../../models/audio-analysis/Track';
-import WorldPoint from './points/WorldPoint';
-import Scene from './Scene';
-import Branch from './Branch';
+import SongCircle from '../services/canvas/drawables/SongCircle';
+import Track from '../models/audio-analysis/Track';
+import WorldPoint from '../services/canvas/drawables/points/WorldPoint';
+import Scene from '../services/canvas/drawables/Scene';
+import Branch from '../services/canvas/drawables/Branch';
 
 export function renderParentSongCircle(scene: Scene, track: Track): SongCircle {
   const pointOnCircle = WorldPoint.getPoint(0, 0);
