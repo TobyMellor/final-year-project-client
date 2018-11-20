@@ -12,8 +12,11 @@ class CircleCanvas extends React.Component {
   componentDidMount() {
     const canvas: HTMLCanvasElement = this.getCanvas();
 
-    CanvasService.getInstance(canvas);
-    MusicService.getInstance();
+    // @ts-ignore This is for testing
+    window.CanvasService = CanvasService.getInstance(canvas);
+
+    // @ts-ignore This is for testing
+    window.MusicService = MusicService.getInstance();
   }
 
   render() {
