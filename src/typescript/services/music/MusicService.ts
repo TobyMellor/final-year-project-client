@@ -64,11 +64,6 @@ class MusicService {
   public async setPlayingTrack(track: TrackModel) {
     const previousPlayingTrack: TrackModel | null = this.getPlayingTrack();
 
-    // Load in the AudioAnalysis and AudioFeatures for the track we're
-    // about to play
-    await trackFactory.addAudioAnalysis(track);
-    await trackFactory.addAudioFeatures(track);
-
     if (previousPlayingTrack) {
       this.childTracks.add(previousPlayingTrack);
     }

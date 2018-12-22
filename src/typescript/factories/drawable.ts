@@ -1,11 +1,11 @@
 import SongCircle from '../services/canvas/drawables/SongCircle';
-import Track from '../models/audio-analysis/Track';
+import TrackModel from '../models/audio-analysis/Track';
 import WorldPoint from '../services/canvas/drawables/points/WorldPoint';
 import Scene from '../services/canvas/drawables/Scene';
-import Branch from '../services/canvas/drawables/Branch';
-import CanvasService from '../services/canvas/CanvasService';
+import BezierCurve from '../services/canvas/drawables/BezierCurve';
+import BranchModel from '../models/branches/Branch';
 
-export function renderParentSongCircle(scene: Scene, track: Track): SongCircle {
+export async function renderParentSongCircle(scene: Scene, track: TrackModel): Promise<SongCircle> {
   const pointOnCircle = WorldPoint.getPoint(0, 0);
   const radius = 1;
   const lineWidth = getLineWidthForSong(radius);
@@ -15,13 +15,17 @@ export function renderParentSongCircle(scene: Scene, track: Track): SongCircle {
                                           1,
                                           lineWidth,
                                           0xFFFFFF);
+
+  const branches = await track.getBranches();
+  branches.forEach(branch => renderBezierCurves(scene, parentSongCircle, branch));
+
   return parentSongCircle;
 }
 
 export function renderChildSongCircle(
   scene: Scene,
   parentSongCircle: SongCircle,
-  track: Track,
+  track: TrackModel,
   percentage: number,
 ): SongCircle {
   const radius = getRadiusForSong(parentSongCircle, track);
@@ -39,13 +43,15 @@ export function renderChildSongCircle(
   return childSongCircle;
 }
 
-export function renderBranches(scene: Scene, parentSongCircle: SongCircle): Branch[] {
-  const bezierCurve = new Branch(scene, parentSongCircle, 20, 60, 1);
-
-  return [];
+export function renderBezierCurves(
+  scene: Scene,
+  songCircle: SongCircle,
+  branch: BranchModel,
+) {
+  new BezierCurve(scene, songCircle, branch, 20, 60, 1);
 }
 
-function getRadiusForSong(parentSongCircle: SongCircle, childTrack: Track): number {
+function getRadiusForSong(parentSongCircle: SongCircle, childTrack: TrackModel): number {
   const parentTrack = parentSongCircle.getTrack();
   const relativeSize = childTrack.getDurationMs() / parentTrack.getDurationMs();
 

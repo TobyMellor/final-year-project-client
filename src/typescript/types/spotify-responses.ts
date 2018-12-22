@@ -458,3 +458,51 @@ export interface GetAnAudioAnalysisResponse {
   sections: GetAnAudioAnalysisResponseSection[];
   segments: GetAnAudioAnalysisResponseSegment[];
 }
+
+/**
+ * GET https://api.spotify.com/v1/audio-features/{id}
+ *
+ * EXAMPLE:
+ *
+ * {
+ *   "danceability": 0.735,
+ *   "energy": 0.578,
+ *   "key": 5,
+ *   "loudness": -11.84,
+ *   "mode": 0,
+ *   "speechiness": 0.0461,
+ *   "acousticness": 0.514,
+ *   "instrumentalness": 0.0902,
+ *   "liveness": 0.159,
+ *   "valence": 0.624,
+ *   "tempo": 98.002,
+ *   "type": "audio_features",
+ *   "id": "06AKEBrKUckW0KREUWRnvT",
+ *   "uri": "spotify:track:06AKEBrKUckW0KREUWRnvT",
+ *   "track_href": "https://api.spotify.com/v1/tracks/06AKEBrKUckW0KREUWRnvT",
+ *   "analysis_url": "https://api.spotify.com/v1/audio-analysis/06AKEBrKUckW0KREUWRnvT",
+ *   "duration_ms": 255349,
+ *   "time_signature": 4
+ * }
+ */
+
+export interface GetAudioFeaturesResponse {
+  danceability: number;
+  energy: number;
+  key: number;
+  loudness: number;
+  mode: number;
+  speechiness: number;
+  acousticness: number;
+  instrumentalness: number;
+  liveness: number;
+  valence: number;
+  tempo: number;
+  type: string;
+  id: string;
+  uri: string;
+  track_href: string;
+  analysis_url: string;
+  duration_ms: number;
+  time_signature: number;
+}

@@ -1,11 +1,14 @@
 import AlbumModel, { Input as AlbumInput } from '../Album';
 import AudioFeaturesModel from '../audio-features/AudioFeatures';
 import AudioAnalysisModel from './AudioAnalysis';
+import BranchModel from '../branches/Branch';
+import * as trackFactory from '../../factories/track';
 
 export type Input = {
   album: AlbumModel | AlbumInput;
   audioFeatures?: AudioFeaturesModel;
   audioAnalysis?: AudioAnalysisModel;
+  branches?: BranchModel[];
   duration_ms: number;
   explicit: boolean;
   id: string;
@@ -15,8 +18,12 @@ export type Input = {
 
 class TrackModel {
   private album: AlbumModel;
-  private audioFeatures: AudioFeaturesModel | null; // Loaded in when it becomes parent song
-  private audioAnalysis: AudioAnalysisModel | null; // ditto ^
+
+  // Loaded in when it becomes parent song
+  private audioFeatures: AudioFeaturesModel | null;
+  private audioAnalysis: AudioAnalysisModel | null;
+  private branches: BranchModel[] | null;
+
   private durationMs: number;
   private explicit: boolean;
   private ID: string;
@@ -27,6 +34,7 @@ class TrackModel {
     album,
     audioFeatures,
     audioAnalysis,
+    branches,
     duration_ms,
     explicit,
     id,
@@ -36,6 +44,7 @@ class TrackModel {
     this.album = album instanceof AlbumModel ? album : new AlbumModel(album);
     this.audioFeatures = audioFeatures || null;
     this.audioAnalysis = audioAnalysis || null;
+    this.branches = branches || null;
     this.durationMs = duration_ms;
     this.explicit = explicit;
     this.ID = id;
@@ -47,20 +56,30 @@ class TrackModel {
     return this.album;
   }
 
-  public getAudioFeatures() {
-    return this.audioFeatures;
+  public getAudioFeatures(): Promise<AudioFeaturesModel> {
+    return this.audioFeatures
+      ? Promise.resolve(this.audioFeatures)
+      : trackFactory.addAudioFeatures(this);
   }
 
   public setAudioFeatures(audioFeatures: AudioFeaturesModel) {
     this.audioFeatures = audioFeatures;
   }
 
-  public getAudioAnalysis() {
-    return this.audioAnalysis;
+  public async getAudioAnalysis(): Promise<AudioAnalysisModel> {
+    return this.audioAnalysis
+      ? Promise.resolve(this.audioAnalysis)
+      : trackFactory.addAudioAnalysis(this);
   }
 
   public setAudioAnalysis(audioAnalysis: AudioAnalysisModel) {
     this.audioAnalysis = audioAnalysis;
+  }
+
+  public async getBranches() {
+    return this.branches
+      ? Promise.resolve(this.branches)
+      : trackFactory.addBranches(this);
   }
 
   public getDurationMs() {

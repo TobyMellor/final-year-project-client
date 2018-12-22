@@ -3,7 +3,7 @@
 
 import { sample } from '../mocker';
 
-export function getAnAudioAnalysis(ID: string) {
+export function getAnAudioAnalysisMock(ID: string) {
   const mocks = [
     // KIDS SEE GHOSTS
     //     - Reborn (4RVbK6cV0VqWdpCDcx3hiT)

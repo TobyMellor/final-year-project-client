@@ -1,9 +1,9 @@
 import SpotifyAPI from './SpotifyAPI';
 import Request from '../Request';
 import { GetATrackResponse } from '../../../types/spotify-responses';
-import Track from '../../../models/audio-analysis/Track';
+import TrackModel from '../../../models/audio-analysis/Track';
 
-export class GetATrack extends Request {
+class GetATrack extends Request {
   private ID: string;
 
   constructor(ID: string) {
@@ -12,15 +12,15 @@ export class GetATrack extends Request {
     this.ID = ID;
   }
 
-  static async request(ID: string): Promise<Track> {
+  static async request(ID: string): Promise<TrackModel> {
     const response = <GetATrackResponse> await SpotifyAPI.get(
       new GetATrack(ID),
     );
 
-    return new Track(response);
+    return new TrackModel(response);
   }
 
-  async mockResponse(): Promise<Track> {
+  async mockResponse(): Promise<TrackModel> {
     return require('../mocks/spotify/tracks').getATrackMock(this.ID);
   }
 
@@ -28,3 +28,5 @@ export class GetATrack extends Request {
     return `tracks/${this.ID}`;
   }
 }
+
+export default GetATrack;

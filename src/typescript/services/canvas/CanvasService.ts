@@ -39,10 +39,10 @@ class CanvasService {
     return this._instance = new this(canvas);
   }
 
-  public setSongCircles(
+  public async setSongCircles(
     { playingTrack, childTracks }: { playingTrack: TrackModel, childTracks: TrackModel[] },
   ) {
-    const parentSongCircle = DrawableFactory.renderParentSongCircle(this.scene, playingTrack);
+    const parentSongCircle = await DrawableFactory.renderParentSongCircle(this.scene, playingTrack);
 
     childTracks.forEach((childTrack) => {
       const percentage = Math.round(Math.random() * 100);

@@ -1,10 +1,9 @@
 import SpotifyAPI from './SpotifyAPI';
 import Request from '../Request';
 import { GetAnAudioAnalysisResponse } from '../../../types/spotify-responses';
-import Track from '../../../models/audio-analysis/Track';
-import AudioAnalysis from '../../../models/audio-analysis/AudioAnalysis';
+import AudioAnalysisModel from '../../../models/audio-analysis/AudioAnalysis';
 
-export class GetAnAudioAnalysis extends Request {
+class GetAnAudioAnalysis extends Request {
   private ID: string;
 
   constructor(ID: string) {
@@ -13,19 +12,21 @@ export class GetAnAudioAnalysis extends Request {
     this.ID = ID;
   }
 
-  static async request(ID: string): Promise<AudioAnalysis> {
+  static async request(ID: string): Promise<AudioAnalysisModel> {
     const response = <GetAnAudioAnalysisResponse> await SpotifyAPI.get(
       new GetAnAudioAnalysis(ID),
     );
 
-    return new AudioAnalysis(response);
+    return new AudioAnalysisModel(response);
   }
 
-  async mockResponse(): Promise<Track> {
-    return require('../mocks/spotify/audio-analysis').getAnAudioAnalysis(this.ID);
+  async mockResponse(): Promise<AudioAnalysisModel> {
+    return require('../mocks/spotify/audio-analysis').getAnAudioAnalysisMock(this.ID);
   }
 
   getEndpoint() {
     return `audio-analysis/${this.ID}`;
   }
 }
+
+export default GetAnAudioAnalysis;
