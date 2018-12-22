@@ -13,7 +13,7 @@ export type Input = {
   valence: number;
 };
 
-class AudioFeatures {
+class AudioFeaturesModel {
   // A confidence measure from 0.0 to 1.0 of whether the track is acoustic.
   // 1.0 represents high confidence the track is acoustic.
   private acousticness: number;
@@ -163,4 +163,4 @@ class AudioFeatures {
   }
 }
 
-export default AudioFeatures;
+export default AudioFeaturesModel;

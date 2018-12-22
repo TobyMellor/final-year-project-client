@@ -4,7 +4,7 @@ export type Input = {
   width: number;
 };
 
-class Image {
+class ImageModel {
   private height: number;
   private url: string;
   private width: number;
@@ -28,4 +28,4 @@ class Image {
   }
 }
 
-export default Image;
+export default ImageModel;

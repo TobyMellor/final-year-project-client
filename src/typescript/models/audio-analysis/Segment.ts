@@ -1,6 +1,6 @@
 import { GetAnAudioAnalysisResponseSegment } from '../../types/spotify-responses';
 
-class Segment {
+class SegmentModel {
   // The starting point (in seconds) of the segment.
   private start: number;
 
@@ -65,4 +65,4 @@ class Segment {
   }
 }
 
-export default Segment;
+export default SegmentModel;

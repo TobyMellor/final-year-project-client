@@ -1,21 +1,33 @@
-import Beat from '../audio-analysis/Beat';
+import BeatModel from '../audio-analysis/Beat';
 
 export type Input = {
   ID: number,
-  originBeat: Beat,
-  destinationBeat: Beat,
+  originBeat: BeatModel,
+  destinationBeat: BeatModel,
 };
 
-abstract class Branch {
+abstract class BranchModel {
   private ID: number;
-  private originBeat: Beat;
-  private destinationBeat: Beat;
+  private originBeat: BeatModel;
+  private destinationBeat: BeatModel;
 
   protected constructor({ ID, originBeat, destinationBeat }: Input) {
     this.ID = ID,
     this.originBeat = originBeat;
     this.destinationBeat = destinationBeat;
   }
+
+  public getID(): number {
+    return this.ID;
+  }
+
+  public getOriginBeat(): BeatModel {
+    return this.originBeat;
+  }
+
+  public getDestinationBeat(): BeatModel {
+    return this.destinationBeat;
+  }
 }
 
-export default Branch;
+export default BranchModel;

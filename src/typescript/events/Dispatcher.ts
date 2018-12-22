@@ -1,4 +1,5 @@
 import DispatcherEvent, { CallbackFn } from './DispatcherEvent';
+import * as loggerService from '../services/logging/logger';
 import config from '../config';
 
 interface Events {
@@ -26,7 +27,7 @@ class Dispatcher {
   }
 
   on(eventName: string, context: Object, callbackFn: CallbackFn) {
-    if (config.fyp.debug) { console.debug('EVENT FIRED:', eventName); }
+    loggerService.debug('EVENT FIRED:', eventName);
 
     if (!this.events[eventName]) {
       this.events[eventName] = new DispatcherEvent(eventName, context);

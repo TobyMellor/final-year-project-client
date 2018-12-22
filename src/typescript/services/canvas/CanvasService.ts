@@ -3,7 +3,7 @@
  */
 
 import Dispatcher from '../../events/Dispatcher';
-import Track from '../../models/audio-analysis/Track';
+import TrackModel from '../../models/audio-analysis/Track';
 import SongCircle from '../canvas/drawables/SongCircle';
 import Scene from '../canvas/drawables/Scene';
 import * as DrawableFactory from '../../factories/drawable';
@@ -40,11 +40,9 @@ class CanvasService {
   }
 
   public setSongCircles(
-    { playingTrack, childTracks }: { playingTrack: Track, childTracks: Track[] },
+    { playingTrack, childTracks }: { playingTrack: TrackModel, childTracks: TrackModel[] },
   ) {
     const parentSongCircle = DrawableFactory.renderParentSongCircle(this.scene, playingTrack);
-
-    DrawableFactory.renderBranches(this.scene, parentSongCircle);
 
     childTracks.forEach((childTrack) => {
       const percentage = Math.round(Math.random() * 100);
@@ -54,6 +52,10 @@ class CanvasService {
                                                    childTrack,
                                                    percentage);
     });
+  }
+
+  public getScene() {
+    return this.scene;
   }
 }
 

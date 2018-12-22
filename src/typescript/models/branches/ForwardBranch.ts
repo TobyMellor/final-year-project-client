@@ -1,9 +1,9 @@
-import Branch, { Input as BranchInput } from './Branch';
+import BranchModel, { Input as BranchInput } from './Branch';
 
-class FowardBranch extends Branch {
+class FowardBranchModel extends BranchModel {
   protected constructor(input: BranchInput) {
     super(input);
   }
 }
 
-export default FowardBranch;
+export default FowardBranchModel;

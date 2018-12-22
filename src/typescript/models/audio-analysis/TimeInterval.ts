@@ -1,6 +1,6 @@
 import { GetAnAudioAnalysisResponseTimeInterval } from '../../types/spotify-responses';
 
-abstract class TimeInterval {
+abstract class TimeIntervalModel {
   private start: number;
   private duration: number;
   private confidence: number;
@@ -12,4 +12,4 @@ abstract class TimeInterval {
   }
 }
 
-export default TimeInterval;
+export default TimeIntervalModel;

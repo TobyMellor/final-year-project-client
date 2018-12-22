@@ -1,11 +1,11 @@
-import Album, { Input as AlbumInput } from '../Album';
-import AudioFeatures from '../audio-features/AudioFeatures';
-import AudioAnalysis from './AudioAnalysis';
+import AlbumModel, { Input as AlbumInput } from '../Album';
+import AudioFeaturesModel from '../audio-features/AudioFeatures';
+import AudioAnalysisModel from './AudioAnalysis';
 
 export type Input = {
-  album: Album | AlbumInput;
-  audioFeatures?: AudioFeatures;
-  audioAnalysis?: AudioAnalysis;
+  album: AlbumModel | AlbumInput;
+  audioFeatures?: AudioFeaturesModel;
+  audioAnalysis?: AudioAnalysisModel;
   duration_ms: number;
   explicit: boolean;
   id: string;
@@ -13,10 +13,10 @@ export type Input = {
   uri: string;
 };
 
-class Track {
-  private album: Album;
-  private audioFeatures: AudioFeatures | null; // Loaded in when it becomes parent song
-  private audioAnalysis: AudioAnalysis | null; // ditto ^
+class TrackModel {
+  private album: AlbumModel;
+  private audioFeatures: AudioFeaturesModel | null; // Loaded in when it becomes parent song
+  private audioAnalysis: AudioAnalysisModel | null; // ditto ^
   private durationMs: number;
   private explicit: boolean;
   private ID: string;
@@ -33,7 +33,7 @@ class Track {
     name,
     uri,
   }: Input) {
-    this.album = album instanceof Album ? album : new Album(album);
+    this.album = album instanceof AlbumModel ? album : new AlbumModel(album);
     this.audioFeatures = audioFeatures || null;
     this.audioAnalysis = audioAnalysis || null;
     this.durationMs = duration_ms;
@@ -51,7 +51,7 @@ class Track {
     return this.audioFeatures;
   }
 
-  public setAudioFeatures(audioFeatures: AudioFeatures) {
+  public setAudioFeatures(audioFeatures: AudioFeaturesModel) {
     this.audioFeatures = audioFeatures;
   }
 
@@ -59,7 +59,7 @@ class Track {
     return this.audioAnalysis;
   }
 
-  public setAudioAnalysis(audioAnalysis: AudioAnalysis) {
+  public setAudioAnalysis(audioAnalysis: AudioAnalysisModel) {
     this.audioAnalysis = audioAnalysis;
   }
 
@@ -95,4 +95,4 @@ class Track {
   }
 }
 
-export default Track;
+export default TrackModel;

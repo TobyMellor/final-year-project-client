@@ -1,4 +1,4 @@
-import Track from '../../models/audio-analysis/Track';
+import TrackModel from '../../models/audio-analysis/Track';
 import Dispatcher from '../../events/Dispatcher';
 import * as trackFactory from '../../factories/track';
 
@@ -9,9 +9,9 @@ import * as trackFactory from '../../factories/track';
 class MusicService {
   private static _instance: MusicService;
 
-  private tracks: Track[] = [];
-  private playingTrack: Track = null;
-  private childTracks: Set<Track> = new Set<Track>();
+  private tracks: TrackModel[] = [];
+  private playingTrack: TrackModel = null;
+  private childTracks: Set<TrackModel> = new Set<TrackModel>();
 
   private constructor() {
     // AJAX requests for spotify data
@@ -25,7 +25,7 @@ class MusicService {
       '3O8NlPh2LByMU9lSRSHedm',
       '0wwPcA6wtMf6HUMpIRdeP7',
     ];
-    const trackRequests: Promise<Track>[] = trackIDs.map(ID => trackFactory.createTrack(ID));
+    const trackRequests: Promise<TrackModel>[] = trackIDs.map(ID => trackFactory.createTrack(ID));
 
     Promise
       .all(trackRequests)
@@ -43,26 +43,26 @@ class MusicService {
     return this._instance || (this._instance = new this());
   }
 
-  public addChildTracks(...tracks: Track[]) {
+  public addChildTracks(...tracks: TrackModel[]) {
     tracks.forEach(track => this.childTracks.add(track));
   }
 
-  public getTracks(): Track[] {
+  public getTracks(): TrackModel[] {
     return this.tracks;
   }
 
-  public getTrack(ID: string): Track {
+  public getTrack(ID: string): TrackModel {
     const tracks = this.tracks;
 
     return tracks.find(track => track.getID() === ID);
   }
 
-  public getPlayingTrack(): Track | null {
+  public getPlayingTrack(): TrackModel | null {
     return this.playingTrack;
   }
 
-  public async setPlayingTrack(track: Track) {
-    const previousPlayingTrack: Track | null = this.getPlayingTrack();
+  public async setPlayingTrack(track: TrackModel) {
+    const previousPlayingTrack: TrackModel | null = this.getPlayingTrack();
 
     // Load in the AudioAnalysis and AudioFeatures for the track we're
     // about to play

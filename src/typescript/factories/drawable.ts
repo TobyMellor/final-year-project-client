@@ -3,6 +3,7 @@ import Track from '../models/audio-analysis/Track';
 import WorldPoint from '../services/canvas/drawables/points/WorldPoint';
 import Scene from '../services/canvas/drawables/Scene';
 import Branch from '../services/canvas/drawables/Branch';
+import CanvasService from '../services/canvas/CanvasService';
 
 export function renderParentSongCircle(scene: Scene, track: Track): SongCircle {
   const pointOnCircle = WorldPoint.getPoint(0, 0);

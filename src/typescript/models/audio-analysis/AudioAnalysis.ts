@@ -1,9 +1,9 @@
 import { GetAnAudioAnalysisResponse } from '../../types/spotify-responses';
-import Bar from './Bar';
-import Beat from './Beat';
-import Segment from './Segment';
+import BarModel from './Bar';
+import BeatModel from './Beat';
+import SegmentModel from './Segment';
 
-class AudioAnalysis {
+class AudioAnalysisModel {
   private endOfFadeIn: number;
   private startOfFadeOut: number;
   private tempo: {
@@ -22,9 +22,9 @@ class AudioAnalysis {
     value: number,
     confidence: number,
   };
-  private bars: Bar[];
-  private beats: Beat[];
-  private segments: Segment[];
+  private bars: BarModel[];
+  private beats: BeatModel[];
+  private segments: SegmentModel[];
 
   constructor({ track, bars, beats, segments }: GetAnAudioAnalysisResponse) {
 
@@ -49,14 +49,14 @@ class AudioAnalysis {
     };
 
     // Bars Analysis
-    this.bars = bars.map(bar => new Bar(bar));
+    this.bars = bars.map(bar => new BarModel(bar));
 
     // Beats Analysis
-    this.beats = beats.map(beat => new Beat(beat));
+    this.beats = beats.map(beat => new BeatModel(beat));
 
     // Segment Analysis
-    this.segments = segments.map(segment => new Segment(segment));
+    this.segments = segments.map(segment => new SegmentModel(segment));
   }
 }
 
-export default AudioAnalysis;
+export default AudioAnalysisModel;

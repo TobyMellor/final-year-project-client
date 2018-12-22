@@ -1,10 +1,10 @@
 import { GetAnAudioAnalysisResponseTimeInterval } from '../../types/spotify-responses';
-import TimeInterval from './TimeInterval';
+import TimeIntervalModel from './TimeInterval';
 
-class Bar extends TimeInterval {
+class BarModel extends TimeIntervalModel {
   constructor(input: GetAnAudioAnalysisResponseTimeInterval) {
     super(input);
   }
 }
 
-export default Bar;
+export default BarModel;
