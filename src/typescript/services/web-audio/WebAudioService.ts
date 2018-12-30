@@ -15,11 +15,16 @@ import { FYPEvent } from '../../types/enums';
 class WebAudioService {
   private static _instance: WebAudioService;
 
+  private audioContext: AudioContext;
+
   private tracks: TrackModel[] = [];
   private playingTrack: TrackModel = null;
   private childTracks: Set<TrackModel> = new Set<TrackModel>();
 
   private constructor() {
+    const AudioContext = (<any> window).AudioContext || (<any> window).webkitAudioContext;
+    this.audioContext = new AudioContext();
+
     const trackIDs: string[] = [
       '4RVbK6cV0VqWdpCDcx3hiT',
       '3aUFrxO1B8EW63QchEl3wX',
@@ -71,6 +76,8 @@ class WebAudioService {
     this.childTracks.delete(track);
     this.playingTrack = track;
 
+    this.playTrack(track);
+
     Dispatcher.getInstance()
               .dispatch(FYPEvent.PlayingTrackChanged, {
                 playingTrack: this.playingTrack,
@@ -82,11 +89,21 @@ class WebAudioService {
     return this.childTracks;
   }
 
-  protected getExportState() {
-    return {
-      playingTrack: this.getPlayingTrack(),
-      childTracks: this.getChildTracks(),
-    };
+  private async playTrack(track: TrackModel) {
+    const trackID = track.getID();
+    const response = await fetch(`tracks/${trackID}.mp3`);
+    const arrayBuffer = await response.arrayBuffer();
+    const audioBuffer = await this.audioContext.decodeAudioData(arrayBuffer);
+
+    this.playSample(audioBuffer);
+  }
+
+  private async playSample(audioBuffer: AudioBuffer) {
+    const source = this.audioContext.createBufferSource();
+
+    source.buffer = audioBuffer;
+    source.connect(this.audioContext.destination);
+    source.start();
   }
 }
 
