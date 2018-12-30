@@ -50,3 +50,15 @@ export function worldWidthToAbsoluteWidth(
 
   return absoluteCircleWidth;
 }
+
+export function decimalToPercentage(decimal: number): number {
+  return decimal * 100;
+}
+
+export function getRandomInteger(): number {
+  return Math.round(Math.random() * 100);
+}
+
+export function secondsToMilliseconds(seconds: number): number {
+  return seconds * 1000;
+}

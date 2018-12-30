@@ -22,7 +22,6 @@ class TrackModel {
   // Loaded in when it becomes parent song
   private audioFeatures: AudioFeaturesModel | null;
   private audioAnalysis: AudioAnalysisModel | null;
-  private branches: BranchModel[] | null;
 
   private durationMs: number;
   private explicit: boolean;
@@ -44,7 +43,6 @@ class TrackModel {
     this.album = album instanceof AlbumModel ? album : new AlbumModel(album);
     this.audioFeatures = audioFeatures || null;
     this.audioAnalysis = audioAnalysis || null;
-    this.branches = branches || null;
     this.durationMs = duration_ms;
     this.explicit = explicit;
     this.ID = id;
@@ -76,12 +74,6 @@ class TrackModel {
     this.audioAnalysis = audioAnalysis;
   }
 
-  public async getBranches() {
-    return this.branches
-      ? Promise.resolve(this.branches)
-      : trackFactory.addBranches(this);
-  }
-
   public getDurationMs() {
     return this.durationMs;
   }
@@ -111,6 +103,12 @@ class TrackModel {
 
   public getURI() {
     return this.URI;
+  }
+
+  public async getBranches(): Promise<BranchModel[]> {
+    const audioAnalysis = await this.getAudioAnalysis();
+
+    return audioAnalysis.getBranches();
   }
 }
 

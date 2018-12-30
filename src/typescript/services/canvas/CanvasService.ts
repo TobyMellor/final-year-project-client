@@ -7,6 +7,7 @@ import TrackModel from '../../models/audio-analysis/Track';
 import SongCircle from '../canvas/drawables/SongCircle';
 import Scene from '../canvas/drawables/Scene';
 import * as DrawableFactory from '../../factories/drawable';
+import * as conversions from './drawables/utils/conversions';
 
 class CanvasService {
   private static _instance: CanvasService = null;
@@ -45,7 +46,7 @@ class CanvasService {
     const parentSongCircle = await DrawableFactory.renderParentSongCircle(this.scene, playingTrack);
 
     childTracks.forEach((childTrack) => {
-      const percentage = Math.round(Math.random() * 100);
+      const percentage = conversions.getRandomInteger();
 
       return DrawableFactory.renderChildSongCircle(this.scene,
                                                    parentSongCircle,

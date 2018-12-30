@@ -30,12 +30,9 @@ class MusicService {
     Promise
       .all(trackRequests)
       .then((tracks) => {
-        const childTracks = tracks;
-        const playingTrack = childTracks.shift();
-
         this.tracks = tracks;
-        this.addChildTracks(...childTracks);
-        this.setPlayingTrack(playingTrack);
+        this.addChildTracks(...tracks);
+        this.setPlayingTrack(tracks[0]);
       });
   }
 
@@ -51,10 +48,10 @@ class MusicService {
     return this.tracks;
   }
 
-  public getTrack(ID: string): TrackModel {
+  public getTrack(ID: string): TrackModel | null {
     const tracks = this.tracks;
 
-    return tracks.find(track => track.getID() === ID);
+    return tracks.find(track => track.getID() === ID) || null;
   }
 
   public getPlayingTrack(): TrackModel | null {

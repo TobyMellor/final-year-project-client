@@ -48,7 +48,21 @@ export function renderBezierCurves(
   songCircle: SongCircle,
   branch: BranchModel,
 ) {
-  new BezierCurve(scene, songCircle, branch, 20, 60, 1);
+  const trackDuration = songCircle.getTrack().getDurationMs();
+  const originBeat = branch.getOriginBeat();
+  const destinationBeat = branch.getDestinationBeat();
+
+  const originPercentage = originBeat.getPercentageInTrack(trackDuration);
+  const destinationPercentage = destinationBeat.getPercentageInTrack(trackDuration);
+  const lineWidth = getBezierCurveLineWidth();
+
+  // Render the curve
+  new BezierCurve(scene,
+                  songCircle,
+                  branch,
+                  originPercentage,
+                  destinationPercentage,
+                  lineWidth);
 }
 
 function getRadiusForSong(parentSongCircle: SongCircle, childTrack: TrackModel): number {
@@ -60,4 +74,8 @@ function getRadiusForSong(parentSongCircle: SongCircle, childTrack: TrackModel):
 
 function getLineWidthForSong(radius: number): number {
   return radius * 0.1;
+}
+
+function getBezierCurveLineWidth(): number {
+  return 5;
 }

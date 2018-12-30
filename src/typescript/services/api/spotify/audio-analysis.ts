@@ -17,7 +17,7 @@ class GetAnAudioAnalysis extends Request {
       new GetAnAudioAnalysis(ID),
     );
 
-    return new AudioAnalysisModel(response);
+    return new AudioAnalysisModel({ trackID: ID, ...response });
   }
 
   async mockResponse(): Promise<AudioAnalysisModel> {
