@@ -2,6 +2,8 @@ import AlbumModel, { Input as AlbumInput } from '../Album';
 import AudioFeaturesModel from '../audio-features/AudioFeatures';
 import AudioAnalysisModel from './AudioAnalysis';
 import * as trackFactory from '../../factories/track';
+import * as conversions from '../../services/canvas/drawables/utils/conversions';
+import { TimeIdentifier } from '../../types/general';
 
 export type Input = {
   album: AlbumModel | AlbumInput;
@@ -21,7 +23,7 @@ class TrackModel {
   private audioFeatures: AudioFeaturesModel | null;
   private audioAnalysis: AudioAnalysisModel | null;
 
-  private durationMs: number;
+  private duration: TimeIdentifier;
   private explicit: boolean;
   private ID: string;
   private name: string;
@@ -40,7 +42,7 @@ class TrackModel {
     this.album = album instanceof AlbumModel ? album : new AlbumModel(album);
     this.audioFeatures = audioFeatures || null;
     this.audioAnalysis = audioAnalysis || null;
-    this.durationMs = duration_ms;
+    this.duration = conversions.getTimeIdentifierFromMilliseconds(duration_ms);
     this.explicit = explicit;
     this.ID = id;
     this.name = name;
@@ -71,8 +73,8 @@ class TrackModel {
     this.audioAnalysis = audioAnalysis;
   }
 
-  public getDurationMs() {
-    return this.durationMs;
+  public getDuration() {
+    return this.duration;
   }
 
   public isExplicit() {

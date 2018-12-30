@@ -1,4 +1,5 @@
 import Scene from '../Scene';
+import { TimeIdentifier } from '../../../../types/general';
 
 export function degreesToRadians(degrees: number) {
   const radians = degrees * (Math.PI / 180);
@@ -61,4 +62,22 @@ export function getRandomInteger(): number {
 
 export function secondsToMilliseconds(seconds: number): number {
   return seconds * 1000;
+}
+
+export function millisecondsToSeconds(ms: number): number {
+  return ms / 1000;
+}
+
+export function getTimeIdentifierFromSeconds(secs: number): TimeIdentifier {
+  return {
+    secs,
+    ms: secondsToMilliseconds(secs),
+  };
+}
+
+export function getTimeIdentifierFromMilliseconds(ms: number): TimeIdentifier {
+  return {
+    ms,
+    secs: millisecondsToSeconds(ms),
+  };
 }

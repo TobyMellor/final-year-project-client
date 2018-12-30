@@ -50,7 +50,7 @@ export function renderBezierCurves(
   songCircle: SongCircle,
   branch: BranchModel,
 ) {
-  const trackDuration = songCircle.getTrack().getDurationMs();
+  const trackDuration = songCircle.getTrack().getDuration();
   const originBeat = branch.getOriginBeat();
   const destinationBeat = branch.getDestinationBeat();
 
@@ -69,7 +69,7 @@ export function renderBezierCurves(
 
 function getRadiusForSong(parentSongCircle: SongCircle, childTrack: TrackModel): number {
   const parentTrack = parentSongCircle.getTrack();
-  const relativeSize = childTrack.getDurationMs() / parentTrack.getDurationMs();
+  const relativeSize = childTrack.getDuration().ms / parentTrack.getDuration().ms;
 
   return relativeSize * parentSongCircle.getRadius();
 }

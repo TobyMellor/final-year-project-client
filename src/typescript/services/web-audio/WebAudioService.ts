@@ -11,6 +11,7 @@ import TrackModel from '../../models/audio-analysis/Track';
 import Dispatcher from '../../events/Dispatcher';
 import * as trackFactory from '../../factories/track';
 import { FYPEvent } from '../../types/enums';
+import BeatModel from '../../models/audio-analysis/Beat';
 
 class WebAudioService {
   private static _instance: WebAudioService;
@@ -42,6 +43,10 @@ class WebAudioService {
         this.addChildTracks(...tracks);
         this.setPlayingTrack(tracks[0]);
       });
+
+    // Once we've loaded the track, analyzed it, and rendered the visuals
+    Dispatcher.getInstance()
+              .on(FYPEvent.PlayingTrackRenderered, this, this.startPlayingTrack);
   }
 
   public static getInstance(): WebAudioService {
@@ -76,8 +81,6 @@ class WebAudioService {
     this.childTracks.delete(track);
     this.playingTrack = track;
 
-    this.playTrack(track);
-
     Dispatcher.getInstance()
               .dispatch(FYPEvent.PlayingTrackChanged, {
                 playingTrack: this.playingTrack,
@@ -89,21 +92,36 @@ class WebAudioService {
     return this.childTracks;
   }
 
-  private async playTrack(track: TrackModel) {
-    const trackID = track.getID();
+  private async startPlayingTrack() {
+    const trackID = this.playingTrack.getID();
+    const audioAnalysis = await this.playingTrack.getAudioAnalysis();
+
+    // Get the Audio Buffer for the corresponding mp3 file
     const response = await fetch(`tracks/${trackID}.mp3`);
     const arrayBuffer = await response.arrayBuffer();
     const audioBuffer = await this.audioContext.decodeAudioData(arrayBuffer);
 
-    this.playSample(audioBuffer);
+    audioAnalysis
+      .getBeats()
+      .map((beat: BeatModel) => {
+        return this.playSample(audioBuffer,
+                               this.audioContext.currentTime + beat.getStart().secs,
+                               beat.getStart().secs,
+                               beat.getDuration().secs);
+      });
   }
 
-  private async playSample(audioBuffer: AudioBuffer) {
+  private async playSample(
+    audioBuffer: AudioBuffer,
+    when?: number,
+    offset?: number,
+    duration?: number,
+  ) {
     const source = this.audioContext.createBufferSource();
 
     source.buffer = audioBuffer;
     source.connect(this.audioContext.destination);
-    source.start();
+    source.start(when, offset, duration);
   }
 }
 

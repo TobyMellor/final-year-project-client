@@ -1,9 +1,10 @@
 import { GetAnAudioAnalysisResponseTimeInterval } from '../../types/spotify-responses';
 import * as conversions from '../../services/canvas/drawables/utils/conversions';
+import { TimeIdentifier } from '../../types/general';
 
 abstract class TimeIntervalModel {
-  private startMs: number;
-  private durationMs: number;
+  private start: TimeIdentifier;
+  private duration: TimeIdentifier;
   private confidence: number;
 
   protected constructor({
@@ -11,21 +12,21 @@ abstract class TimeIntervalModel {
     duration: durationSeconds,
     confidence,
   }: GetAnAudioAnalysisResponseTimeInterval) {
-    this.startMs = conversions.secondsToMilliseconds(startSeconds);
-    this.durationMs = conversions.secondsToMilliseconds(durationSeconds);
+    this.start = conversions.getTimeIdentifierFromSeconds(startSeconds);
+    this.duration = conversions.getTimeIdentifierFromSeconds(durationSeconds);
     this.confidence = confidence;
   }
 
-  public getStartMs(): number {
-    return this.startMs;
+  public getStart(): TimeIdentifier {
+    return this.start;
   }
 
-  public getDurationMs(): number {
-    return this.durationMs;
+  public getDuration(): TimeIdentifier {
+    return this.duration;
   }
 
-  public getPercentageInTrack(trackDurationMs: number): number {
-    const decimal = this.startMs / trackDurationMs;
+  public getPercentageInTrack(trackDuration: TimeIdentifier): number {
+    const decimal = this.start.ms / trackDuration.ms;
     const percentage = conversions.decimalToPercentage(decimal);
 
     return percentage;

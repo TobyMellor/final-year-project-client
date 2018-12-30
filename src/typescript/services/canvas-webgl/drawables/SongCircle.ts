@@ -35,7 +35,7 @@ class SongCircle extends Drawable {
     // So, give smaller circles a smaller Z
     // One trillion isn't special here, it's just making Z small
     const oneTrillion = 1000000000;
-    center.z = 1 - track.getDurationMs() / oneTrillion;
+    center.z = 1 - track.getDuration().ms / oneTrillion;
 
     const isParentSongCircle: boolean = center.x === 0 && center.y === 0;
     const circleDrawableInput = this.getDrawableInput(gl,

@@ -2,10 +2,10 @@ import { GetAnAudioAnalysisResponse } from '../../types/spotify-responses';
 import BarModel from './Bar';
 import BeatModel from './Beat';
 import SegmentModel from './Segment';
-import BranchModel from '../branches/Branch';
-import * as trackFactory from '../../factories/track';
 import TrackModel from './Track';
 import WebAudioService from '../../services/web-audio/WebAudioService';
+import * as conversions from '../../services/canvas/drawables/utils/conversions';
+import { TimeIdentifier } from '../../types/general';
 
 interface Input extends GetAnAudioAnalysisResponse {
   trackID: string;
@@ -13,8 +13,8 @@ interface Input extends GetAnAudioAnalysisResponse {
 
 class AudioAnalysisModel {
   private trackID: string;
-  private endOfFadeIn: number;
-  private startOfFadeOut: number;
+  private endOfFadeIn: TimeIdentifier;
+  private startOfFadeOut: TimeIdentifier;
   private tempo: {
     value: number,
     confidence: number,
@@ -39,8 +39,8 @@ class AudioAnalysisModel {
     this.trackID = trackID;
 
     // Track Analysis
-    this.endOfFadeIn = track.end_of_fade_in;
-    this.startOfFadeOut = track.start_of_fade_out;
+    this.endOfFadeIn = conversions.getTimeIdentifierFromSeconds(track.end_of_fade_in);
+    this.startOfFadeOut = conversions.getTimeIdentifierFromSeconds(track.start_of_fade_out);
     this.tempo = {
       value: track.tempo,
       confidence: track.tempo_confidence,
