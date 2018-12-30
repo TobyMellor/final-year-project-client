@@ -1,22 +1,25 @@
+/**
+ * Music Service
+ *
+ * Handles:
+ *  - Loading of tracks
+ *  - Initially playing a track
+ *  - Executing the Seek Queue
+ */
+
 import TrackModel from '../../models/audio-analysis/Track';
 import Dispatcher from '../../events/Dispatcher';
 import * as trackFactory from '../../factories/track';
+import { FYPEvent } from '../../types/enums';
 
-/**
- * Initial Music Setup
- */
-
-class MusicService {
-  private static _instance: MusicService;
+class WebAudioService {
+  private static _instance: WebAudioService;
 
   private tracks: TrackModel[] = [];
   private playingTrack: TrackModel = null;
   private childTracks: Set<TrackModel> = new Set<TrackModel>();
 
   private constructor() {
-    // AJAX requests for spotify data
-    // Analyse beats and bars
-
     const trackIDs: string[] = [
       '4RVbK6cV0VqWdpCDcx3hiT',
       '3aUFrxO1B8EW63QchEl3wX',
@@ -36,7 +39,7 @@ class MusicService {
       });
   }
 
-  public static getInstance(): MusicService {
+  public static getInstance(): WebAudioService {
     return this._instance || (this._instance = new this());
   }
 
@@ -69,15 +72,22 @@ class MusicService {
     this.playingTrack = track;
 
     Dispatcher.getInstance()
-              .dispatch('PlayingTrackChanged', {
-                playingTrack: this.getPlayingTrack(),
-                childTracks: this.getChildTracks(),
+              .dispatch(FYPEvent.PlayingTrackChanged, {
+                playingTrack: this.playingTrack,
+                childTracks: this.childTracks,
               });
   }
 
   public getChildTracks() {
     return this.childTracks;
   }
+
+  protected getExportState() {
+    return {
+      playingTrack: this.getPlayingTrack(),
+      childTracks: this.getChildTracks(),
+    };
+  }
 }
 
-export default MusicService;
+export default WebAudioService;

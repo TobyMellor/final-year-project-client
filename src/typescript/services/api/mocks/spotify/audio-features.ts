@@ -30,7 +30,7 @@ export function getAudioFeaturesMock(ID?: string) {
     const mockObjects = mocks.map(mock => JSON.parse(mock));
     const mockByID = mockObjects.find(mockObject => mockObject.id === ID) || null;
 
-    if (!mockByID) throw Error('Could not find the desired Mock');
+    if (!mockByID) throw new Error('Could not find the desired Mock!');
 
     return mockByID;
   }

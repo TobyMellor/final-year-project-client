@@ -1,3 +1,5 @@
+import { FYPEvent } from '../types/enums';
+
 export type CallbackFn = (data: any) => void;
 
 class DispatcherEvent {
@@ -34,6 +36,10 @@ class DispatcherEvent {
 
       return bindedCallbackFn(data);
     });
+  }
+
+  public getListenerCount(): number {
+    return this.callbackFns.length;
   }
 }
 

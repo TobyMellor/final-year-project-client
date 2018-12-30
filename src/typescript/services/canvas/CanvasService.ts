@@ -1,13 +1,17 @@
 /**
- * Initial Canvas/WebGL Setup
+ * Canvas Service
+ *
+ * Handles everything to do with the canvas,
+ * including animations, WebGL, circles,
+ * branches, etc.
  */
 
 import Dispatcher from '../../events/Dispatcher';
 import TrackModel from '../../models/audio-analysis/Track';
-import SongCircle from '../canvas/drawables/SongCircle';
 import Scene from '../canvas/drawables/Scene';
 import * as DrawableFactory from '../../factories/drawable';
 import * as conversions from './drawables/utils/conversions';
+import { FYPEvent } from '../../types/enums';
 
 class CanvasService {
   private static _instance: CanvasService = null;
@@ -17,9 +21,9 @@ class CanvasService {
   private constructor(canvas: HTMLCanvasElement) {
     const scene = this.scene = Scene.getInstance(canvas);
 
-    // Once we've loaded the first songs from Spotify, display the song circles
+    // Once we've loaded and analyzed the playing track, display the song circles
     Dispatcher.getInstance()
-              .on('PlayingTrackChanged', this, this.setSongCircles);
+              .on(FYPEvent.PlayingTrackBranchesAnalyzed, this, this.setSongCircles);
 
     const render = (now: number) => {
       if (Math.random() < 0.05) {
@@ -53,6 +57,9 @@ class CanvasService {
                                                    childTrack,
                                                    percentage);
     });
+
+    Dispatcher.getInstance()
+              .dispatch(FYPEvent.PlayingTrackRenderered);
   }
 
   public getScene() {

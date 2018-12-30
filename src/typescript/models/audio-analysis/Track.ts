@@ -1,14 +1,12 @@
 import AlbumModel, { Input as AlbumInput } from '../Album';
 import AudioFeaturesModel from '../audio-features/AudioFeatures';
 import AudioAnalysisModel from './AudioAnalysis';
-import BranchModel from '../branches/Branch';
 import * as trackFactory from '../../factories/track';
 
 export type Input = {
   album: AlbumModel | AlbumInput;
   audioFeatures?: AudioFeaturesModel;
   audioAnalysis?: AudioAnalysisModel;
-  branches?: BranchModel[];
   duration_ms: number;
   explicit: boolean;
   id: string;
@@ -33,7 +31,6 @@ class TrackModel {
     album,
     audioFeatures,
     audioAnalysis,
-    branches,
     duration_ms,
     explicit,
     id,
@@ -103,12 +100,6 @@ class TrackModel {
 
   public getURI() {
     return this.URI;
-  }
-
-  public async getBranches(): Promise<BranchModel[]> {
-    const audioAnalysis = await this.getAudioAnalysis();
-
-    return audioAnalysis.getBranches();
   }
 }
 

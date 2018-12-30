@@ -4,6 +4,7 @@ import WorldPoint from '../services/canvas/drawables/points/WorldPoint';
 import Scene from '../services/canvas/drawables/Scene';
 import BezierCurve from '../services/canvas/drawables/BezierCurve';
 import BranchModel from '../models/branches/Branch';
+import BranchService from '../services/branch/BranchService';
 
 export async function renderParentSongCircle(scene: Scene, track: TrackModel): Promise<SongCircle> {
   const pointOnCircle = WorldPoint.getPoint(0, 0);
@@ -16,7 +17,8 @@ export async function renderParentSongCircle(scene: Scene, track: TrackModel): P
                                           lineWidth,
                                           0xFFFFFF);
 
-  const branches = await track.getBranches();
+  const branchService = await BranchService.getInstance();
+  const branches = await branchService.getBranches();
   branches.forEach(branch => renderBezierCurves(scene, parentSongCircle, branch));
 
   return parentSongCircle;

@@ -5,7 +5,7 @@ import SegmentModel from './Segment';
 import BranchModel from '../branches/Branch';
 import * as trackFactory from '../../factories/track';
 import TrackModel from './Track';
-import MusicService from '../../services/music/MusicService';
+import WebAudioService from '../../services/web-audio/WebAudioService';
 
 interface Input extends GetAnAudioAnalysisResponse {
   trackID: string;
@@ -34,7 +34,6 @@ class AudioAnalysisModel {
   private bars: BarModel[];
   private beats: BeatModel[];
   private segments: SegmentModel[];
-  private branches?: BranchModel[];
 
   constructor({ track, bars, beats, segments, trackID }: Input) {
     this.trackID = trackID;
@@ -69,19 +68,9 @@ class AudioAnalysisModel {
     this.segments = segments.map(segment => new SegmentModel(segment));
   }
 
-  public async getBranches(): Promise<BranchModel[]> {
-    return this.branches
-      ? Promise.resolve(this.branches)
-      : trackFactory.addBranches(this);
-  }
-
-  public setBranches(branches: BranchModel[]) {
-    this.branches = branches;
-  }
-
   public getTrack(): TrackModel | null {
-    const musicService = MusicService.getInstance();
-    const track = musicService.getTrack(this.trackID);
+    const webAudioService = WebAudioService.getInstance();
+    const track = webAudioService.getTrack(this.trackID);
 
     return track;
   }
