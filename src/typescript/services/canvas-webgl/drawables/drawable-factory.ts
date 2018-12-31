@@ -1,6 +1,6 @@
 import CanvasService from '../CanvasService';
 import SongCircle from './SongCircle';
-import Track from '../../../models/Track';
+import Track from '../../../models/audio-analysis/Track';
 import WorldPoint from './points/WorldPoint';
 
 export function createParentSongCircle(track: Track): SongCircle {
@@ -43,7 +43,7 @@ export function createChildSongCircle(
 
 function getRadiusForSong(parentSongCircle: SongCircle, childTrack: Track): number {
   const parentTrack = parentSongCircle.getTrack();
-  const relativeSize = childTrack.getDurationMs() / parentTrack.getDurationMs();
+  const relativeSize = childTrack.getDuration().ms / parentTrack.getDuration().ms;
 
   return relativeSize * parentSongCircle.getRadius();
 }

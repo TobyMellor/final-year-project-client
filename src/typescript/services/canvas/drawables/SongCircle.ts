@@ -1,4 +1,4 @@
-import Track from '../../../models/Track';
+import Track from '../../../models/audio-analysis/Track';
 import WorldPoint from './points/WorldPoint';
 import Scene from './Scene';
 import * as conversions from './utils/conversions';
@@ -34,7 +34,7 @@ class SongCircle {
     // So, give smaller circles a smaller Z
     // One trillion isn't special here, it's just making Z small
     const oneTrillion = 1000000000;
-    this.center.z = Scene.Z_BASE_DISTANCE - track.getDurationMs() / oneTrillion;
+    this.center.z = Scene.Z_BASE_DISTANCE - track.getDuration().ms / oneTrillion;
 
     this.renderCircle(scene, track, center, radius, backgroundColour);
     this.renderCircleOutline(scene, center, radius, lineWidth);

@@ -1,10 +1,12 @@
 import Scene from './Scene';
 import SongCircle from './SongCircle';
 import WorldPoint from './points/WorldPoint';
+import BranchModel from '../../../models/branches/Branch';
 
-class Branch {
+class BezierCurve {
   private scene: Scene;
   private songCircle: SongCircle;
+  private branch: BranchModel;
   private fromPercentage: number;
   private toPercentage: number;
   private lineWidth: number;
@@ -12,6 +14,7 @@ class Branch {
   constructor(
     scene: Scene,
     songCircle: SongCircle,
+    branch: BranchModel,
     fromPercentage: number,
     toPercentage: number,
     lineWidth: number,
@@ -20,6 +23,7 @@ class Branch {
     this.fromPercentage = fromPercentage;
     this.toPercentage = toPercentage;
     this.lineWidth = lineWidth;
+    this.branch = branch;
 
     this.renderBezierCurve(scene, songCircle, fromPercentage, toPercentage, lineWidth);
   }
@@ -56,6 +60,10 @@ class Branch {
 
     scene.add(bezierCurve);
   }
+
+  public getBranch(): BranchModel {
+    return this.branch;
+  }
 }
 
-export default Branch;
+export default BezierCurve;

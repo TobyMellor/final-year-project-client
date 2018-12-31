@@ -1,9 +1,9 @@
-import Album from '../../../models/Album';
+import AlbumModel from '../../../models/Album';
 import SpotifyAPI from './SpotifyAPI';
 import Request from '../Request';
 import { GetAnAlbumResponse } from '../../../types/spotify-responses';
 
-export class GetAnAlbum extends Request {
+class GetAnAlbum extends Request {
   private id: number;
 
   constructor(id: number) {
@@ -12,15 +12,15 @@ export class GetAnAlbum extends Request {
     this.id = id;
   }
 
-  static async request(id: number): Promise<Album> {
+  static async request(id: number): Promise<AlbumModel> {
     const response = <GetAnAlbumResponse> await SpotifyAPI.get(
       new GetAnAlbum(id),
     );
 
-    return new Album(response);
+    return new AlbumModel(response);
   }
 
-  async mockResponse(): Promise<Album> {
+  async mockResponse(): Promise<AlbumModel> {
     return require('../mocks/spotify/albums').getAnAlbumMock();
   }
 
@@ -28,3 +28,5 @@ export class GetAnAlbum extends Request {
     return `albums/${this.id}`;
   }
 }
+
+export default GetAnAlbum;

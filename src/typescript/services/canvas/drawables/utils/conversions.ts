@@ -1,4 +1,5 @@
 import Scene from '../Scene';
+import { TimeIdentifier } from '../../../../types/general';
 
 export function degreesToRadians(degrees: number) {
   const radians = degrees * (Math.PI / 180);
@@ -49,4 +50,34 @@ export function worldWidthToAbsoluteWidth(
   const absoluteCircleWidth = worldCircleWidth * gl.canvas.width / window.devicePixelRatio;
 
   return absoluteCircleWidth;
+}
+
+export function decimalToPercentage(decimal: number): number {
+  return decimal * 100;
+}
+
+export function getRandomInteger(): number {
+  return Math.round(Math.random() * 100);
+}
+
+export function secondsToMilliseconds(seconds: number): number {
+  return seconds * 1000;
+}
+
+export function millisecondsToSeconds(ms: number): number {
+  return ms / 1000;
+}
+
+export function getTimeIdentifierFromSeconds(secs: number): TimeIdentifier {
+  return {
+    secs,
+    ms: secondsToMilliseconds(secs),
+  };
+}
+
+export function getTimeIdentifierFromMilliseconds(ms: number): TimeIdentifier {
+  return {
+    ms,
+    secs: millisecondsToSeconds(ms),
+  };
 }

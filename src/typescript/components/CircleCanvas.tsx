@@ -1,6 +1,7 @@
 import * as React from 'react';
 import CanvasService from '../services/canvas/CanvasService';
-import MusicService from '../services/music/MusicService';
+import WebAudioService from '../services/web-audio/WebAudioService';
+import BranchService from '../services/branch/BranchService';
 
 interface CircleCanvasProps {}
 
@@ -12,8 +13,14 @@ class CircleCanvas extends React.Component {
   componentDidMount() {
     const canvas: HTMLCanvasElement = this.getCanvas();
 
-    CanvasService.getInstance(canvas);
-    MusicService.getInstance();
+    // @ts-ignore This is for testing
+    window.CanvasService = CanvasService.getInstance(canvas);
+
+    // @ts-ignore This is for testing
+    window.WebAudioService = WebAudioService.getInstance();
+
+    // @ts-ignore This is for testing
+    window.BranchService = BranchService.getInstance();
   }
 
   render() {
