@@ -10,12 +10,11 @@ class BeatQueueManager {
 
   public static add(audioContext: AudioContext, beats: BeatModel[]): QueuedBeatModel[] {
     const lastSubmittedCurrentTime = this.getLastSubmittedCurrentTime(audioContext);
-    const lastBeatStartSecs = this.getLastBeatStartSecs();
+    let secondsSinceFirstBeat = 0;
 
     const queuedBeats = beats.map((beat) => {
-      const thisBeatStartSecs = beat.getStart().secs;
-      const secondsSinceFirstBeat = thisBeatStartSecs - lastBeatStartSecs;
       const submittedCurrentTime = lastSubmittedCurrentTime + secondsSinceFirstBeat;
+      secondsSinceFirstBeat += beat.getDurationSecs();
 
       return new QueuedBeatModel({
         beat,
@@ -28,7 +27,7 @@ class BeatQueueManager {
     return queuedBeats;
   }
 
-  private static last(): QueuedBeatModel {
+  public static last(): QueuedBeatModel {
     return this.queuedBeats[this.queuedBeats.length - 1];
   }
 
@@ -49,8 +48,7 @@ class BeatQueueManager {
     if (this.queuedBeats.length) {
       return this.last()
                  .getBeat()
-                 .getStart()
-                 .secs;
+                 .getStartSecs();
     }
 
     return 0;

@@ -17,12 +17,20 @@ abstract class TimeIntervalModel {
     this.confidence = confidence;
   }
 
-  public getStart(): TimeIdentifier {
-    return this.start;
+  public getStartMs(): number {
+    return this.start.ms;
   }
 
-  public getDuration(): TimeIdentifier {
-    return this.duration;
+  public getStartSecs(): number {
+    return this.start.secs;
+  }
+
+  public getDurationMs(): number {
+    return this.duration.ms;
+  }
+
+  public getDurationSecs(): number {
+    return this.duration.secs;
   }
 
   public getPercentageInTrack(trackDuration: TimeIdentifier): number {

@@ -1,20 +1,16 @@
 import BranchModel, { Input as BranchInput } from './Branch';
+import BeatModel from '../audio-analysis/Beat';
 
-class FowardBranchModel extends BranchModel {
+class ForwardBranchModel extends BranchModel {
+  protected originBeat: BeatModel;
+  protected destinationBeat: BeatModel;
+
   constructor(input: BranchInput) {
-    const originBeatStartMs = input.originBeat.getStart().ms;
-    const destinationBeatStartMs = input.destinationBeat.getStart().ms;
-
-    if (originBeatStartMs === destinationBeatStartMs) {
-      throw new Error('Attempted to create a Branch leading to the same place!');
-    }
-
-    if (originBeatStartMs > destinationBeatStartMs) {
-      throw new Error('Attempted to create a Forward Branch that\'s going backwards!');
-    }
-
     super(input);
+
+    this.originBeat = input.earliestBeat;
+    this.destinationBeat = input.latestBeat;
   }
 }
 
-export default FowardBranchModel;
+export default ForwardBranchModel;

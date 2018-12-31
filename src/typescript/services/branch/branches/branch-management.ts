@@ -1,9 +1,8 @@
 import TrackModel from '../../../models/audio-analysis/Track';
-import BranchModel from '../../../models/branches/Branch';
-import ForwardBranchModel from '../../../models/branches/ForwardBranch';
-import BackwardBranchModel from '../../../models/branches/BackwardBranch';
 import config from '../../../config';
 import AudioAnalysisModel from '../../../models/audio-analysis/AudioAnalysis';
+import * as branchFactory from '../../../factories/branch';
+import BranchModel from '../../../models/branches/Branch';
 
 export async function generateBranches(track: TrackModel): Promise<BranchModel[]> {
   const audioAnalysis = await track.getAudioAnalysis();
@@ -22,8 +21,8 @@ export function getMockForTrack(audioAnalysis: AudioAnalysisModel): BranchModel[
 
   if (trackID === '4RVbK6cV0VqWdpCDcx3hiT') { // Reborn
     return [
-      new ForwardBranchModel({ originBeat: beats[10], destinationBeat: beats[50] }),
-      new BackwardBranchModel({ originBeat: beats[150], destinationBeat: beats[10] }),
+      ...branchFactory.createBranches(beats[10], beats[50]),
+      ...branchFactory.createBranches(beats[25], beats[150]),
     ];
   }
 

@@ -12,7 +12,6 @@ import Dispatcher from '../../events/Dispatcher';
 import * as trackFactory from '../../factories/track';
 import { FYPEvent } from '../../types/enums';
 import BeatModel from '../../models/audio-analysis/Beat';
-import QueuedBeatModel from '../../models/web-audio/QueuedBeat';
 import BeatQueueManager from './BeatQueueManager';
 
 class WebAudioService {
@@ -111,7 +110,7 @@ class WebAudioService {
     this.audioBuffer = audioBuffer;
 
     const SCHEDULE_BUFFER_COUNT = 2;
-    this.dispatchNextBeatsRequest(SCHEDULE_BUFFER_COUNT);
+    this.dispatchNextBeatsRequest(null, SCHEDULE_BUFFER_COUNT);
   }
 
   private async queueBeatsForPlaying({ beats }: { beats: BeatModel[] }) {
@@ -127,12 +126,14 @@ class WebAudioService {
 
       lastBufferSource = this.playSample(this.audioBuffer,
                                          queuedBeat.getSubmittedCurrentTime(),
-                                         beat.getStart().secs,
-                                         beat.getDuration().secs);
+                                         beat.getStartSecs(),
+                                         beat.getDurationSecs());
     });
 
     lastBufferSource.onended = () => {
-      this.dispatchNextBeatsRequest();
+      const lastQueuedBeat = BeatQueueManager.last().getBeat();
+
+      this.dispatchNextBeatsRequest(lastQueuedBeat);
     };
   }
 
@@ -152,10 +153,11 @@ class WebAudioService {
   }
 
   // Signal that we're ready to receive beats to play
-  private dispatchNextBeatsRequest(beatBatchCount = 1) {
+  private dispatchNextBeatsRequest(lastQueuedBeat: BeatModel | null, beatBatchCount: number = 1) {
     Dispatcher.getInstance()
               .dispatch(FYPEvent.NextBeatsRequested, {
                 beatBatchCount,
+                lastQueuedBeat,
                 playingTrack: this.playingTrack,
               });
   }

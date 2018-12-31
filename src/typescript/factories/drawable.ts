@@ -51,19 +51,19 @@ export function renderBezierCurves(
   branch: BranchModel,
 ) {
   const trackDuration = songCircle.getTrack().getDuration();
-  const originBeat = branch.getOriginBeat();
-  const destinationBeat = branch.getDestinationBeat();
+  const earliestBeat = branch.getEarliestBeat();
+  const latestBeat = branch.getLatestBeat();
 
-  const originPercentage = originBeat.getPercentageInTrack(trackDuration);
-  const destinationPercentage = destinationBeat.getPercentageInTrack(trackDuration);
+  const earliestPercentage = earliestBeat.getPercentageInTrack(trackDuration);
+  const latestPercentage = latestBeat.getPercentageInTrack(trackDuration);
   const lineWidth = getBezierCurveLineWidth();
 
   // Render the curve
   new BezierCurve(scene,
                   songCircle,
                   branch,
-                  originPercentage,
-                  destinationPercentage,
+                  earliestPercentage,
+                  latestPercentage,
                   lineWidth);
 }
 
