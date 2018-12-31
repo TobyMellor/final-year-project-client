@@ -9,5 +9,11 @@ export enum FYPEvent {
   PlayingTrackBranchesAnalyzed = 'playing_track_branches_analyzed',
 
   // The Playing Track has completed the first render since it was changed
-  PlayingTrackRenderered = 'playing_track_renderered',
+  PlayingTrackRendered = 'playing_track_rendered',
+
+  // The Music Service is requesting the next segment of beats to be queued for future play
+  NextBeatsRequested = 'next_beats_requested',
+
+  // The next beats have been chosen and can be queued for future play
+  BeatsReadyForQueueing = 'beats_ready_for_queueing',
 }

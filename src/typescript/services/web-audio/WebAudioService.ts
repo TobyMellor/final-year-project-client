@@ -12,11 +12,14 @@ import Dispatcher from '../../events/Dispatcher';
 import * as trackFactory from '../../factories/track';
 import { FYPEvent } from '../../types/enums';
 import BeatModel from '../../models/audio-analysis/Beat';
+import QueuedBeatModel from '../../models/web-audio/QueuedBeat';
+import BeatQueueManager from './BeatQueueManager';
 
 class WebAudioService {
   private static _instance: WebAudioService;
 
   private audioContext: AudioContext;
+  private audioBuffer: AudioBuffer;
 
   private tracks: TrackModel[] = [];
   private playingTrack: TrackModel = null;
@@ -24,6 +27,7 @@ class WebAudioService {
 
   private constructor() {
     const AudioContext = (<any> window).AudioContext || (<any> window).webkitAudioContext;
+
     this.audioContext = new AudioContext();
 
     const trackIDs: string[] = [
@@ -46,7 +50,11 @@ class WebAudioService {
 
     // Once we've loaded the track, analyzed it, and rendered the visuals
     Dispatcher.getInstance()
-              .on(FYPEvent.PlayingTrackRenderered, this, this.startPlayingTrack);
+              .on(FYPEvent.PlayingTrackRendered, this, this.loadPlayingTrack);
+
+    // When the Branch Service has given us new beats
+    Dispatcher.getInstance()
+              .on(FYPEvent.BeatsReadyForQueueing, this, this.queueBeatsForPlaying);
   }
 
   public static getInstance(): WebAudioService {
@@ -92,36 +100,64 @@ class WebAudioService {
     return this.childTracks;
   }
 
-  private async startPlayingTrack() {
+  private async loadPlayingTrack() {
     const trackID = this.playingTrack.getID();
-    const audioAnalysis = await this.playingTrack.getAudioAnalysis();
 
     // Get the Audio Buffer for the corresponding mp3 file
     const response = await fetch(`tracks/${trackID}.mp3`);
     const arrayBuffer = await response.arrayBuffer();
     const audioBuffer = await this.audioContext.decodeAudioData(arrayBuffer);
 
-    audioAnalysis
-      .getBeats()
-      .map((beat: BeatModel) => {
-        return this.playSample(audioBuffer,
-                               this.audioContext.currentTime + beat.getStart().secs,
-                               beat.getStart().secs,
-                               beat.getDuration().secs);
-      });
+    this.audioBuffer = audioBuffer;
+
+    const SCHEDULE_BUFFER_COUNT = 2;
+    this.dispatchNextBeatsRequest(SCHEDULE_BUFFER_COUNT);
   }
 
-  private async playSample(
+  private async queueBeatsForPlaying({ beats }: { beats: BeatModel[] }) {
+    if (!beats || beats.length === 0) {
+      throw new Error('Attempted to request no beats!');
+    }
+
+    const queuedBeats = BeatQueueManager.add(this.audioContext, beats);
+    let lastBufferSource: AudioBufferSourceNode;
+
+    queuedBeats.forEach((queuedBeat) => {
+      const beat = queuedBeat.getBeat();
+
+      lastBufferSource = this.playSample(this.audioBuffer,
+                                         queuedBeat.getSubmittedCurrentTime(),
+                                         beat.getStart().secs,
+                                         beat.getDuration().secs);
+    });
+
+    lastBufferSource.onended = () => {
+      this.dispatchNextBeatsRequest();
+    };
+  }
+
+  private playSample(
     audioBuffer: AudioBuffer,
     when?: number,
     offset?: number,
     duration?: number,
-  ) {
+  ): AudioBufferSourceNode {
     const source = this.audioContext.createBufferSource();
 
     source.buffer = audioBuffer;
     source.connect(this.audioContext.destination);
     source.start(when, offset, duration);
+
+    return source;
+  }
+
+  // Signal that we're ready to receive beats to play
+  private dispatchNextBeatsRequest(beatBatchCount = 1) {
+    Dispatcher.getInstance()
+              .dispatch(FYPEvent.NextBeatsRequested, {
+                beatBatchCount,
+                playingTrack: this.playingTrack,
+              });
   }
 }
 

@@ -59,7 +59,7 @@ class CanvasService {
     });
 
     Dispatcher.getInstance()
-              .dispatch(FYPEvent.PlayingTrackRenderered);
+              .dispatch(FYPEvent.PlayingTrackRendered);
   }
 
   public getScene() {
