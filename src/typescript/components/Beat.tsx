@@ -6,9 +6,14 @@ export interface BeatProps {
   isEndOfBar: boolean;
   timbreNormalized: number;
   loudnessNormalized: number;
+  increaseHighestZIndex: () => number;
 }
 
-class Beat extends React.Component<BeatProps> {
+interface BeatState {
+  hoverCount: number;
+}
+
+class Beat extends React.Component<BeatProps, BeatState> {
   constructor(props: BeatProps) {
     super(props);
 
@@ -18,6 +23,10 @@ class Beat extends React.Component<BeatProps> {
         || !this.isNumberNormalized(loudnessNormalized)) {
       throw new Error('Attempted to render beats from un-normalized values!');
     }
+
+    this.state = {
+      hoverCount: 0,
+    };
   }
 
   componentDidMount() {
@@ -34,7 +43,9 @@ class Beat extends React.Component<BeatProps> {
     });
 
     return (
-      <div className={`beat ${barPadding}`}>
+      <div className={`beat ${barPadding}`}
+           style={{ zIndex: this.state.hoverCount }}
+           onMouseEnter={this.increaseHoverCount.bind(this)}>
         <span className="circle circle-hollow"></span>
         <span className={`circle circle-solid ${circleColour} ${circleSize}`}></span>
       </div>
@@ -82,6 +93,16 @@ class Beat extends React.Component<BeatProps> {
 
   private isNumberNormalized(number: number): boolean {
     return 0 <= number && number <= 1;
+  }
+
+  private increaseHoverCount() {
+    const highestZIndex = this.props.increaseHighestZIndex();
+
+    this.setState(({ hoverCount }) => {
+      return {
+        hoverCount: highestZIndex,
+      };
+    });
   }
 }
 

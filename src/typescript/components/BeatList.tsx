@@ -10,9 +10,17 @@ export interface BeatListProps {
   }[];
 }
 
-class BeatList extends React.Component<BeatListProps> {
+interface BeatListState {
+  highestZIndex: number;
+}
+
+class BeatList extends React.Component<BeatListProps, BeatListState> {
   constructor(props: BeatListProps) {
     super(props);
+
+    this.state = {
+      highestZIndex: 0,
+    };
   }
 
   componentDidMount() {
@@ -31,6 +39,7 @@ class BeatList extends React.Component<BeatListProps> {
         beatsProps.push({
           isStartOfBar: i === 0,
           isEndOfBar: i === beats.length - 1,
+          increaseHighestZIndex: this.increaseHighestZIndex.bind(this),
           ...beat,
         });
       }
@@ -38,13 +47,13 @@ class BeatList extends React.Component<BeatListProps> {
 
     // Convert beats into beat elements
     const beatElements = beatsProps.map((beatProp, index) => {
-      const { isStartOfBar, isEndOfBar, timbreNormalized, loudnessNormalized } = beatProp;
 
       return <Beat key={index}
-                   isStartOfBar={isStartOfBar}
-                   isEndOfBar={isEndOfBar}
-                   timbreNormalized={timbreNormalized}
-                   loudnessNormalized={loudnessNormalized} />;
+                   isStartOfBar={beatProp.isStartOfBar}
+                   isEndOfBar={beatProp.isEndOfBar}
+                   timbreNormalized={beatProp.timbreNormalized}
+                   loudnessNormalized={beatProp.loudnessNormalized}
+                   increaseHighestZIndex={beatProp.increaseHighestZIndex} />;
     });
 
     return (
@@ -52,6 +61,16 @@ class BeatList extends React.Component<BeatListProps> {
         {beatElements}
       </div>
     );
+  }
+
+  private increaseHighestZIndex(): number {
+    this.setState(({ highestZIndex }) => {
+      return {
+        highestZIndex: highestZIndex + 1,
+      };
+    });
+
+    return this.state.highestZIndex;
   }
 }
 

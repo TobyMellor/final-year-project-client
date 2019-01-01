@@ -41,6 +41,9 @@ canvas {
       height: 64px;
       flex: 0 0 auto;
       margin-left: -16px;
+      cursor: pointer;
+      bottom: 0;
+      transition: bottom 0.25s ease;
 
       // Every bar should be separated
       &.bar-start { margin-left: 8px;  }
@@ -49,6 +52,9 @@ canvas {
       // First and last child should have extra room
       &:first-child { margin-left: 16px;  }
       &:last-child  { margin-right: 16px; }
+
+      // Animate a move upwards when hovering
+      &:hover { bottom: 8px; }
 
       .circle {
         display: inline-block;
