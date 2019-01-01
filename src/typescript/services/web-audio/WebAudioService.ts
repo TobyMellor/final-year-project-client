@@ -13,6 +13,7 @@ import * as trackFactory from '../../factories/track';
 import { FYPEvent } from '../../types/enums';
 import BeatModel from '../../models/audio-analysis/Beat';
 import BeatQueueManager from './BeatQueueManager';
+import config from '../../config';
 
 class WebAudioService {
   private static _instance: WebAudioService;
@@ -47,13 +48,15 @@ class WebAudioService {
         this.setPlayingTrack(tracks[0]);
       });
 
-    // Once we've loaded the track, analyzed it, and rendered the visuals
-    Dispatcher.getInstance()
-              .on(FYPEvent.PlayingTrackRendered, this, this.loadPlayingTrack);
+    if (config.fyp.shouldPlayMusic) {
+      // Once we've loaded the track, analyzed it, and rendered the visuals
+      Dispatcher.getInstance()
+                .on(FYPEvent.PlayingTrackRendered, this, this.loadPlayingTrack);
 
-    // When the Branch Service has given us new beats
-    Dispatcher.getInstance()
-              .on(FYPEvent.BeatsReadyForQueueing, this, this.queueBeatsForPlaying);
+      // When the Branch Service has given us new beats
+      Dispatcher.getInstance()
+                .on(FYPEvent.BeatsReadyForQueueing, this, this.queueBeatsForPlaying);
+    }
   }
 
   public static getInstance(): WebAudioService {
