@@ -4,10 +4,12 @@ import Beat, { BeatProps } from './Beat';
 export interface BeatListProps {
   bars: {
     beats: {
+      order: number,
       timbreNormalized: number,
       loudnessNormalized: number,
     }[],
   }[];
+  shouldInvertScrollbar?: boolean;
 }
 
 interface BeatListState {
@@ -23,12 +25,9 @@ class BeatList extends React.Component<BeatListProps, BeatListState> {
     };
   }
 
-  componentDidMount() {
-    //
-  }
-
   render() {
-    const { bars } = this.props;
+    const { shouldInvertScrollbar, bars } = this.props;
+    const invertScrollbarClassName = shouldInvertScrollbar ? 'invert-scrollbar' : '';
     const beatsProps: BeatProps[] = [];
 
     // Add "isStartOfBar" and "isEndOfBar" to each beat
@@ -46,19 +45,22 @@ class BeatList extends React.Component<BeatListProps, BeatListState> {
     });
 
     // Convert beats into beat elements
-    const beatElements = beatsProps.map((beatProp, index) => {
+    const beatElements = beatsProps.map((beatProp) => {
 
-      return <Beat key={index}
+      return <Beat key={beatProp.order}
                    isStartOfBar={beatProp.isStartOfBar}
                    isEndOfBar={beatProp.isEndOfBar}
+                   order={beatProp.order}
                    timbreNormalized={beatProp.timbreNormalized}
                    loudnessNormalized={beatProp.loudnessNormalized}
                    increaseHighestZIndex={beatProp.increaseHighestZIndex} />;
     });
 
     return (
-      <div className="beats">
-        {beatElements}
+      <div className={`horizontal-scrollbar ${invertScrollbarClassName}`}>
+        <div className="beats">
+          {beatElements}
+        </div>
       </div>
     );
   }

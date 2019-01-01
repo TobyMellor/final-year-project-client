@@ -4,6 +4,7 @@ import classNames from 'classnames';
 export interface BeatProps {
   isStartOfBar: boolean;
   isEndOfBar: boolean;
+  order: number;
   timbreNormalized: number;
   loudnessNormalized: number;
   increaseHighestZIndex: () => number;
@@ -29,25 +30,32 @@ class Beat extends React.Component<BeatProps, BeatState> {
     };
   }
 
-  componentDidMount() {
-    //
-  }
-
   render() {
-    const { timbreNormalized, loudnessNormalized, isStartOfBar, isEndOfBar } = this.props;
+    const {
+      order,
+      timbreNormalized,
+      loudnessNormalized,
+      isStartOfBar,
+      isEndOfBar,
+    } = this.props;
+
     const circleColour = this.getCircleColour(timbreNormalized);
     const circleSize = this.getCircleSize(loudnessNormalized);
-    const barPadding = classNames({
+    const circleSolidClassNames = `circle circle-solid ${circleColour} ${circleSize}`;
+    const barPaddingClassName = classNames({
       'bar-start': isStartOfBar,
       'bar-end': isEndOfBar,
     });
 
     return (
-      <div className={`beat ${barPadding}`}
+      <div className={`beat ${barPaddingClassName}`}
            style={{ zIndex: this.state.hoverCount }}
            onMouseEnter={this.increaseHoverCount.bind(this)}>
         <span className="circle circle-hollow"></span>
-        <span className={`circle circle-solid ${circleColour} ${circleSize}`}></span>
+        <span className={circleSolidClassNames}></span>
+        <div className="beat-order-container">
+          <span>{order}</span>
+        </div>
       </div>
     );
   }
@@ -98,10 +106,8 @@ class Beat extends React.Component<BeatProps, BeatState> {
   private increaseHoverCount() {
     const highestZIndex = this.props.increaseHighestZIndex();
 
-    this.setState(({ hoverCount }) => {
-      return {
-        hoverCount: highestZIndex,
-      };
+    this.setState({
+      hoverCount: highestZIndex,
     });
   }
 }
