@@ -114,15 +114,17 @@ class Beat extends React.Component<BeatProps, BeatState> {
   }
 
   private handleClick() {
-    this.scrollBeatIntoView();
-
     this.props.signalClickToParentFn(this.props.parentComponent,
                                      this.props.order,
                                      this.handleParentScroll.bind(this));
+
+    // Scroll to the circle, after all animations have finished
+    const EXPAND_ANIMATION_TIME_MS = 400;
+    setTimeout(() => this.scrollBeatIntoView(), EXPAND_ANIMATION_TIME_MS);
   }
 
   private handleParentScroll() {
-    const SCROLL_BACK_AFTER_SECS = 2500;
+    const SCROLL_BACK_AFTER_MS = 2500;
     const timer = setTimeout(
       () => {
         if (!this.props.isSelected) {
@@ -131,7 +133,7 @@ class Beat extends React.Component<BeatProps, BeatState> {
 
         this.scrollBeatIntoView();
       },
-      SCROLL_BACK_AFTER_SECS);
+      SCROLL_BACK_AFTER_MS);
 
     this.setState(({ scrollReturnTimer }) => {
       clearTimeout(scrollReturnTimer);
