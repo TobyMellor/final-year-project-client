@@ -1,16 +1,18 @@
 import * as React from 'react';
 import Beat from './Beat';
 import cx from 'classnames';
+import { RawBar } from './App';
+import BeatList from './BeatList';
 
-export interface BarProps {
-  order: number;
-  beats: {
-    order: number,
-    timbreNormalized: number,
-    loudnessNormalized: number,
-  }[];
-  signalClickToParentFn: (barOrder: number, beatOrder: number) => void;
+export interface BarProps extends RawBar {
+  signalClickToParentFn: (
+    parentComponent: BeatList,
+    barOrder: number,
+    beatOrder: number,
+    scrollCallbackFn: () => void,
+  ) => void;
   selectedBeatOrder: number;
+  parentComponent: BeatList;
 }
 
 interface BarState {
@@ -39,7 +41,8 @@ class Bar extends React.Component<BarProps, BarState> {
                    loudnessNormalized={beat.loudnessNormalized}
                    isSelected={isBeatSelected}
                    increaseHighestZIndexFn={this.increaseHighestZIndex.bind(this)}
-                   signalClickToParentFn={this.signalClickToParent.bind(this, beat.order)} />;
+                   signalClickToParentFn={this.signalClickToParent}
+                   parentComponent={this} />;
     });
 
     return (
@@ -67,8 +70,13 @@ class Bar extends React.Component<BarProps, BarState> {
     return this.state.highestZIndex;
   }
 
-  private signalClickToParent(beatOrder: number) {
-    this.props.signalClickToParentFn(this.props.order, beatOrder);
+  private signalClickToParent(thisComponent: Bar, beatOrder: number, scrollCallbackFn: () => void) {
+    const props = thisComponent.props;
+
+    props.signalClickToParentFn(props.parentComponent,
+                                props.order,
+                                beatOrder,
+                                scrollCallbackFn);
   }
 }
 

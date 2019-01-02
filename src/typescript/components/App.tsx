@@ -53,3 +53,14 @@ export default function ({}: AppProps) {
     </React.Fragment>
   );
 }
+
+export interface RawBeat {
+  order: number;
+  timbreNormalized: number;
+  loudnessNormalized: number;
+}
+
+export interface RawBar {
+  order: number;
+  beats: RawBeat[];
+}

@@ -29,13 +29,24 @@ canvas {
   box-shadow: 0px 0px 15px -5px rgba(0,0,0,0.75);
 
   .horizontal-scrollbar {
+    &.hidden .bars {
+      height: 0;
+      overflow-x: hidden;
+    }
+
     .bars {
       display: flex;
       flex-wrap: nowrap;
       overflow-x: auto;
       padding-top: 10px;
       height: 64px + 46px; // Height of beat, plus extra room
-      transition: opacity 0.25s ease;
+      transition: opacity 0.25s ease, height 0.5s ease;
+
+      scrollbar-width: none;
+      &::-webkit-scrollbar {
+        width: 0px;
+        background: transparent;
+      }
 
       &.selected {
         .bar {

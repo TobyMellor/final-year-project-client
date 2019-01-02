@@ -1,20 +1,27 @@
 import * as React from 'react';
 import cx from 'classnames';
+import { RawBeat } from './App';
+import Bar from './Bar';
 
-export interface BeatProps {
-  order: number;
-  timbreNormalized: number;
-  loudnessNormalized: number;
-  increaseHighestZIndexFn: () => number;
+export interface BeatProps extends RawBeat {
   isSelected: boolean;
-  signalClickToParentFn: (beatOrder: number) => void;
+  increaseHighestZIndexFn: () => number;
+  signalClickToParentFn: (
+    parentComponent: Bar,
+    beatOrder: number,
+    scrollCallbackFn: () => void,
+  ) => void;
+  parentComponent: Bar;
 }
 
 interface BeatState {
   hoverCount: number;
+  scrollReturnTimer: NodeJS.Timeout | null;
 }
 
 class Beat extends React.Component<BeatProps, BeatState> {
+  private beatElement: React.RefObject<HTMLDivElement>;
+
   constructor(props: BeatProps) {
     super(props);
 
@@ -25,8 +32,10 @@ class Beat extends React.Component<BeatProps, BeatState> {
       throw new Error('Attempted to render beats from un-normalized values!');
     }
 
+    this.beatElement = React.createRef();
     this.state = {
       hoverCount: 0,
+      scrollReturnTimer: null,
     };
   }
 
@@ -39,10 +48,11 @@ class Beat extends React.Component<BeatProps, BeatState> {
     const beatClassName = cx('beat', { selected: this.props.isSelected });
 
     return (
-      <div className={beatClassName}
+      <div ref={this.beatElement}
+           className={beatClassName}
            style={{ zIndex: this.state.hoverCount }}
            onMouseEnter={this.increaseHoverCount.bind(this)}
-           onClick={this.select.bind(this)}>
+           onClick={this.handleClick.bind(this)}>
         <span className="circle circle-hollow"></span>
         <span className={circleSolidClassNames}></span>
         <div className="beat-order-container">
@@ -103,15 +113,40 @@ class Beat extends React.Component<BeatProps, BeatState> {
     });
   }
 
-  private select(e: React.MouseEvent<HTMLDivElement>) {
-    const beatElement: any = e.target;
+  private handleClick() {
+    this.scrollBeatIntoView();
+
+    this.props.signalClickToParentFn(this.props.parentComponent,
+                                     this.props.order,
+                                     this.handleParentScroll.bind(this));
+  }
+
+  private handleParentScroll() {
+    const SCROLL_BACK_AFTER_SECS = 2500;
+    const timer = setTimeout(
+      () => {
+        if (!this.props.isSelected) {
+          return;
+        }
+
+        this.scrollBeatIntoView();
+      },
+      SCROLL_BACK_AFTER_SECS);
+
+    this.setState(({ scrollReturnTimer }) => {
+      clearTimeout(scrollReturnTimer);
+
+      return { scrollReturnTimer: timer };
+    });
+  }
+
+  private scrollBeatIntoView() {
+    const beatElement = this.beatElement.current;
 
     beatElement.scrollIntoView({
       behavior: 'smooth',
       inline: 'center',
     });
-
-    this.props.signalClickToParentFn(this.props.order);
   }
 }
 
