@@ -36,6 +36,7 @@
     "mocha": "^5.2.0",
     "mocha-webpack": "^1.1.0",
     "node-sass": "^4.11.0",
+    "normalize-scss": "^7.0.1",
     "sass-loader": "^7.1.0",
     "sinon": "^6.3.5",
     "source-map-loader": "^0.2.4",
