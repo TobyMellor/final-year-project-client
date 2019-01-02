@@ -1,9 +1,6 @@
 import * as React from 'react';
-import classNames from 'classnames';
 
 export interface BeatProps {
-  isStartOfBar: boolean;
-  isEndOfBar: boolean;
   order: number;
   timbreNormalized: number;
   loudnessNormalized: number;
@@ -31,24 +28,14 @@ class Beat extends React.Component<BeatProps, BeatState> {
   }
 
   render() {
-    const {
-      order,
-      timbreNormalized,
-      loudnessNormalized,
-      isStartOfBar,
-      isEndOfBar,
-    } = this.props;
+    const { order, timbreNormalized, loudnessNormalized } = this.props;
 
     const circleColour = this.getCircleColour(timbreNormalized);
     const circleSize = this.getCircleSize(loudnessNormalized);
     const circleSolidClassNames = `circle circle-solid ${circleColour} ${circleSize}`;
-    const barPaddingClassName = classNames({
-      'bar-start': isStartOfBar,
-      'bar-end': isEndOfBar,
-    });
 
     return (
-      <div className={`beat ${barPaddingClassName}`}
+      <div className="beat"
            style={{ zIndex: this.state.hoverCount }}
            onMouseEnter={this.increaseHoverCount.bind(this)}>
         <span className="circle circle-hollow"></span>

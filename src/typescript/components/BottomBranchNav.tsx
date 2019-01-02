@@ -12,7 +12,7 @@ class BottomBranchNav extends React.Component<BottomBranchNavProps> {
     return (
       <div className="bottom-branch-nav">
         <BeatList bars={this.props.bars} shouldInvertScrollbar={true} />
-        <BeatList bars={this.props.bars} />
+        {/* <BeatList bars={this.props.bars} /> */}
       </div>
     );
   }
