@@ -43,6 +43,15 @@ export default function ({}: AppProps) {
         { order: 16, timbreNormalized: 0.54, loudnessNormalized: 0.65 },
       ],
     },
+    {
+      order: 5,
+      beats: [
+        { order: 17, timbreNormalized: 0.35, loudnessNormalized: 1.00 },
+        { order: 18, timbreNormalized: 0.55, loudnessNormalized: 1.00 },
+        { order: 19, timbreNormalized: 0.23, loudnessNormalized: 0.85 },
+        { order: 20, timbreNormalized: 0.75, loudnessNormalized: 0.12 },
+      ],
+    },
   ];
 
   return (

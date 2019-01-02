@@ -1,4 +1,3 @@
-import 'normalize-scss';
 import '../sass/vendor.scss';
 import '../sass/style.scss';
 

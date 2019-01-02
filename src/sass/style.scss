@@ -1,8 +1,11 @@
 @import 'colours';
 
+$default-font: -apple-system, BlinkMacSystemFont, sans-serif;
+$bold: 600;
+
 body {
   background-color: $white;
-  font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+  font-family: $default-font;
   margin: 0;
   padding: 0;
 }
@@ -15,158 +18,182 @@ canvas {
 .song-circle-text {
   position: absolute;
   color: $white;
-  font-weight: 600;
+  font-weight: $bold;
 }
 
 .bottom-branch-nav {
-  width: 64px * 12;
-  position: sticky;
-  left: 0;
+  max-width: 64px * 12;
+  position: fixed;
   right: 0;
+  left: 0;
   bottom: 0;
-  background-color: $light-white;
-  border-color: $dark-white;
-  box-shadow: 0px 0px 15px -5px rgba(0,0,0,0.75);
 
-  .horizontal-scrollbar {
-    &.hidden .bars {
-      height: 0;
-      overflow-x: hidden;
+  .modal-title {
+    font-size: 24px;
+    font-weight: $bold;
+    color: $text-black;
+    font-family: $default-font;
+  }
+
+  .modal-header {
+    .modal-title {
+      padding-left: 8px;
     }
 
-    .bars {
-      display: flex;
-      flex-wrap: nowrap;
-      overflow-x: auto;
-      padding-top: 10px;
-      height: 64px + 46px; // Height of beat, plus extra room
-      transition: opacity 0.25s ease, height 0.5s ease;
+    .close {
+      padding: 22px;
+    }
+  }
 
-      scrollbar-width: none;
-      &::-webkit-scrollbar {
-        width: 0px;
-        background: transparent;
+  .bottom-branch-nav-body {
+    padding-top: 16px;
+    padding-bottom: 16px;
+
+    .horizontal-scrollbar {
+      &.hidden, &.hidden .bars {
+        height: 0;
+        overflow-x: hidden;
       }
 
-      &.selected {
+      .bars {
+        display: flex;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        padding-top: 10px;
+        height: 64px + 46px; // Height of beat, plus extra room
+        transition: opacity 0.25s ease, height 0.5s ease;
+
+        scrollbar-width: none;
+        &::-webkit-scrollbar {
+          width: 0px;
+          background: transparent;
+        }
+
+        &.selected {
+          .bar {
+            opacity: 0.5;
+
+            &.selected {
+              opacity: 1;
+              margin-left: 16px;
+
+              .beat {
+                opacity: 0.5;
+                margin-left: 2px;
+                margin-right: 2px;
+
+                &:first-child {
+                  margin-left: 0;
+                }
+
+                &:last-child {
+                  margin-right: 0;
+                }
+
+                &.selected {
+                  opacity: 1;
+                  bottom: 10px;
+                }
+              }
+            }
+          }
+        }
+
         .bar {
-          opacity: 0.5;
+          display: inherit;
+          margin-left: 16px + 16px; // Negative -16px margin-left
+          margin-right: 16px;
 
-          &.selected {
-            opacity: 1;
-            margin-left: 16px;
+          .beat {
+            position: relative;
+            width: 64px;
+            height: 64px;
+            flex: 0 0 auto;
+            margin-left: -16px;
+            cursor: pointer;
+            bottom: 0;
+            transition: bottom 0.25s ease, margin 0.25s ease;
 
-            .beat {
-              opacity: 0.5;
-              margin-left: 2px;
-              margin-right: 2px;
+            // Animate a move upwards when hovering
+            &:hover {
+              bottom: 10px;
+            }
 
-              &:first-child {
-                margin-left: 0;
+            &:first-child {
+              .beat-order-container > span {
+                color: $dark-black;
+              }
+            }
+
+            .circle {
+              display: inline-block;
+              border-radius: 50%;
+
+              &.circle-hollow {
+                width: 100%;
+                height: 100%;
+                border: 5px solid $dark-black;
+                background-color: $white;
               }
 
-              &:last-child {
-                margin-right: 0;
-              }
+              &.circle-solid {
+                background-color: $dark-black;
+                position: absolute;
+                margin: auto;
+                top: 0;
+                right: 0;
+                bottom: 0;
+                left: 0;
 
-              &.selected {
-                opacity: 1;
-                bottom: 10px;
+                &.circle-light-purple { background-color: $light-purple; }
+                &.circle-dark-purple  { background-color: $dark-purple;  }
+                &.circle-light-blue   { background-color: $light-blue;   }
+                &.circle-dark-blue    { background-color: $dark-blue;    }
+                &.circle-light-green  { background-color: $light-green;  }
+                &.circle-dark-green   { background-color: $dark-green;   }
+                &.circle-light-yellow { background-color: $light-yellow; }
+                &.circle-dark-yellow  { background-color: $dark-yellow;  }
+                &.circle-light-orange { background-color: $light-orange; }
+                &.circle-dark-orange  { background-color: $dark-orange;  }
+                &.circle-light-red    { background-color: $light-red;    }
+                &.circle-dark-red     { background-color: $dark-red;     }
+
+                &.circle-xs { width: 22px; height: 22px; }
+                &.circle-sm { width: 28px; height: 28px; }
+                &.circle-md { width: 34px; height: 34px; }
+                &.circle-lg { width: 42px; height: 42px; }
+                &.circle-xl { width: 46px; height: 46px; }
+              }
+            }
+
+            .beat-order-container {
+              text-align: center;
+
+              & > span {
+                font-weight: $bold;
+                font-size: 18px;
+                color: $text-black;
               }
             }
           }
         }
       }
 
-      .bar {
-        display: inherit;
-        margin-left: 16px + 16px; // Negative -16px margin-left
-        margin-right: 16px;
-
-        .beat {
-          position: relative;
-          width: 64px;
-          height: 64px;
-          flex: 0 0 auto;
-          margin-left: -16px;
-          cursor: pointer;
-          bottom: 0;
-          transition: bottom 0.25s ease, margin 0.25s ease;
-
-          // Every bar should be separated
-          &.bar-start {
-            margin-left: 8px;
-          }
-
-          &.bar-end {
-            margin-right: 8px;
-          }
-
-          // Animate a move upwards when hovering
-          &:hover {
-            bottom: 10px;
-          }
-
-          .circle {
-            display: inline-block;
-            border-radius: 50%;
-
-            &.circle-hollow {
-              width: 100%;
-              height: 100%;
-              border: 5px solid $dark-black;
-              background-color: $white;
-            }
-
-            &.circle-solid {
-              background-color: $dark-black;
-              position: absolute;
-              margin: auto;
-              top: 0;
-              right: 0;
-              bottom: 0;
-              left: 0;
-
-              &.circle-light-purple { background-color: $light-purple; }
-              &.circle-dark-purple  { background-color: $dark-purple;  }
-              &.circle-light-blue   { background-color: $light-blue;   }
-              &.circle-dark-blue    { background-color: $dark-blue;    }
-              &.circle-light-green  { background-color: $light-green;  }
-              &.circle-dark-green   { background-color: $dark-green;   }
-              &.circle-light-yellow { background-color: $light-yellow; }
-              &.circle-dark-yellow  { background-color: $dark-yellow;  }
-              &.circle-light-orange { background-color: $light-orange; }
-              &.circle-dark-orange  { background-color: $dark-orange;  }
-              &.circle-light-red    { background-color: $light-red;    }
-              &.circle-dark-red     { background-color: $dark-red;     }
-
-              &.circle-xs { width: 22px; height: 22px; }
-              &.circle-sm { width: 28px; height: 28px; }
-              &.circle-md { width: 34px; height: 34px; }
-              &.circle-lg { width: 42px; height: 42px; }
-              &.circle-xl { width: 46px; height: 46px; }
-            }
-          }
-
-          .beat-order-container {
-            text-align: center;
-
-            & > span {
-              font-weight: 500;
-              font-size: 18px;
-              color: $dark-black;
-            }
-          }
-        }
-      }
-    }
-
-    &.invert-scrollbar {
-      transform: rotateX(180deg);
-
-      .beat-order-container {
+      &.invert-scrollbar {
         transform: rotateX(180deg);
+
+        .beat-order-container {
+          transform: rotateX(180deg);
+        }
       }
     }
   }
+}
+
+.modal .modal-title-feedback {
+  color: $text-faded;
+  margin: 10px 0 0 12px;
+  font-size: 18px;
+
+  font-weight: 400;
 }
