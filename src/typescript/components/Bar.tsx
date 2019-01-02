@@ -1,12 +1,16 @@
 import * as React from 'react';
-import Beat, { BeatProps } from './Beat';
+import Beat from './Beat';
+import cx from 'classnames';
 
 export interface BarProps {
+  order: number;
   beats: {
     order: number,
     timbreNormalized: number,
     loudnessNormalized: number,
   }[];
+  signalClickToParentFn: (barOrder: number, beatOrder: number) => void;
+  selectedBeatOrder: number;
 }
 
 interface BarState {
@@ -24,20 +28,33 @@ class Bar extends React.Component<BarProps, BarState> {
 
   render() {
     const { beats } = this.props;
+    const barClassNames = cx('bar', { selected: this.isBarSelected() });
+
     const beatElements = beats.map((beat) => {
+      const isBeatSelected = this.isBeatSelected(beat.order);
 
       return <Beat key={beat.order}
                    order={beat.order}
                    timbreNormalized={beat.timbreNormalized}
                    loudnessNormalized={beat.loudnessNormalized}
-                   increaseHighestZIndex={this.increaseHighestZIndex.bind(this)} />;
+                   isSelected={isBeatSelected}
+                   increaseHighestZIndexFn={this.increaseHighestZIndex.bind(this)}
+                   signalClickToParentFn={this.signalClickToParent.bind(this, beat.order)} />;
     });
 
     return (
-      <div className="bar">
+      <div className={barClassNames}>
         {beatElements}
       </div>
     );
+  }
+
+  private isBarSelected() {
+    return this.props.selectedBeatOrder !== -1;
+  }
+
+  private isBeatSelected(beatOrder: number) {
+    return this.isBarSelected && this.props.selectedBeatOrder === beatOrder;
   }
 
   private increaseHighestZIndex(): number {
@@ -48,6 +65,10 @@ class Bar extends React.Component<BarProps, BarState> {
     });
 
     return this.state.highestZIndex;
+  }
+
+  private signalClickToParent(beatOrder: number) {
+    this.props.signalClickToParentFn(this.props.order, beatOrder);
   }
 }
 

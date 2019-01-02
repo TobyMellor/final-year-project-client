@@ -35,6 +35,37 @@ canvas {
       overflow-x: auto;
       padding-top: 10px;
       height: 64px + 46px; // Height of beat, plus extra room
+      transition: opacity 0.25s ease;
+
+      &.selected {
+        .bar {
+          opacity: 0.5;
+
+          &.selected {
+            opacity: 1;
+            margin-left: 16px;
+
+            .beat {
+              opacity: 0.5;
+              margin-left: 2px;
+              margin-right: 2px;
+
+              &:first-child {
+                margin-left: 0;
+              }
+
+              &:last-child {
+                margin-right: 0;
+              }
+
+              &.selected {
+                opacity: 1;
+                bottom: 10px;
+              }
+            }
+          }
+        }
+      }
 
       .bar {
         display: inherit;
@@ -49,14 +80,21 @@ canvas {
           margin-left: -16px;
           cursor: pointer;
           bottom: 0;
-          transition: bottom 0.25s ease;
+          transition: bottom 0.25s ease, margin 0.25s ease;
 
           // Every bar should be separated
-          &.bar-start { margin-left: 8px;  }
-          &.bar-end   { margin-right: 8px; }
+          &.bar-start {
+            margin-left: 8px;
+          }
+
+          &.bar-end {
+            margin-right: 8px;
+          }
 
           // Animate a move upwards when hovering
-          &:hover { bottom: 10px; }
+          &:hover {
+            bottom: 10px;
+          }
 
           .circle {
             display: inline-block;

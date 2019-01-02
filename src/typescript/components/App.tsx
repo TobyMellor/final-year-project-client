@@ -8,6 +8,7 @@ interface AppProps {}
 export default function ({}: AppProps) {
   const bars = [
     {
+      order: 1,
       beats: [
         { order: 1, timbreNormalized: 0.30, loudnessNormalized: 1.00 },
         { order: 2, timbreNormalized: 0.11, loudnessNormalized: 0.86 },
@@ -16,6 +17,7 @@ export default function ({}: AppProps) {
       ],
     },
     {
+      order: 2,
       beats: [
         { order: 5, timbreNormalized: 0.90, loudnessNormalized: 0.00 },
         { order: 6, timbreNormalized: 1.00, loudnessNormalized: 0.34 },
@@ -24,6 +26,7 @@ export default function ({}: AppProps) {
       ],
     },
     {
+      order: 3,
       beats: [
         { order: 9, timbreNormalized: 0.44, loudnessNormalized: 0.26 },
         { order: 10, timbreNormalized: 0.96, loudnessNormalized: 0.46 },
@@ -32,6 +35,7 @@ export default function ({}: AppProps) {
       ],
     },
     {
+      order: 4,
       beats: [
         { order: 13, timbreNormalized: 0.90, loudnessNormalized: 0.00 },
         { order: 14, timbreNormalized: 1.00, loudnessNormalized: 0.34 },

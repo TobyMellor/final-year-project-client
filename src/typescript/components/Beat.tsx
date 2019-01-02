@@ -1,10 +1,13 @@
 import * as React from 'react';
+import cx from 'classnames';
 
 export interface BeatProps {
   order: number;
   timbreNormalized: number;
   loudnessNormalized: number;
-  increaseHighestZIndex: () => number;
+  increaseHighestZIndexFn: () => number;
+  isSelected: boolean;
+  signalClickToParentFn: (beatOrder: number) => void;
 }
 
 interface BeatState {
@@ -32,12 +35,14 @@ class Beat extends React.Component<BeatProps, BeatState> {
 
     const circleColour = this.getCircleColour(timbreNormalized);
     const circleSize = this.getCircleSize(loudnessNormalized);
-    const circleSolidClassNames = `circle circle-solid ${circleColour} ${circleSize}`;
+    const circleSolidClassNames = cx('circle', 'circle-solid', circleColour, circleSize);
+    const beatClassName = cx('beat', { selected: this.props.isSelected });
 
     return (
-      <div className="beat"
+      <div className={beatClassName}
            style={{ zIndex: this.state.hoverCount }}
-           onMouseEnter={this.increaseHoverCount.bind(this)}>
+           onMouseEnter={this.increaseHoverCount.bind(this)}
+           onClick={this.select.bind(this)}>
         <span className="circle circle-hollow"></span>
         <span className={circleSolidClassNames}></span>
         <div className="beat-order-container">
@@ -91,11 +96,22 @@ class Beat extends React.Component<BeatProps, BeatState> {
   }
 
   private increaseHoverCount() {
-    const highestZIndex = this.props.increaseHighestZIndex();
+    const highestZIndex = this.props.increaseHighestZIndexFn();
 
     this.setState({
       hoverCount: highestZIndex,
     });
+  }
+
+  private select(e: React.MouseEvent<HTMLDivElement>) {
+    const beatElement: any = e.target;
+
+    beatElement.scrollIntoView({
+      behavior: 'smooth',
+      inline: 'center',
+    });
+
+    this.props.signalClickToParentFn(this.props.order);
   }
 }
 
