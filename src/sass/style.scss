@@ -45,6 +45,19 @@ canvas {
     }
   }
 
+  .modal-footer {
+    height: 75px;
+    transition: height 0.25s ease, padding 0.25s ease;
+    justify-content: center;
+
+
+    &.modal-footer-collapsed {
+      border: none;
+      height: 0;
+      padding: 0;
+    }
+  }
+
   .bottom-branch-nav-body {
     padding-top: 16px;
     padding-bottom: 16px;
@@ -121,7 +134,7 @@ canvas {
 
             &:first-child {
               .beat-order-container > span {
-                color: $dark-black;
+                color: $text-black;
               }
             }
 
@@ -172,7 +185,7 @@ canvas {
               & > span {
                 font-weight: $bold;
                 font-size: 18px;
-                color: $text-black;
+                color: $text-faded;
               }
             }
           }
@@ -187,6 +200,28 @@ canvas {
         }
       }
     }
+
+    &.previewing {
+      .horizontal-scrollbar {
+        .bars {
+          .bar {
+            margin: 0;
+
+            &.selected {
+              margin: 0 !important;
+            }
+
+            .beat {
+              margin: 0 16px !important;
+
+              &.selected {
+                bottom: 41px !important;
+              }
+            }
+          }
+        }
+      }
+    }
   }
 }
 
@@ -196,4 +231,40 @@ canvas {
   font-size: 18px;
 
   font-weight: 400;
+}
+
+.btn {
+  font-weight: $bold;
+  padding-left: 16px;
+  padding-right: 16px;
+  border: 1px solid $dark-white;
+  border-bottom: 3px solid $light-black !important;
+  border-radius: 8px;
+
+  &:hover {
+    border-bottom: 2px solid $light-black !important;
+  }
+
+  &.start-fade, &.end-fade {
+    transition: opacity 0.2s ease;
+  }
+
+  &.start-fade {
+    height: 0;
+    opacity: 0;
+  }
+
+  &.end-fade {
+    opacity: 1;
+  }
+
+  &.btn-success {
+    background-color: $dark-green;
+    border-color: $dark-green;
+
+    &:hover {
+      background-color: $light-green;
+      border-color: transparent;
+    }
+  }
 }

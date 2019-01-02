@@ -2,6 +2,7 @@ import * as React from 'react';
 import cx from 'classnames';
 import { RawBeat } from './App';
 import Bar from './Bar';
+import { BottomBranchNavStatus } from './BottomBranchNav';
 
 export interface BeatProps extends RawBeat {
   isSelected: boolean;
@@ -12,6 +13,7 @@ export interface BeatProps extends RawBeat {
     scrollCallbackFn: () => void,
   ) => void;
   parentComponent: Bar;
+  bottomBranchNavStatus: BottomBranchNavStatus;
 }
 
 interface BeatState {
@@ -41,7 +43,6 @@ class Beat extends React.Component<BeatProps, BeatState> {
 
   render() {
     const { order, timbreNormalized, loudnessNormalized } = this.props;
-
     const circleColour = this.getCircleColour(timbreNormalized);
     const circleSize = this.getCircleSize(loudnessNormalized);
     const circleSolidClassNames = cx('circle', 'circle-solid', circleColour, circleSize);
@@ -124,7 +125,13 @@ class Beat extends React.Component<BeatProps, BeatState> {
   }
 
   private handleParentScroll() {
-    const SCROLL_BACK_AFTER_MS = 2500;
+    const { bottomBranchNavStatus } = this.props;
+
+    // There should be a smaller scroll delay when the scroll is triggered
+    // by a CSS change
+    const shouldIncludeScrollDelay = bottomBranchNavStatus !== BottomBranchNavStatus.PREVIEWING;
+    const scrollBackAfterMs = shouldIncludeScrollDelay ? 2500 : 250;
+
     const timer = setTimeout(
       () => {
         if (!this.props.isSelected) {
@@ -133,7 +140,7 @@ class Beat extends React.Component<BeatProps, BeatState> {
 
         this.scrollBeatIntoView();
       },
-      SCROLL_BACK_AFTER_MS);
+      scrollBackAfterMs);
 
     this.setState(({ scrollReturnTimer }) => {
       clearTimeout(scrollReturnTimer);

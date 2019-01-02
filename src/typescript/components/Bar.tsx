@@ -3,6 +3,7 @@ import Beat from './Beat';
 import cx from 'classnames';
 import { RawBar } from './App';
 import BeatList from './BeatList';
+import { BottomBranchNavStatus } from './BottomBranchNav';
 
 export interface BarProps extends RawBar {
   signalClickToParentFn: (
@@ -13,6 +14,7 @@ export interface BarProps extends RawBar {
   ) => void;
   selectedBeatOrder: number;
   parentComponent: BeatList;
+  bottomBranchNavStatus: BottomBranchNavStatus;
 }
 
 interface BarState {
@@ -29,7 +31,7 @@ class Bar extends React.Component<BarProps, BarState> {
   }
 
   render() {
-    const { beats } = this.props;
+    const { beats, bottomBranchNavStatus } = this.props;
     const barClassNames = cx('bar', { selected: this.isBarSelected() });
 
     const beatElements = beats.map((beat) => {
@@ -42,7 +44,8 @@ class Bar extends React.Component<BarProps, BarState> {
                    isSelected={isBeatSelected}
                    increaseHighestZIndexFn={this.increaseHighestZIndex.bind(this)}
                    signalClickToParentFn={this.signalClickToParent}
-                   parentComponent={this} />;
+                   parentComponent={this}
+                   bottomBranchNavStatus={bottomBranchNavStatus} />;
     });
 
     return (

@@ -2,12 +2,14 @@ import * as React from 'react';
 import Bar from './Bar';
 import cx from 'classnames';
 import { RawBar } from './App';
+import { BottomBranchNavStatus } from './BottomBranchNav';
 
 export interface BeatListProps {
   bars: RawBar[];
   shouldInvertScrollbar?: boolean;
   signalClickToParentFn: () => void;
   isHidden?: boolean;
+  bottomBranchNavStatus: BottomBranchNavStatus;
 }
 
 interface BeatListState {
@@ -28,7 +30,7 @@ class BeatList extends React.Component<BeatListProps, BeatListState> {
   }
 
   render() {
-    const { shouldInvertScrollbar, bars, isHidden } = this.props;
+    const { shouldInvertScrollbar, bars, isHidden, bottomBranchNavStatus } = this.props;
     const scrollbarClassNames = cx(
       'horizontal-scrollbar',
       {
@@ -46,7 +48,8 @@ class BeatList extends React.Component<BeatListProps, BeatListState> {
                   beats={bar.beats}
                   signalClickToParentFn={this.handleClick}
                   selectedBeatOrder={selectedBeatOrder}
-                  parentComponent={this} />;
+                  parentComponent={this}
+                  bottomBranchNavStatus={bottomBranchNavStatus} />;
     });
 
     return (
