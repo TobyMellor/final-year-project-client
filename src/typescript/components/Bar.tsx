@@ -1,11 +1,11 @@
 import * as React from 'react';
 import Beat from './Beat';
 import cx from 'classnames';
-import { RawBar } from './App';
 import BeatList from './BeatList';
 import { BottomBranchNavStatus } from './BottomBranchNav';
+import { UIBarType } from '../services/ui/entities';
 
-export interface BarProps extends RawBar {
+export interface BarProps extends UIBarType {
   signalClickToParentFn: (
     parentComponent: BeatList,
     barOrder: number,

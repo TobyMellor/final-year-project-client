@@ -1,12 +1,15 @@
 import * as React from 'react';
-import BeatList, { BeatListProps } from './BeatList';
-import { RawBar } from './App';
+import BeatList from './BeatList';
 import Translator from '../../translations/Translator';
 import cx from 'classnames';
 import Button, { SuccessButton } from './Button';
+import { UIBarType } from '../services/ui/entities';
+import { FYPEvent } from '../types/enums';
+import Dispatcher from '../events/Dispatcher';
+import TrackModel from '../models/audio-analysis/Track';
 
 interface BottomBranchNavProps {
-  bars: RawBar[];
+  bars: UIBarType[];
 }
 
 interface BottomBranchNavState {
@@ -154,11 +157,6 @@ export enum BottomBranchNavStatus {
   CHOOSE_SECOND_BEAT = 'choose_second_beat',
   PREVIEWABLE = 'previewable',
   PREVIEWING = 'previewing',
-}
-
-enum BeatListOrientation {
-  TOP = 'top',
-  BOTTOM = 'bottom',
 }
 
 export default BottomBranchNav;

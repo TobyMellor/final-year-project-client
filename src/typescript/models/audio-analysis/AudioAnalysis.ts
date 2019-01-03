@@ -6,6 +6,7 @@ import TrackModel from './Track';
 import WebAudioService from '../../services/web-audio/WebAudioService';
 import * as conversions from '../../services/canvas/drawables/utils/conversions';
 import { TimeIdentifier } from '../../types/general';
+import * as trackFactory from '../../factories/track';
 
 interface Input extends GetAnAudioAnalysisResponse {
   trackID: string;
@@ -34,8 +35,18 @@ class AudioAnalysisModel {
   private bars: BarModel[];
   private beats: BeatModel[];
   private segments: SegmentModel[];
+  private maxTimbre: number;
+  private minTimbre: number;
+  private maxLoudness: number;
+  private minLoudness: number;
 
-  constructor({ track, bars, beats, segments, trackID }: Input) {
+  constructor({
+    track,
+    bars: barsInput,
+    beats: beatsInput,
+    segments: segmentsInput,
+    trackID,
+  }: Input) {
     this.trackID = trackID;
 
     // Track Analysis
@@ -58,14 +69,24 @@ class AudioAnalysisModel {
       confidence: track.mode_confidence,
     };
 
-    // Bars Analysis
-    this.bars = bars.map(bar => new BarModel(bar));
+    // Bars, Beats and Segments Analysis
+    const {
+      bars,
+      beats,
+      segments,
+      maxTimbre,
+      minTimbre,
+      maxLoudness,
+      minLoudness,
+     } = trackFactory.createBarsBeatsAndSegments(barsInput, beatsInput, segmentsInput);
 
-    // Beats Analysis
-    this.beats = beats.map(beat => new BeatModel(beat));
-
-    // Segment Analysis
-    this.segments = segments.map(segment => new SegmentModel(segment));
+    this.bars = bars;
+    this.beats = beats;
+    this.segments = segments;
+    this.maxTimbre = maxTimbre;
+    this.minTimbre = minTimbre;
+    this.maxLoudness = maxLoudness;
+    this.minLoudness = minLoudness;
   }
 
   public getTrack(): TrackModel | null {
@@ -85,6 +106,22 @@ class AudioAnalysisModel {
 
   public getBars(): BarModel[] {
     return this.bars;
+  }
+
+  public getMaxTimbre(): number {
+    return this.maxTimbre;
+  }
+
+  public getMinTimbre(): number {
+    return this.minTimbre;
+  }
+
+  public getMaxLoudness(): number {
+    return this.maxLoudness;
+  }
+
+  public getMinLoudness(): number {
+    return this.minLoudness;
   }
 }
 

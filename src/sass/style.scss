@@ -211,16 +211,24 @@ canvas {
 
               &.selected {
                 .beat {
-                  opacity: 1;
-
                   &.selected {
                     bottom: 42px;
                   }
                 }
               }
 
-              .beat, .beat:first-child, .beat:last-child {
-                margin: 0 8px;
+              .beat {
+                &, &:first-child, &:last-child {
+                  margin: 0 8px;
+                }
+
+                &, &.selected {
+                  opacity: 1;
+                }
+
+                &:not(.playing) {
+                  opacity: 0.5;
+                }
               }
             }
           }

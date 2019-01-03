@@ -4,6 +4,7 @@ import AudioAnalysisModel from './AudioAnalysis';
 import * as trackFactory from '../../factories/track';
 import * as conversions from '../../services/canvas/drawables/utils/conversions';
 import { TimeIdentifier } from '../../types/general';
+import BeatModel from './Beat';
 
 export type Input = {
   album: AlbumModel | AlbumInput;
@@ -102,6 +103,20 @@ class TrackModel {
 
   public getURI() {
     return this.URI;
+  }
+
+  public async getBeats(): Promise<BeatModel[]> {
+    const audioAnalysis = await this.getAudioAnalysis();
+    const beats = audioAnalysis.getBeats();
+
+    return beats;
+  }
+
+  public async getBeatsWithOrders(beatOrders: number[]): Promise<BeatModel[]> {
+    const allBeats = await this.getBeats();
+    const beatsWithOrders = allBeats.filter((_, i) => beatOrders.includes(i));
+
+    return beatsWithOrders;
   }
 }
 

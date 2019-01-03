@@ -1,11 +1,11 @@
 import * as React from 'react';
 import Bar from './Bar';
 import cx from 'classnames';
-import { RawBar } from './App';
 import { BottomBranchNavStatus } from './BottomBranchNav';
+import { UIBarType } from '../services/ui/entities';
 
 export interface BeatListProps {
-  bars: RawBar[];
+  bars: UIBarType[];
   shouldInvertScrollbar?: boolean;
   signalClickToParentFn: () => void;
   isHidden?: boolean;

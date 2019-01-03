@@ -1,7 +1,5 @@
 import * as React from 'react';
 import cx from 'classnames';
-import { RawBeat } from './App';
-import Bar from './Bar';
 
 interface ButtonProps {
   colourClassName?: ButtonColour;

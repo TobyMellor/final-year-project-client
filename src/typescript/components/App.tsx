@@ -2,74 +2,49 @@ import * as React from 'react';
 import Nav from './Nav';
 import CircleCanvas from './CircleCanvas';
 import BottomBranchNav from './BottomBranchNav';
+import { UIBarType, getUIBars } from '../services/ui/entities';
+import { FYPEvent } from '../types/enums';
+import Dispatcher from '../events/Dispatcher';
+import TrackModel from '../models/audio-analysis/Track';
 
 interface AppProps {}
 
-export default function ({}: AppProps) {
-  const bars = [
-    {
-      order: 1,
-      beats: [
-        { order: 1, timbreNormalized: 0.30, loudnessNormalized: 1.00 },
-        { order: 2, timbreNormalized: 0.11, loudnessNormalized: 0.86 },
-        { order: 3, timbreNormalized: 0.20, loudnessNormalized: 0.12 },
-        { order: 4, timbreNormalized: 0.95, loudnessNormalized: 0.40 },
-      ],
-    },
-    {
-      order: 2,
-      beats: [
-        { order: 5, timbreNormalized: 0.90, loudnessNormalized: 0.00 },
-        { order: 6, timbreNormalized: 1.00, loudnessNormalized: 0.34 },
-        { order: 7, timbreNormalized: 0.35, loudnessNormalized: 1.00 },
-        { order: 8, timbreNormalized: 0.54, loudnessNormalized: 0.65 },
-      ],
-    },
-    {
-      order: 3,
-      beats: [
-        { order: 9, timbreNormalized: 0.44, loudnessNormalized: 0.26 },
-        { order: 10, timbreNormalized: 0.96, loudnessNormalized: 0.46 },
-        { order: 11, timbreNormalized: 0.37, loudnessNormalized: 0.54 },
-        { order: 12, timbreNormalized: 0.02, loudnessNormalized: 0.77 },
-      ],
-    },
-    {
-      order: 4,
-      beats: [
-        { order: 13, timbreNormalized: 0.90, loudnessNormalized: 0.00 },
-        { order: 14, timbreNormalized: 1.00, loudnessNormalized: 0.34 },
-        { order: 15, timbreNormalized: 0.35, loudnessNormalized: 1.00 },
-        { order: 16, timbreNormalized: 0.54, loudnessNormalized: 0.65 },
-      ],
-    },
-    {
-      order: 5,
-      beats: [
-        { order: 17, timbreNormalized: 0.35, loudnessNormalized: 1.00 },
-        { order: 18, timbreNormalized: 0.55, loudnessNormalized: 1.00 },
-        { order: 19, timbreNormalized: 0.23, loudnessNormalized: 0.85 },
-        { order: 20, timbreNormalized: 0.75, loudnessNormalized: 0.12 },
-      ],
-    },
-  ];
-
-  return (
-    <React.Fragment>
-      <Nav />
-      <CircleCanvas />
-      <BottomBranchNav bars={bars} />
-    </React.Fragment>
-  );
+interface AppState {
+  bars: UIBarType[];
 }
 
-export interface RawBeat {
-  order: number;
-  timbreNormalized: number;
-  loudnessNormalized: number;
+class App extends React.Component<AppProps, AppState> {
+  constructor(props: AppProps) {
+    super(props);
+
+    this.state = {
+      bars: [],
+    };
+
+    // When a new song has been loaded and analyzed
+    Dispatcher.getInstance()
+              .on(FYPEvent.PlayingTrackBranchesAnalyzed, this, this.updateBars);
+  }
+
+  render() {
+    const { bars } = this.state;
+
+    return (
+      <React.Fragment>
+        <Nav />
+        <CircleCanvas />
+        <BottomBranchNav bars={bars} />
+      </React.Fragment>
+    );
+  }
+
+  private async updateBars({ playingTrack }: { playingTrack: TrackModel }) {
+    const UIBars = await getUIBars(playingTrack);
+
+    this.setState({
+      bars: UIBars,
+    });
+  }
 }
 
-export interface RawBar {
-  order: number;
-  beats: RawBeat[];
-}
+export default App;

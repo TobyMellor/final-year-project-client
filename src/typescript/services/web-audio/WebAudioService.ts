@@ -48,11 +48,11 @@ class WebAudioService {
         this.setPlayingTrack(tracks[0]);
       });
 
-    if (config.fyp.shouldPlayMusic) {
-      // Once we've loaded the track, analyzed it, and rendered the visuals
-      Dispatcher.getInstance()
-                .on(FYPEvent.PlayingTrackRendered, this, this.loadPlayingTrack);
+    // Once we've loaded the track, analyzed it, and rendered the visuals
+    Dispatcher.getInstance()
+              .on(FYPEvent.PlayingTrackRendered, this, this.loadPlayingTrack);
 
+    if (config.fyp.shouldPlayMusic) {
       // When the Branch Service has given us new beats
       Dispatcher.getInstance()
                 .on(FYPEvent.BeatsReadyForQueueing, this, this.queueBeatsForPlaying);
@@ -116,7 +116,10 @@ class WebAudioService {
     this.dispatchNextBeatsRequest(null, SCHEDULE_BUFFER_COUNT);
   }
 
-  private async queueBeatsForPlaying({ beats }: { beats: BeatModel[] }) {
+  private async queueBeatsForPlaying(
+    { beats }: { beats: BeatModel[] },
+    shouldDispatchNextBeatsRequest: boolean = true,
+  ) {
     if (!beats || beats.length === 0) {
       throw new Error('Attempted to request no beats!');
     }
@@ -133,11 +136,21 @@ class WebAudioService {
                                          beat.getDurationSecs());
     });
 
-    lastBufferSource.onended = () => {
-      const lastQueuedBeat = BeatQueueManager.last().getBeat();
+    if (shouldDispatchNextBeatsRequest) {
+      lastBufferSource.onended = () => {
+        const lastQueuedBeat = BeatQueueManager.last().getBeat();
 
-      this.dispatchNextBeatsRequest(lastQueuedBeat);
-    };
+        this.dispatchNextBeatsRequest(lastQueuedBeat);
+      };
+    }
+  }
+
+  public async previewBeatsWithOrders(beatOrders: number[]) {
+    const previewingBeats = await this.playingTrack.getBeatsWithOrders(beatOrders);
+
+    BeatQueueManager.clear();
+
+    return this.queueBeatsForPlaying({ beats: previewingBeats }, false);
   }
 
   private playSample(

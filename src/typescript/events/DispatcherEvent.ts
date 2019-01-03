@@ -1,37 +1,29 @@
 import { FYPEvent } from '../types/enums';
 
-export type CallbackFn = (data: any) => void;
+export type Callback = {
+  context: Object,
+  callbackFn: (data: any) => void,
+};
 
 class DispatcherEvent {
   private eventName: string;
-  private context: Object;
-  private callbackFns: CallbackFn[];
+  private callbacks: Callback[];
 
-  constructor(eventName: string, context: Object) {
+  constructor(eventName: string) {
     this.eventName = eventName;
-    this.context = context;
-    this.callbackFns = [];
+    this.callbacks = [];
   }
 
-  registerCallback(callbackFn: CallbackFn) {
-    this.callbackFns.push(callbackFn);
-  }
-
-  unregisterCallback(callbackFn: CallbackFn) {
-    const index = this.callbackFns.indexOf(callbackFn);
-
-    if (index > -1) {
-      this.callbackFns.splice(index, 1);
-    }
+  registerCallback(callback: Callback) {
+    this.callbacks.push(callback);
   }
 
   fire(data: any) {
-    const context = this.context;
-    const callbacksFn = this.callbackFns.copyWithin(0, 0);
+    const callbacks = this.callbacks.copyWithin(0, 0);
 
     // Bind the callbacks to their context (so 'this' works inside the callback),
     // and run the callback
-    callbacksFn.forEach((callbackFn: CallbackFn) => {
+    callbacks.forEach(({ context, callbackFn }: Callback) => {
       const bindedCallbackFn = callbackFn.bind(context);
 
       return bindedCallbackFn(data);
@@ -39,7 +31,7 @@ class DispatcherEvent {
   }
 
   public getListenerCount(): number {
-    return this.callbackFns.length;
+    return this.callbacks.length;
   }
 }
 

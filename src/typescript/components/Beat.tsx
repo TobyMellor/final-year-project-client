@@ -1,10 +1,10 @@
 import * as React from 'react';
 import cx from 'classnames';
-import { RawBeat } from './App';
 import Bar from './Bar';
 import { BottomBranchNavStatus } from './BottomBranchNav';
+import { UIBeatType } from '../services/ui/entities';
 
-export interface BeatProps extends RawBeat {
+export interface BeatProps extends UIBeatType {
   isSelected: boolean;
   increaseHighestZIndexFn: () => number;
   signalClickToParentFn: (
