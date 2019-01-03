@@ -204,18 +204,23 @@ canvas {
     &.previewing {
       .horizontal-scrollbar {
         .bars {
-          .bar {
-            margin: 0;
-
-            &.selected {
-              margin: 0 !important;
-            }
-
-            .beat {
-              margin: 0 16px !important;
+          &.selected {
+            .bar {
+              opacity: 1;
+              margin: 0;
 
               &.selected {
-                bottom: 41px !important;
+                .beat {
+                  opacity: 1;
+
+                  &.selected {
+                    bottom: 42px;
+                  }
+                }
+              }
+
+              .beat, .beat:first-child, .beat:last-child {
+                margin: 0 8px;
               }
             }
           }

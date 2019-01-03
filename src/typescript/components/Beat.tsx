@@ -130,7 +130,7 @@ class Beat extends React.Component<BeatProps, BeatState> {
     // There should be a smaller scroll delay when the scroll is triggered
     // by a CSS change
     const shouldIncludeScrollDelay = bottomBranchNavStatus !== BottomBranchNavStatus.PREVIEWING;
-    const scrollBackAfterMs = shouldIncludeScrollDelay ? 2500 : 250;
+    const scrollBackAfterMs = shouldIncludeScrollDelay ? 2500 : 300;
 
     const timer = setTimeout(
       () => {
