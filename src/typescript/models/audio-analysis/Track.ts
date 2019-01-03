@@ -113,8 +113,8 @@ class TrackModel {
   }
 
   public async getBeatsWithOrders(beatOrders: number[]): Promise<BeatModel[]> {
-    const allBeats = await this.getBeats();
-    const beatsWithOrders = allBeats.filter((_, i) => beatOrders.includes(i));
+    const beats = await this.getBeats();
+    const beatsWithOrders = beats.filter(beat => beatOrders.includes(beat.getOrder()));
 
     return beatsWithOrders;
   }
