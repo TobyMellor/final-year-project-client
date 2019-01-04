@@ -129,6 +129,7 @@ canvas {
           display: inherit;
           margin-left: 16px + 16px; // Negative -16px margin-left
           margin-right: 16px;
+          transition: opacity 1s ease;
 
           .beat {
             position: relative;
@@ -139,6 +140,7 @@ canvas {
             cursor: pointer;
             bottom: 0;
             transition: bottom 0.25s ease, margin 0.25s ease;
+            transition: opacity 1s ease;
 
             // Animate a move upwards when hovering
             &:hover {
