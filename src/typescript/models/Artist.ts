@@ -8,32 +8,32 @@ export type Input = {
 };
 
 class ArtistModel {
-  private ID: string; // The Spotify ID for the artist
-  private images: ImageModel[];
-  private name: string;
-  private URI: string;
+  private _ID: string; // The Spotify ID for the artist
+  private _images: ImageModel[];
+  private _name: string;
+  private _URI: string;
 
   constructor({ id, images, name, uri }: Input) {
-    this.ID = id;
-    this.images = images.map(image => new ImageModel(image));
-    this.name = name;
-    this.URI = uri;
+    this._ID = id;
+    this._images = images.map(image => new ImageModel(image));
+    this._name = name;
+    this._URI = uri;
   }
 
-  public getID() {
-    return this.ID;
+  public get ID() {
+    return this._ID;
   }
 
-  public getImages() {
-    return this.images;
+  public get images() {
+    return this._images;
   }
 
-  public getName() {
-    return this.name;
+  public get name() {
+    return this._name;
   }
 
-  public getURI() {
-    return this.URI;
+  public get URI() {
+    return this._URI;
   }
 }
 

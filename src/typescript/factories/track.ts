@@ -12,7 +12,6 @@ import {
   GetAnAudioAnalysisResponseSegment,
 } from '../types/spotify-responses';
 import TimeIntervalModel from '../models/audio-analysis/TimeInterval';
-import { number } from 'prop-types';
 import { CreateBarsBeatsAndSegments, CreateSegments } from '../types/general';
 
 export async function createTrack(ID: string): Promise<TrackModel> {
@@ -20,7 +19,7 @@ export async function createTrack(ID: string): Promise<TrackModel> {
 }
 
 export async function addAudioAnalysis(track: TrackModel): Promise<AudioAnalysisModel> {
-  const audioAnalysis = await GetAnAudioAnalysis.request(track.getID());
+  const audioAnalysis = await GetAnAudioAnalysis.request(track.ID);
 
   track.setAudioAnalysis(audioAnalysis);
 
@@ -28,7 +27,7 @@ export async function addAudioAnalysis(track: TrackModel): Promise<AudioAnalysis
 }
 
 export async function addAudioFeatures(track: TrackModel): Promise<AudioFeaturesModel> {
-  const audioFeatures = await GetAudioFeatures.request(track.getID());
+  const audioFeatures = await GetAudioFeatures.request(track.ID);
 
   track.setAudioFeatures(audioFeatures);
 
@@ -71,8 +70,7 @@ function createSegments(
 
   const segments = segmentsInput.map((segmentInput, order) => {
     const segment = new SegmentModel({ ...segmentInput, order });
-    const timbre = segment.getTimbre();
-    const loudness = segment.getMaxLoudness();
+    const { timbre, maxLoudness: loudness } = segment;
 
     maxTimbre = Math.max(maxTimbre, timbre);
     minTimbre = Math.min(minTimbre, timbre);
@@ -119,7 +117,7 @@ function createBars(
 
       // A beat falls outside this bar if it starts at the end
       // of this bar
-      if (beat.getStartSecs() >= barInput.start + barInput.duration) {
+      if (beat.startSecs >= barInput.start + barInput.duration) {
         break;
       }
 
@@ -134,10 +132,10 @@ function getOverlappingTimeIntervalModels(
   parentTimeIntervalModel: TimeIntervalModel,
   childTimeIntervalModels: TimeIntervalModel[],
 ): TimeIntervalModel[] {
-  const [parentStartMs, parentEndMs] = parentTimeIntervalModel.getStartAndEndMs();
+  const [parentStartMs, parentEndMs] = parentTimeIntervalModel.startAndEndMs;
 
   return childTimeIntervalModels.filter((childTimeIntervalModel) => {
-    const [childStartMs, childEndMs] = childTimeIntervalModel.getStartAndEndMs();
+    const [childStartMs, childEndMs] = childTimeIntervalModel.startAndEndMs;
 
     // Child's straddling parentStartMs or is fully within range
     if (childEndMs >= parentStartMs && childEndMs <= parentEndMs) {

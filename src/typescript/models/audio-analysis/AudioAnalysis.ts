@@ -13,32 +13,32 @@ interface Input extends GetAnAudioAnalysisResponse {
 }
 
 class AudioAnalysisModel {
-  private trackID: string;
-  private endOfFadeIn: TimeIdentifier;
-  private startOfFadeOut: TimeIdentifier;
-  private tempo: {
+  private _trackID: string;
+  private _endOfFadeIn: TimeIdentifier;
+  private _startOfFadeOut: TimeIdentifier;
+  private _tempo: {
     value: number,
     confidence: number,
   };
-  private timeSignature: {
+  private _timeSignature: {
     value: number,
     confidence: number,
   };
-  private key: {
+  private _key: {
     value: number,
     confidence: number,
   };
-  private mode: {
+  private _mode: {
     value: number,
     confidence: number,
   };
-  private bars: BarModel[];
-  private beats: BeatModel[];
-  private segments: SegmentModel[];
-  private maxTimbre: number;
-  private minTimbre: number;
-  private maxLoudness: number;
-  private minLoudness: number;
+  private _bars: BarModel[];
+  private _beats: BeatModel[];
+  private _segments: SegmentModel[];
+  private _maxTimbre: number;
+  private _minTimbre: number;
+  private _maxLoudness: number;
+  private _minLoudness: number;
 
   constructor({
     track,
@@ -47,24 +47,24 @@ class AudioAnalysisModel {
     segments: segmentsInput,
     trackID,
   }: Input) {
-    this.trackID = trackID;
+    this._trackID = trackID;
 
     // Track Analysis
-    this.endOfFadeIn = conversions.getTimeIdentifierFromSeconds(track.end_of_fade_in);
-    this.startOfFadeOut = conversions.getTimeIdentifierFromSeconds(track.start_of_fade_out);
-    this.tempo = {
+    this._endOfFadeIn = conversions.getTimeIdentifierFromSeconds(track.end_of_fade_in);
+    this._startOfFadeOut = conversions.getTimeIdentifierFromSeconds(track.start_of_fade_out);
+    this._tempo = {
       value: track.tempo,
       confidence: track.tempo_confidence,
     };
-    this.timeSignature = {
+    this._timeSignature = {
       value: track.time_signature,
       confidence: track.time_signature_confidence,
     };
-    this.key = {
+    this._key = {
       value: track.key,
       confidence: track.key_confidence,
     };
-    this.mode = {
+    this._mode = {
       value: track.mode,
       confidence: track.mode_confidence,
     };
@@ -80,48 +80,48 @@ class AudioAnalysisModel {
       minLoudness,
      } = trackFactory.createBarsBeatsAndSegments(barsInput, beatsInput, segmentsInput);
 
-    this.bars = bars;
-    this.beats = beats;
-    this.segments = segments;
-    this.maxTimbre = maxTimbre;
-    this.minTimbre = minTimbre;
-    this.maxLoudness = maxLoudness;
-    this.minLoudness = minLoudness;
+    this._bars = bars;
+    this._beats = beats;
+    this._segments = segments;
+    this._maxTimbre = maxTimbre;
+    this._minTimbre = minTimbre;
+    this._maxLoudness = maxLoudness;
+    this._minLoudness = minLoudness;
   }
 
-  public getTrack(): TrackModel | null {
+  public get track(): TrackModel | null {
     const webAudioService = WebAudioService.getInstance();
-    const track = webAudioService.getTrack(this.trackID);
+    const track = webAudioService.getTrack(this._trackID);
 
     return track;
   }
 
-  public getTrackID(): string {
-    return this.trackID;
+  public get trackID(): string {
+    return this._trackID;
   }
 
-  public getBeats(): BeatModel[] {
-    return this.beats;
+  public get beats(): BeatModel[] {
+    return this._beats;
   }
 
-  public getBars(): BarModel[] {
-    return this.bars;
+  public get bars(): BarModel[] {
+    return this._bars;
   }
 
-  public getMaxTimbre(): number {
-    return this.maxTimbre;
+  public get maxTimbre(): number {
+    return this._maxTimbre;
   }
 
-  public getMinTimbre(): number {
-    return this.minTimbre;
+  public get minTimbre(): number {
+    return this._minTimbre;
   }
 
-  public getMaxLoudness(): number {
-    return this.maxLoudness;
+  public get maxLoudness(): number {
+    return this._maxLoudness;
   }
 
-  public getMinLoudness(): number {
-    return this.minLoudness;
+  public get minLoudness(): number {
+    return this._minLoudness;
   }
 }
 

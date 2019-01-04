@@ -6,48 +6,48 @@ export type Input = {
 };
 
 abstract class BranchModel {
-  private earliestBeat: BeatModel;
-  private latestBeat: BeatModel;
+  private _earliestBeat: BeatModel;
+  private _latestBeat: BeatModel;
 
-  protected abstract originBeat: BeatModel;
-  protected abstract destinationBeat: BeatModel;
+  protected abstract _originBeat: BeatModel;
+  protected abstract _destinationBeat: BeatModel;
 
-  private usedCount: number = 0;
+  private _usedCount: number = 0;
 
   protected constructor({ earliestBeat, latestBeat }: Input) {
-    const earliestBeatStartMs = earliestBeat.getStartMs();
-    const latestBeatStartMs = latestBeat.getStartMs();
+    const earliestBeatStartMs = earliestBeat.startMs;
+    const latestBeatStartMs = latestBeat.startMs;
 
     if (earliestBeatStartMs === latestBeatStartMs) {
       throw new Error('Attempted to create a Branch leading to the same place!');
     }
 
-    this.earliestBeat = earliestBeat;
-    this.latestBeat = latestBeat;
+    this._earliestBeat = earliestBeat;
+    this._latestBeat = latestBeat;
   }
 
-  public getEarliestBeat(): BeatModel {
-    return this.earliestBeat;
+  public get earliestBeat(): BeatModel {
+    return this._earliestBeat;
   }
 
-  public getLatestBeat(): BeatModel {
-    return this.latestBeat;
+  public get latestBeat(): BeatModel {
+    return this._latestBeat;
   }
 
-  public getOriginBeat(): BeatModel {
-    return this.originBeat;
+  public get originBeat(): BeatModel {
+    return this._originBeat;
   }
 
-  public getDestinationBeat(): BeatModel {
-    return this.destinationBeat;
+  public get destinationBeat(): BeatModel {
+    return this._destinationBeat;
   }
 
-  public getUsedCount(): number {
-    return this.usedCount;
+  public get usedCount(): number {
+    return this._usedCount;
   }
 
   public used() {
-    this.usedCount += 1;
+    this._usedCount += 1;
   }
 }
 

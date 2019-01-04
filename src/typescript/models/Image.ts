@@ -5,26 +5,26 @@ export type Input = {
 };
 
 class ImageModel {
-  private height: number;
-  private url: string;
-  private width: number;
+  private _height: number;
+  private _URL: string;
+  private _width: number;
 
   constructor({ height, url, width }: Input) {
-    this.height = height;
-    this.url = url;
-    this.width = width;
+    this._height = height;
+    this._URL = url;
+    this._width = width;
   }
 
-  public getHeight() {
-	  return this.height;
+  public get height() {
+    return this._height;
   }
 
-  public getUrl() {
-    return this.url;
+  public get URL() {
+    return this._URL;
   }
 
-  public getWidth() {
-    return this.width;
+  public get width() {
+    return this._width;
   }
 }
 

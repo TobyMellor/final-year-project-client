@@ -19,14 +19,11 @@ class WorldPoint extends Point {
   }
 
   static getPointOnCircleFromPercentage(
-    parentCircle: SongCircle,
+    { center: parentCircleCenter, radius: parentCircleRadius }: SongCircle,
     percentage: number,
     ourCircleRadius: number = 0,
     ourCircleLineWidth: number = 1,
   ) {
-    // Details about the center (parent) circle that we want to "connect" to
-    const parentCircleCenter: Point = parentCircle.getCenter();
-    const parentCircleRadius: number = parentCircle.getRadius();
 
     // Angle where our circle will sit from the parent's center point
     const angle: number = conversions.percentageToRadians(percentage);

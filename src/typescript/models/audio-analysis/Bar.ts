@@ -8,16 +8,16 @@ interface Input extends GetAnAudioAnalysisResponseTimeInterval {
 }
 
 class BarModel extends TimeIntervalModel {
-  private beats: BeatModel[];
+  private _beats: BeatModel[];
 
   constructor(input: Input) {
     super(input);
 
-    this.beats = input.beats;
+    this._beats = input.beats;
   }
 
-  public getBeats(): BeatModel[] {
-    return this.beats;
+  public get beats(): BeatModel[] {
+    return this._beats;
   }
 }
 

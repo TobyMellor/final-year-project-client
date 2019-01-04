@@ -15,15 +15,10 @@ export interface UIBarType {
 }
 
 export async function getUIBars(track: TrackModel): Promise<UIBarType[]> {
-  const audioAnalysis = await track.getAudioAnalysis();
-  const maxTimbre = audioAnalysis.getMaxTimbre();
-  const minTimbre = audioAnalysis.getMinTimbre();
-  const maxLoudness = audioAnalysis.getMaxLoudness();
-  const minLoudness = audioAnalysis.getMinLoudness();
-  const bars = audioAnalysis.getBars();
+  const { maxTimbre, minTimbre, maxLoudness, minLoudness, bars } = await track.getAudioAnalysis();
 
   return bars.map((bar) => {
-    const order = bar.getOrder();
+    const order = bar.order;
     const UIBeats: UIBeatType[] = getUIBeats(bar, maxTimbre, minTimbre, maxLoudness, minLoudness);
 
     return {
@@ -40,14 +35,12 @@ function getUIBeats(
   maxLoudness: number,
   minLoudness: number,
 ): UIBeatType[] {
-  const barOrder = bar.getOrder();
-  const beats = bar.getBeats();
+  const barOrder = bar.order;
+  const beats = bar.beats;
 
-  return beats.map((beat) => {
-    const order = beat.getOrder();
-    const timbreNormalized = normalizeNumber(beat.getTimbre(), maxTimbre, minTimbre);
-    const loudnessNormalized = normalizeNumber(beat.getMaxLoudness(), maxLoudness, minLoudness);
-    const durationMs = beat.getDurationMs();
+  return beats.map(({ order, timbre: beatTimbre, maxLoudness: beatMaxLoudness, durationMs }) => {
+    const timbreNormalized = normalizeNumber(beatTimbre, maxTimbre, minTimbre);
+    const loudnessNormalized = normalizeNumber(beatMaxLoudness, maxLoudness, minLoudness);
 
     return {
       order,

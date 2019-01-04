@@ -14,7 +14,7 @@ class BeatQueueManager {
 
     const queuedBeats = beats.map((beat) => {
       const submittedCurrentTime = lastSubmittedCurrentTime + secondsSinceFirstBeat;
-      secondsSinceFirstBeat += beat.getDurationSecs();
+      secondsSinceFirstBeat += beat.durationSecs;
 
       return new QueuedBeatModel({
         beat,
@@ -48,7 +48,7 @@ class BeatQueueManager {
     if (this.queuedBeats.length) {
       return this.last()
                  .getBeat()
-                 .getStartSecs();
+                 .startSecs;
     }
 
     return 0;

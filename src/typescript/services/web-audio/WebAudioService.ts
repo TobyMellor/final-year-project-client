@@ -18,17 +18,17 @@ import config from '../../config';
 class WebAudioService {
   private static _instance: WebAudioService;
 
-  private audioContext: AudioContext;
-  private audioBuffer: AudioBuffer;
+  private _audioContext: AudioContext;
+  private _audioBuffer: AudioBuffer;
 
-  private tracks: TrackModel[] = [];
-  private playingTrack: TrackModel = null;
-  private childTracks: Set<TrackModel> = new Set<TrackModel>();
+  private _tracks: TrackModel[] = [];
+  private _playingTrack: TrackModel = null;
+  private _childTracks: Set<TrackModel> = new Set<TrackModel>();
 
   private constructor() {
     const AudioContext = (<any> window).AudioContext || (<any> window).webkitAudioContext;
 
-    this.audioContext = new AudioContext();
+    this._audioContext = new AudioContext();
 
     const trackIDs: string[] = [
       '4RVbK6cV0VqWdpCDcx3hiT',
@@ -43,7 +43,7 @@ class WebAudioService {
     Promise
       .all(trackRequests)
       .then((tracks) => {
-        this.tracks = tracks;
+        this._tracks = tracks;
         this.addChildTracks(...tracks);
         this.setPlayingTrack(tracks[0]);
       });
@@ -64,53 +64,41 @@ class WebAudioService {
   }
 
   public addChildTracks(...tracks: TrackModel[]) {
-    tracks.forEach(track => this.childTracks.add(track));
-  }
-
-  public getTracks(): TrackModel[] {
-    return this.tracks;
+    tracks.forEach(track => this._childTracks.add(track));
   }
 
   public getTrack(ID: string): TrackModel | null {
-    const tracks = this.tracks;
+    const tracks = this._tracks;
 
-    return tracks.find(track => track.getID() === ID) || null;
-  }
-
-  public getPlayingTrack(): TrackModel | null {
-    return this.playingTrack;
+    return tracks.find(track => track.ID === ID) || null;
   }
 
   public async setPlayingTrack(track: TrackModel) {
-    const previousPlayingTrack: TrackModel | null = this.getPlayingTrack();
+    const previousPlayingTrack: TrackModel | null = this._playingTrack;
 
     if (previousPlayingTrack) {
-      this.childTracks.add(previousPlayingTrack);
+      this._childTracks.add(previousPlayingTrack);
     }
 
-    this.childTracks.delete(track);
-    this.playingTrack = track;
+    this._childTracks.delete(track);
+    this._playingTrack = track;
 
     Dispatcher.getInstance()
               .dispatch(FYPEvent.PlayingTrackChanged, {
-                playingTrack: this.playingTrack,
-                childTracks: this.childTracks,
+                playingTrack: this._playingTrack,
+                childTracks: this._childTracks,
               });
   }
 
-  public getChildTracks() {
-    return this.childTracks;
-  }
-
   private async loadPlayingTrack() {
-    const trackID = this.playingTrack.getID();
+    const trackID = this._playingTrack.ID;
 
     // Get the Audio Buffer for the corresponding mp3 file
     const response = await fetch(`tracks/${trackID}.mp3`);
     const arrayBuffer = await response.arrayBuffer();
-    const audioBuffer = await this.audioContext.decodeAudioData(arrayBuffer);
+    const audioBuffer = await this._audioContext.decodeAudioData(arrayBuffer);
 
-    this.audioBuffer = audioBuffer;
+    this._audioBuffer = audioBuffer;
 
     const SCHEDULE_BUFFER_COUNT = 2;
     this.dispatchNextBeatsRequest(null, SCHEDULE_BUFFER_COUNT);
@@ -124,16 +112,16 @@ class WebAudioService {
       throw new Error('Attempted to request no beats!');
     }
 
-    const queuedBeats = BeatQueueManager.add(this.audioContext, beats);
+    const queuedBeats = BeatQueueManager.add(this._audioContext, beats);
     let lastBufferSource: AudioBufferSourceNode;
 
     queuedBeats.forEach((queuedBeat) => {
-      const beat = queuedBeat.getBeat();
+      const { startSecs, durationSecs } = queuedBeat.getBeat();
 
-      lastBufferSource = this.playSample(this.audioBuffer,
+      lastBufferSource = this.playSample(this._audioBuffer,
                                          queuedBeat.getSubmittedCurrentTime(),
-                                         beat.getStartSecs(),
-                                         beat.getDurationSecs());
+                                         startSecs,
+                                         durationSecs);
     });
 
     if (onEndedCallbackFn) {
@@ -152,7 +140,7 @@ class WebAudioService {
   }
 
   public async previewBeatsWithOrders(beatOrders: number[], beatOnEndedCallbackFn: () => void) {
-    const previewingBeats = await this.playingTrack.getBeatsWithOrders(beatOrders);
+    const previewingBeats = await this._playingTrack.getBeatsWithOrders(beatOrders);
 
     BeatQueueManager.clear();
 
@@ -165,10 +153,10 @@ class WebAudioService {
     offset?: number,
     duration?: number,
   ): AudioBufferSourceNode {
-    const source = this.audioContext.createBufferSource();
+    const source = this._audioContext.createBufferSource();
 
     source.buffer = audioBuffer;
-    source.connect(this.audioContext.destination);
+    source.connect(this._audioContext.destination);
     source.start(when, offset, duration);
 
     return source;
@@ -180,7 +168,7 @@ class WebAudioService {
               .dispatch(FYPEvent.NextBeatsRequested, {
                 beatBatchCount,
                 lastQueuedBeat,
-                playingTrack: this.playingTrack,
+                playingTrack: this._playingTrack,
               });
   }
 }

@@ -8,29 +8,29 @@ interface Input extends GetAnAudioAnalysisResponseTimeInterval {
 }
 
 class BeatModel extends TimeIntervalModel {
-  private segments: SegmentModel[];
+  private _segments: SegmentModel[];
 
   constructor(input: Input) {
     super(input);
 
-    this.segments = input.segments;
+    this._segments = input.segments;
   }
 
-  public getSegments(): SegmentModel[] {
-    return this.segments;
+  public get segments(): SegmentModel[] {
+    return this._segments;
   }
 
-  public getTimbre(): number {
-    const segments = this.segments;
-    const totalTimbre = segments.reduce((a, b) => a + b.getTimbre(), 0);
+  public get timbre(): number {
+    const segments = this._segments;
+    const totalTimbre = segments.reduce((a, b) => a + b.timbre, 0);
     const averageTimbre = totalTimbre / segments.length;
 
     return averageTimbre;
   }
 
-  public getMaxLoudness(): number {
-    const segments = this.segments;
-    const totalMaxLoudness = segments.reduce((a, b) => a + b.getMaxLoudness(), 0);
+  public get maxLoudness(): number {
+    const segments = this._segments;
+    const totalMaxLoudness = segments.reduce((a, b) => a + b.maxLoudness, 0);
     const averageMaxLoudness = totalMaxLoudness / segments.length;
 
     return averageMaxLoudness;

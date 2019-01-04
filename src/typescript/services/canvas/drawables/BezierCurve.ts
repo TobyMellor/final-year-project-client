@@ -4,27 +4,14 @@ import WorldPoint from './points/WorldPoint';
 import BranchModel from '../../../models/branches/Branch';
 
 class BezierCurve {
-  private scene: Scene;
-  private songCircle: SongCircle;
-  private branch: BranchModel;
-  private fromPercentage: number;
-  private toPercentage: number;
-  private lineWidth: number;
-
   constructor(
-    scene: Scene,
-    songCircle: SongCircle,
-    branch: BranchModel,
-    fromPercentage: number,
-    toPercentage: number,
-    lineWidth: number,
+    private scene: Scene,
+    private songCircle: SongCircle,
+    public branch: BranchModel,
+    private fromPercentage: number,
+    private toPercentage: number,
+    private lineWidth: number,
   ) {
-    this.scene = scene;
-    this.fromPercentage = fromPercentage;
-    this.toPercentage = toPercentage;
-    this.lineWidth = lineWidth;
-    this.branch = branch;
-
     this.renderBezierCurve(scene, songCircle, fromPercentage, toPercentage, lineWidth);
   }
 
@@ -38,7 +25,7 @@ class BezierCurve {
     const THREE = Scene.THREE;
     const fromPoint = WorldPoint.getPointOnCircleFromPercentage(songCircle,
                                                                 fromPercentage);
-    const centerPoint = songCircle.getCenter();
+    const centerPoint = songCircle.center;
     const toPoint = WorldPoint.getPointOnCircleFromPercentage(songCircle,
                                                               toPercentage);
 
@@ -59,10 +46,6 @@ class BezierCurve {
     bezierCurve.position.set(0, 0, centerPoint.z + 0.0001);
 
     scene.add(bezierCurve);
-  }
-
-  public getBranch(): BranchModel {
-    return this.branch;
   }
 }
 

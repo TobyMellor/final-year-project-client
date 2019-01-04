@@ -8,7 +8,7 @@ interface Input extends GetAnAudioAnalysisResponseSegment {
 }
 
 class SegmentModel extends TimeIntervalModel {
-  private loudness: {
+  private _loudness: {
     // The onset loudness of the segment in decibels (dB). Combined with loudness_max and
     // loudness_max_time, these components can be used to desctibe the “attack” of the segment.
     start: TimeIdentifier;
@@ -30,11 +30,11 @@ class SegmentModel extends TimeIntervalModel {
   // A “chroma” vector representing the pitch content of the segment, corresponding to the
   // 12 pitch classes C, C#, D to B, with values ranging from 0 to 1 that describe the relative
   // dominance of every pitch in the chromatic scale.
-  private pitch: number;
+  private _pitch: number;
 
   // Timbre is the quality of a musical note or sound that distinguishes different types of
   // musical instruments, or voices. Timbre vectors are best used in comparison with each other.
-  private timbre: number;
+  private _timbre: number;
 
   constructor({
     start,
@@ -50,22 +50,22 @@ class SegmentModel extends TimeIntervalModel {
   }: Input) {
     super({ start, duration, confidence, order });
 
-    this.loudness = {
+    this._loudness = {
       start: conversions.getTimeIdentifierFromSeconds(loudness_start),
       maxTime: conversions.getTimeIdentifierFromSeconds(loudness_max_time),
       max: loudness_max,
       end: conversions.getTimeIdentifierFromSeconds(loudness_end),
     };
-    this.pitch = pitches.reduce((a, b) => a + b);
-    this.timbre = timbres.reduce((a, b) => a + b);
+    this._pitch = pitches.reduce((a, b) => a + b);
+    this._timbre = timbres.reduce((a, b) => a + b);
   }
 
-  public getMaxLoudness(): number {
-    return this.loudness.max;
+  public get maxLoudness(): number {
+    return this._loudness.max;
   }
 
-  public getTimbre(): number {
-    return this.timbre;
+  public get timbre(): number {
+    return this._timbre;
   }
 }
 

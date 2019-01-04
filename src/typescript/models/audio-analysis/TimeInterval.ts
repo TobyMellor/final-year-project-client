@@ -7,10 +7,10 @@ interface Input extends GetAnAudioAnalysisResponseTimeInterval {
 }
 
 class TimeIntervalModel {
-  private start: TimeIdentifier;
-  private duration: TimeIdentifier;
-  private confidence: number;
-  private order: number;
+  private _start: TimeIdentifier;
+  private _duration: TimeIdentifier;
+  private _confidence: number;
+  private _order: number;
 
   constructor({
     start: startSeconds,
@@ -18,52 +18,52 @@ class TimeIntervalModel {
     confidence,
     order,
   }: Input) {
-    this.start = conversions.getTimeIdentifierFromSeconds(startSeconds);
-    this.duration = conversions.getTimeIdentifierFromSeconds(durationSeconds);
-    this.confidence = confidence;
-    this.order = order;
+    this._start = conversions.getTimeIdentifierFromSeconds(startSeconds);
+    this._duration = conversions.getTimeIdentifierFromSeconds(durationSeconds);
+    this._confidence = confidence;
+    this._order = order;
   }
 
-  public getStartMs(): number {
-    return this.start.ms;
+  public get startMs(): number {
+    return this._start.ms;
   }
 
-  public getStartSecs(): number {
-    return this.start.secs;
+  public get startSecs(): number {
+    return this._start.secs;
   }
 
-  public getDurationMs(): number {
-    return this.duration.ms;
+  public get durationMs(): number {
+    return this._duration.ms;
   }
 
-  public getDurationSecs(): number {
-    return this.duration.secs;
+  public get durationSecs(): number {
+    return this._duration.secs;
   }
 
-  public getConfidence(): number {
-    return this.confidence;
+  public get confidence(): number {
+    return this._confidence;
   }
 
   public getPercentageInTrack(trackDuration: TimeIdentifier): number {
-    const decimal = this.start.ms / trackDuration.ms;
+    const decimal = this._start.ms / trackDuration.ms;
     const percentage = conversions.decimalToPercentage(decimal);
 
     return percentage;
   }
 
-  private getEndMs(): number {
-    return this.start.ms + this.duration.ms;
+  private get endMs(): number {
+    return this._start.ms + this._duration.ms;
   }
 
-  public getStartAndEndMs(): [number, number] {
-    const startMs = this.start.ms;
-    const endMs = this.getEndMs();
+  public get startAndEndMs(): [number, number] {
+    const startMs = this._start.ms;
+    const endMs = this.endMs;
 
     return [startMs, endMs];
   }
 
-  public getOrder(): number {
-    return this.order;
+  public get order(): number {
+    return this._order;
   }
 }
 
