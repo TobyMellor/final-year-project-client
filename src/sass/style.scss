@@ -221,8 +221,15 @@ canvas {
               }
 
               &.playing {
-                width: 75px;
-                height: 75px;
+                animation: pulse 0.25s ease;
+
+                &:first-child {
+                  animation: big-pulse 0.25s ease;
+                }
+
+                &.selected {
+                  animation: bounce 1.25s ease;
+                }
               }
             }
           }
@@ -273,5 +280,71 @@ canvas {
       background-color: $light-green;
       border-color: transparent;
     }
+  }
+}
+
+// Originally authored by https://daneden.github.io/animate.css
+@keyframes bounce {
+  from,
+  11.1%,
+  to {
+    transform: translate3d(0, 0, 0);
+  }
+
+  22.2% {
+    transform: skewX(-6deg) skewY(-6deg);
+  }
+
+  33.3% {
+    transform: skewX(3deg) skewY(3deg);
+  }
+
+  44.4% {
+    transform: skewX(-1.5deg) skewY(-1.5deg);
+  }
+
+  55.5% {
+    transform: skewX(0.75deg) skewY(0.75deg);
+  }
+
+  66.6% {
+    transform: skewX(-0.375deg) skewY(-0.375deg);
+  }
+
+  77.7% {
+    transform: skewX(0.1875deg) skewY(0.1875);
+  }
+
+  88.8% {
+    transform: skewX(-0.09375deg) skewY(-0.09375deg);
+  }
+}
+
+// Originally authored by https://daneden.github.io/animate.css
+@keyframes pulse {
+  from {
+    transform: scale3d(1, 1, 1);
+  }
+
+  50% {
+    transform: scale3d(1.05, 1.05, 1.05);
+  }
+
+  to {
+    transform: scale3d(1, 1, 1);
+  }
+}
+
+@keyframes big-pulse {
+  from {
+    transform: scale3d(1, 1, 1);
+  }
+
+  50% {
+    transform: scale3d(1.1, 1.1, 1.1);
+  }
+
+  to {
+    transform: scale3d(1, 1, 1);
   }
 }
