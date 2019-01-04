@@ -216,20 +216,23 @@ class BottomBranchNav extends React.Component<BottomBranchNavProps, BottomBranch
     ];
     const pathBeatOrders = pathBeats.map(beat => beat.order);
 
-    this.updatePlayingBeats(pathBeats);
-    this.updateQueuedBeats(pathBeats);
+    // TODO: Find more permanent solution to get around scheduling delay
+    setTimeout(
+      () => {
+        this.updatePlayingBeats(pathBeats);
+        this.updateQueuedBeats(pathBeats);
+      },
+      750);
 
     // Play the opposite branch
     const callbackFn = () => {
-      console.log('End of beats!');
-
       const { status } = this.state;
 
       // If we're still previewing when the beats have finished
       if (status === BottomBranchNavStatus.PREVIEWING) {
 
         // Reverse the originBeat and destinationBeat
-        // this.playBeatPaths(destinationBar, originBar, destinationBeat, originBeat); // TODO: Enbl
+        this.playBeatPaths(destinationBar, originBar, destinationBeat, originBeat);
       }
     };
 
