@@ -22,7 +22,9 @@ canvas {
 }
 
 .bottom-branch-nav {
-  max-width: 64px * 12;
+  $bottomBranchNavWidth: 64px * 12;
+
+  max-width: $bottomBranchNavWidth;
   position: fixed;
   right: 0;
   left: 0;
@@ -72,9 +74,20 @@ canvas {
         display: flex;
         flex-wrap: nowrap;
         overflow-x: auto;
-        padding-top: 10px;
         height: 64px + 46px; // Height of beat, plus extra room
         transition: opacity 0.25s ease, height 0.5s ease;
+        padding-top: 10px;
+
+        // Ensure left/right beats can scroll to the middle
+        // 64px is the width of the beat, 16px margin of each beat
+        padding-left: $bottomBranchNavWidth / 2 - 64px + 15px;
+
+        // Apparently you can't add right padding to increase the scroll range
+        // https://blog.alexandergottlieb.com/overflow-scroll-and-the-right-padding-problem-a-css-only-solution-6d442915b3f4
+        .bar:last-child:after {
+          content: '';
+          width: $bottomBranchNavWidth / 2 - 16px - 17px;
+        }
 
         scrollbar-width: none;
         &::-webkit-scrollbar {

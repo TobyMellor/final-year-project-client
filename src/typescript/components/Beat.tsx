@@ -42,6 +42,14 @@ class Beat extends React.Component<BeatProps, BeatState> {
     };
   }
 
+  componentDidMount() {
+    const { order } = this.props.UIBeat;
+
+    if (order === 0) {
+      this.scrollBeatToLeft();
+    }
+  }
+
   render() {
     const { isQueued, isPlaying, isSelected, UIBeat } = this.props;
     const { order, timbreNormalized, loudnessNormalized } = UIBeat;
@@ -160,6 +168,19 @@ class Beat extends React.Component<BeatProps, BeatState> {
       behavior: 'smooth',
       inline: 'center',
     });
+  }
+
+  private scrollBeatToLeft() {
+    const beatElement = this.beatElement.current;
+    const beatListElement = beatElement.parentElement
+                                       .parentElement;
+    const beatListWidth = beatListElement.clientWidth;
+    const BEAT_WIDTH_PX = 64;
+    const BEAT_LEFT_MARGIN_PX = 16;
+
+    // Scroll the beat list so the first beat is aligned left
+    // This list gets given padding, so the first beat can scroll to the center
+    beatListElement.scrollLeft = (beatListWidth / 2) - BEAT_WIDTH_PX + BEAT_LEFT_MARGIN_PX;
   }
 }
 
