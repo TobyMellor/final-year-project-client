@@ -1,19 +1,20 @@
 import * as React from 'react';
 import cx from 'classnames';
 import Bar from './Bar';
-import { BottomBranchNavStatus } from './BottomBranchNav';
 import { UIBeatType } from '../services/ui/entities';
 
-export interface BeatProps extends UIBeatType {
+export interface BeatProps {
+  UIBeat: UIBeatType;
+  isQueued: boolean;
+  isPlaying: boolean;
   isSelected: boolean;
-  increaseHighestZIndexFn: () => number;
+  parentComponent: Bar;
   signalClickToParentFn: (
     parentComponent: Bar,
-    beatOrder: number,
+    UIBeat: UIBeatType,
     scrollCallbackFn: () => void,
   ) => void;
-  parentComponent: Bar;
-  bottomBranchNavStatus: BottomBranchNavStatus;
+  increaseHighestZIndexFn: () => number;
 }
 
 interface BeatState {
@@ -27,7 +28,7 @@ class Beat extends React.Component<BeatProps, BeatState> {
   constructor(props: BeatProps) {
     super(props);
 
-    const { timbreNormalized, loudnessNormalized } = props;
+    const { timbreNormalized, loudnessNormalized } = props.UIBeat;
 
     if (!this.isNumberNormalized(timbreNormalized)
         || !this.isNumberNormalized(loudnessNormalized)) {
@@ -42,11 +43,19 @@ class Beat extends React.Component<BeatProps, BeatState> {
   }
 
   render() {
-    const { order, timbreNormalized, loudnessNormalized } = this.props;
+    const { isQueued, isPlaying, isSelected, UIBeat } = this.props;
+    const { order, timbreNormalized, loudnessNormalized } = UIBeat;
     const circleColour = this.getCircleColour(timbreNormalized);
     const circleSize = this.getCircleSize(loudnessNormalized);
     const circleSolidClassNames = cx('circle', 'circle-solid', circleColour, circleSize);
-    const beatClassName = cx('beat', { selected: this.props.isSelected });
+    const beatClassName = cx(
+      'beat',
+      {
+        queued: isQueued,
+        playing: isPlaying,
+        selected: isSelected,
+      },
+    );
 
     return (
       <div ref={this.beatElement}
@@ -116,21 +125,16 @@ class Beat extends React.Component<BeatProps, BeatState> {
 
   private handleClick() {
     this.props.signalClickToParentFn(this.props.parentComponent,
-                                     this.props.order,
+                                     this.props.UIBeat,
                                      this.handleParentScroll.bind(this));
 
     // Scroll to the circle, after all animations have finished
-    const EXPAND_ANIMATION_TIME_MS = 400;
+    const EXPAND_ANIMATION_TIME_MS = 450;
     setTimeout(() => this.scrollBeatIntoView(), EXPAND_ANIMATION_TIME_MS);
   }
 
   private handleParentScroll() {
-    const { bottomBranchNavStatus } = this.props;
-
-    // There should be a smaller scroll delay when the scroll is triggered
-    // by a CSS change
-    const shouldIncludeScrollDelay = bottomBranchNavStatus !== BottomBranchNavStatus.PREVIEWING;
-    const scrollBackAfterMs = shouldIncludeScrollDelay ? 2500 : 300;
+    const SCROLL_BACK_AFTER_MS = 2500;
 
     const timer = setTimeout(
       () => {
@@ -140,7 +144,7 @@ class Beat extends React.Component<BeatProps, BeatState> {
 
         this.scrollBeatIntoView();
       },
-      scrollBackAfterMs);
+      SCROLL_BACK_AFTER_MS);
 
     this.setState(({ scrollReturnTimer }) => {
       clearTimeout(scrollReturnTimer);

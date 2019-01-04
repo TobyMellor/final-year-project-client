@@ -2,19 +2,20 @@ import * as React from 'react';
 import Beat from './Beat';
 import cx from 'classnames';
 import BeatList from './BeatList';
-import { BottomBranchNavStatus } from './BottomBranchNav';
-import { UIBarType } from '../services/ui/entities';
+import { UIBarType, UIBeatType } from '../services/ui/entities';
 
-export interface BarProps extends UIBarType {
+export interface BarProps {
+  UIBar: UIBarType;
+  queuedUIBeats?: UIBeatType[];
+  playingUIBeat?: UIBeatType;
+  selectedUIBeat: UIBeatType | null;
+  parentComponent: BeatList;
   signalClickToParentFn: (
     parentComponent: BeatList,
-    barOrder: number,
-    beatOrder: number,
+    UIBar: UIBarType,
+    UIBeat: UIBeatType,
     scrollCallbackFn: () => void,
   ) => void;
-  selectedBeatOrder: number;
-  parentComponent: BeatList;
-  bottomBranchNavStatus: BottomBranchNavStatus;
 }
 
 interface BarState {
@@ -31,22 +32,29 @@ class Bar extends React.Component<BarProps, BarState> {
   }
 
   render() {
-    const { beats, bottomBranchNavStatus } = this.props;
-    const barClassNames = cx('bar', { selected: this.isBarSelected() });
+    const { beats } = this.props.UIBar;
 
     const beatElements = beats.map((beat) => {
-      const isBeatSelected = this.isBeatSelected(beat.order);
+      const isQueued = this.isBeatQueued(beat.order);
+      const isPlaying = this.isBeatPlaying(beat.order);
+      const isSelected = this.isBeatSelected(beat.order);
 
       return <Beat key={beat.order}
-                   order={beat.order}
-                   timbreNormalized={beat.timbreNormalized}
-                   loudnessNormalized={beat.loudnessNormalized}
-                   isSelected={isBeatSelected}
+                   UIBeat={beat}
+                   isQueued={isQueued}
+                   isPlaying={isPlaying}
+                   isSelected={isSelected}
                    increaseHighestZIndexFn={this.increaseHighestZIndex.bind(this)}
                    signalClickToParentFn={this.signalClickToParent}
-                   parentComponent={this}
-                   bottomBranchNavStatus={bottomBranchNavStatus} />;
+                   parentComponent={this} />;
     });
+    const barClassNames = cx(
+      'bar',
+      {
+        selected: this.isBarSelected(),
+        queued: beats.some(beat => this.isBeatQueued(beat.order)), // Queued when any beat is
+      },
+    );
 
     return (
       <div className={barClassNames}>
@@ -56,11 +64,25 @@ class Bar extends React.Component<BarProps, BarState> {
   }
 
   private isBarSelected() {
-    return this.props.selectedBeatOrder !== -1;
+    return this.props.selectedUIBeat !== null;
+  }
+
+  private isBeatQueued(beatOrder: number) {
+    const { queuedUIBeats } = this.props;
+
+    return queuedUIBeats && queuedUIBeats.some(beat => beat.order === beatOrder);
+  }
+
+  private isBeatPlaying(beatOrder: number) {
+    const { playingUIBeat } = this.props;
+
+    return playingUIBeat && playingUIBeat.order === beatOrder;
   }
 
   private isBeatSelected(beatOrder: number) {
-    return this.isBarSelected && this.props.selectedBeatOrder === beatOrder;
+    const { selectedUIBeat } = this.props;
+
+    return this.isBarSelected() && selectedUIBeat.order === beatOrder;
   }
 
   private increaseHighestZIndex(): number {
@@ -73,12 +95,16 @@ class Bar extends React.Component<BarProps, BarState> {
     return this.state.highestZIndex;
   }
 
-  private signalClickToParent(thisComponent: Bar, beatOrder: number, scrollCallbackFn: () => void) {
+  private signalClickToParent(
+    thisComponent: Bar,
+    UIBeat: UIBeatType,
+    scrollCallbackFn: () => void,
+  ) {
     const props = thisComponent.props;
 
     props.signalClickToParentFn(props.parentComponent,
-                                props.order,
-                                beatOrder,
+                                props.UIBar,
+                                UIBeat,
                                 scrollCallbackFn);
   }
 }

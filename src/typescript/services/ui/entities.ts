@@ -3,8 +3,10 @@ import BarModel from '../../models/audio-analysis/Bar';
 
 export interface UIBeatType {
   order: number;
+  barOrder: number;
   timbreNormalized: number;
   loudnessNormalized: number;
+  durationMs: number;
 }
 
 export interface UIBarType {
@@ -38,17 +40,21 @@ function getUIBeats(
   maxLoudness: number,
   minLoudness: number,
 ): UIBeatType[] {
+  const barOrder = bar.getOrder();
   const beats = bar.getBeats();
 
   return beats.map((beat) => {
     const order = beat.getOrder();
     const timbreNormalized = normalizeNumber(beat.getTimbre(), maxTimbre, minTimbre);
     const loudnessNormalized = normalizeNumber(beat.getMaxLoudness(), maxLoudness, minLoudness);
+    const durationMs = beat.getDurationMs();
 
     return {
       order,
+      barOrder,
       timbreNormalized,
       loudnessNormalized,
+      durationMs,
     };
   });
 }

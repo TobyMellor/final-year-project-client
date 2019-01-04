@@ -10,7 +10,7 @@ import TrackModel from '../models/audio-analysis/Track';
 interface AppProps {}
 
 interface AppState {
-  bars: UIBarType[];
+  UIBars: UIBarType[];
 }
 
 class App extends React.Component<AppProps, AppState> {
@@ -18,7 +18,7 @@ class App extends React.Component<AppProps, AppState> {
     super(props);
 
     this.state = {
-      bars: [],
+      UIBars: [],
     };
 
     // When a new song has been loaded and analyzed
@@ -27,13 +27,13 @@ class App extends React.Component<AppProps, AppState> {
   }
 
   render() {
-    const { bars } = this.state;
+    const { UIBars } = this.state;
 
     return (
       <React.Fragment>
         <Nav />
         <CircleCanvas />
-        <BottomBranchNav bars={bars} />
+        <BottomBranchNav UIBars={UIBars} />
       </React.Fragment>
     );
   }
@@ -42,7 +42,7 @@ class App extends React.Component<AppProps, AppState> {
     const UIBars = await getUIBars(playingTrack);
 
     this.setState({
-      bars: UIBars,
+      UIBars,
     });
   }
 }

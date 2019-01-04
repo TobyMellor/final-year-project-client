@@ -201,34 +201,28 @@ canvas {
       }
     }
 
-    &.previewing {
-      .horizontal-scrollbar {
-        .bars {
-          &.selected {
-            .bar {
-              opacity: 1;
-              margin: 0;
+    &.previewable, &.previewing {
+      .horizontal-scrollbar .bars.selected .bar.selected .beat.selected {
+        bottom: 42px;
+      }
+    }
 
-              &.selected {
-                .beat {
-                  &.selected {
-                    bottom: 42px;
-                  }
-                }
+    &.previewing {
+      .horizontal-scrollbar .bars.selected {
+        .bar {
+          opacity: 0.5;
+
+          &.queued {
+            opacity: 1;
+
+            .beat {
+              &.queued {
+                opacity: 1;
               }
 
-              .beat {
-                &, &:first-child, &:last-child {
-                  margin: 0 8px;
-                }
-
-                &, &.selected {
-                  opacity: 1;
-                }
-
-                &:not(.playing) {
-                  opacity: 0.5;
-                }
+              &.playing {
+                width: 75px;
+                height: 75px;
               }
             }
           }

@@ -118,7 +118,7 @@ class WebAudioService {
 
   private async queueBeatsForPlaying(
     { beats }: { beats: BeatModel[] },
-    shouldDispatchNextBeatsRequest: boolean = true,
+    onEndedCallbackFn?: () => void,
   ) {
     if (!beats || beats.length === 0) {
       throw new Error('Attempted to request no beats!');
@@ -136,7 +136,13 @@ class WebAudioService {
                                          beat.getDurationSecs());
     });
 
-    if (shouldDispatchNextBeatsRequest) {
+    if (onEndedCallbackFn) {
+
+      // Custom onended: e.g. UI branch previewing
+      lastBufferSource.onended = onEndedCallbackFn;
+    } else {
+
+      // Default onended: Request next batch of beats
       lastBufferSource.onended = () => {
         const lastQueuedBeat = BeatQueueManager.last().getBeat();
 
@@ -145,12 +151,12 @@ class WebAudioService {
     }
   }
 
-  public async previewBeatsWithOrders(beatOrders: number[]) {
+  public async previewBeatsWithOrders(beatOrders: number[], beatOnEndedCallbackFn: () => void) {
     const previewingBeats = await this.playingTrack.getBeatsWithOrders(beatOrders);
 
     BeatQueueManager.clear();
 
-    return this.queueBeatsForPlaying({ beats: previewingBeats }, false);
+    return this.queueBeatsForPlaying({ beats: previewingBeats }, beatOnEndedCallbackFn);
   }
 
   private playSample(

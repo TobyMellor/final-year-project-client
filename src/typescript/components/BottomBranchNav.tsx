@@ -3,18 +3,28 @@ import BeatList from './BeatList';
 import Translator from '../../translations/Translator';
 import cx from 'classnames';
 import Button, { SuccessButton } from './Button';
-import { UIBarType } from '../services/ui/entities';
-import { FYPEvent } from '../types/enums';
-import Dispatcher from '../events/Dispatcher';
-import TrackModel from '../models/audio-analysis/Track';
+import { UIBarType, UIBeatType } from '../services/ui/entities';
+import WebAudioService from '../services/web-audio/WebAudioService';
 
 interface BottomBranchNavProps {
-  bars: UIBarType[];
+  UIBars: UIBarType[];
+}
+
+export enum BeatListOrientation {
+  TOP,
+  BOTTOM,
 }
 
 interface BottomBranchNavState {
   status: BottomBranchNavStatus;
-  isBeatSelected: boolean;
+  UIBarsAndBeats: {
+    [key: number]: { // Key is an orientation in BeatListOrientation
+      queued?: UIBeatType[],
+      playing?: UIBeatType,
+      selected?: UIBeatType,
+    },
+  };
+  beatPreviewTimer: NodeJS.Timeout;
 }
 
 class BottomBranchNav extends React.Component<BottomBranchNavProps, BottomBranchNavState> {
@@ -23,18 +33,25 @@ class BottomBranchNav extends React.Component<BottomBranchNavProps, BottomBranch
 
     this.state = {
       status: BottomBranchNavStatus.CHOOSE_FIRST_BEAT,
-      isBeatSelected: false,
+      UIBarsAndBeats: {
+        [BeatListOrientation.TOP]: {},
+        [BeatListOrientation.BOTTOM]: {},
+      },
+      beatPreviewTimer: null,
     };
   }
 
   render() {
-    const { bars } = this.props;
-    const { status } = this.state;
+    const { UIBars } = this.props;
+    const { status, UIBarsAndBeats } = this.state;
     const instructionForStatus = this.getInstructionForStatus();
     const modalFooterElement = this.getFooter();
     const bottomBranchNavBodyClassNames = cx(
       'bottom-branch-nav-body',
-      { previewing: status === BottomBranchNavStatus.PREVIEWING },
+      {
+        previewable: status === BottomBranchNavStatus.PREVIEWABLE,
+        previewing: status === BottomBranchNavStatus.PREVIEWING,
+      },
     );
 
     return (
@@ -53,18 +70,19 @@ class BottomBranchNav extends React.Component<BottomBranchNavProps, BottomBranch
             </div>
             <div className="modal-body p-0">
               <div className={bottomBranchNavBodyClassNames}>
-                <BeatList bars={bars}
-                          shouldInvertScrollbar={true}
-                          signalClickToParentFn={
-                            this.handleBeatListClick.bind(this)
-                          }
-                          bottomBranchNavStatus={status} />
-                <BeatList bars={bars}
-                          isHidden={!this.state.isBeatSelected}
-                          signalClickToParentFn={
-                            this.handleBeatListClick.bind(this)
-                          }
-                          bottomBranchNavStatus={status} />
+                <BeatList parentComponent={this}
+                          signalClickToParentFn={this.handleBeatListClick}
+                          UIBars={UIBars}
+                          queuedUIBeats={UIBarsAndBeats[BeatListOrientation.TOP].queued}
+                          playingUIBeat={UIBarsAndBeats[BeatListOrientation.TOP].playing}
+                          orientation={BeatListOrientation.TOP} />
+                <BeatList parentComponent={this}
+                          signalClickToParentFn={this.handleBeatListClick}
+                          UIBars={UIBars}
+                          queuedUIBeats={UIBarsAndBeats[BeatListOrientation.BOTTOM].queued}
+                          playingUIBeat={UIBarsAndBeats[BeatListOrientation.BOTTOM].playing}
+                          isHidden={status === BottomBranchNavStatus.CHOOSE_FIRST_BEAT}
+                          orientation={BeatListOrientation.BOTTOM}  />
               </div>
             </div>
             {modalFooterElement}
@@ -110,33 +128,68 @@ class BottomBranchNav extends React.Component<BottomBranchNavProps, BottomBranch
     );
   }
 
-  private handleBeatListClick() {
-    this.setState({
-      isBeatSelected: true,
+  private handleBeatListClick(
+    thisComponent: BottomBranchNav,
+    beatListOrientation: BeatListOrientation,
+    selectedUIBeat: UIBeatType,
+  ) {
+    thisComponent.setState(({ UIBarsAndBeats }) => {
+      const isOrientationTop = beatListOrientation === BeatListOrientation.TOP;
+
+      if (isOrientationTop) {
+        UIBarsAndBeats[BeatListOrientation.TOP].selected = selectedUIBeat;
+      } else {
+        UIBarsAndBeats[BeatListOrientation.BOTTOM].selected = selectedUIBeat;
+      }
+
+      return {
+        UIBarsAndBeats,
+      };
     });
 
-    const { status } = this.state;
+    const { status } = thisComponent.state;
 
     if (status === BottomBranchNavStatus.CHOOSE_FIRST_BEAT) {
-      this.setState({
+      thisComponent.setState({
         status: BottomBranchNavStatus.CHOOSE_SECOND_BEAT,
       });
     } else if (status === BottomBranchNavStatus.CHOOSE_SECOND_BEAT) {
-      this.setState({
+      thisComponent.setState({
         status: BottomBranchNavStatus.PREVIEWABLE,
       });
     }
   }
 
   private handlePreviewClick() {
-    this.setState({
-      status: BottomBranchNavStatus.PREVIEWING,
+    this.setState(({ beatPreviewTimer }) => {
+      clearTimeout(beatPreviewTimer);
+
+      return {
+        status: BottomBranchNavStatus.PREVIEWING,
+        beatPreviewTimer: null,
+      };
     });
+
+    const { UIBarsAndBeats } = this.state;
+    const topSelectedBeat = UIBarsAndBeats[BeatListOrientation.TOP].selected;
+    const bottomSelectedBeat = UIBarsAndBeats[BeatListOrientation.BOTTOM].selected;
+    const topSelectedBar = this.getBarFromBeat(topSelectedBeat);
+    const bottomSelectedBar = this.getBarFromBeat(bottomSelectedBeat);
+
+    this.playBeatPaths(topSelectedBar,
+                       bottomSelectedBar,
+                       topSelectedBeat,
+                       bottomSelectedBeat);
   }
 
   private handlePreviewingBackClick() {
-    this.setState({
-      status: BottomBranchNavStatus.PREVIEWABLE,
+    this.setState(({ beatPreviewTimer }) => {
+      clearTimeout(beatPreviewTimer);
+
+      return {
+        status: BottomBranchNavStatus.PREVIEWABLE,
+        beatPreviewTimer: null,
+      };
     });
   }
 
@@ -149,6 +202,121 @@ class BottomBranchNav extends React.Component<BottomBranchNavProps, BottomBranch
     const instruction = Translator.react.bottom_branch_nav[status];
 
     return instruction;
+  }
+
+  private playBeatPaths(
+    originBar: UIBarType,
+    destinationBar: UIBarType,
+    originBeat: UIBeatType,
+    destinationBeat: UIBeatType,
+  ) {
+    const pathBeats = [
+      ...this.getAdjacentBeats(originBar, originBeat, true, true),
+      ...this.getAdjacentBeats(destinationBar, destinationBeat, false, false),
+    ];
+    const pathBeatOrders = pathBeats.map(beat => beat.order);
+
+    this.updatePlayingBeats(pathBeats);
+    this.updateQueuedBeats(pathBeats);
+
+    // Play the opposite branch
+    const callbackFn = () => {
+      console.log('End of beats!');
+
+      const { status } = this.state;
+
+      // If we're still previewing when the beats have finished
+      if (status === BottomBranchNavStatus.PREVIEWING) {
+
+        // Reverse the originBeat and destinationBeat
+        // this.playBeatPaths(destinationBar, originBar, destinationBeat, originBeat); // TODO: Enbl
+      }
+    };
+
+    WebAudioService.getInstance()
+                   .previewBeatsWithOrders(pathBeatOrders,
+                                           callbackFn.bind(this));
+  }
+
+  private getAdjacentBeats(
+    anchorBar: UIBarType,
+    anchorBeat: UIBeatType,
+    shouldReturnBeatsBefore: boolean,
+    shouldIncludeInputBeat: boolean,
+  ): UIBeatType[] {
+    const { beats: anchorBarBeats, order: anchorBarOrder } = anchorBar;
+    const anchorBeatOrder = anchorBeat.order;
+
+    // Get the beats in the bar to the right or left
+    const adjacentBarOrder = shouldReturnBeatsBefore ? anchorBarOrder - 1 : anchorBarOrder + 1;
+    const adjacentBarBeats = this.props.UIBars[adjacentBarOrder].beats;
+
+    // Get beats in the same bar that are to the right or left
+    const adjacentBeatsInBar = anchorBarBeats.filter(({ order: anchorBarBeatOrder }) => {
+      if (shouldReturnBeatsBefore) {
+        return anchorBarBeatOrder < anchorBeatOrder;
+      }
+
+      return anchorBarBeatOrder > anchorBeatOrder;
+    });
+
+    const adjacentBeats = [
+      ...adjacentBarBeats,
+      ...adjacentBeatsInBar,
+    ];
+
+    if (shouldIncludeInputBeat) {
+      adjacentBeats.push(anchorBeat);
+    }
+
+    return adjacentBeats.sort((a, b) => a.order - b.order);
+  }
+
+  private updateQueuedBeats(queuedUIBeats: UIBeatType[]) {
+    this.setState(({ UIBarsAndBeats }) => {
+      for (const orientation in UIBarsAndBeats) {
+        UIBarsAndBeats[orientation].queued = queuedUIBeats;
+      }
+
+      return {
+        UIBarsAndBeats,
+      };
+    });
+  }
+
+  private updatePlayingBeats(queuedUIBeats: UIBeatType[]) {
+    const copyQueuedUIBeats = [...queuedUIBeats];
+
+    const updatePlayingBeat = (queuedUIBeats: UIBeatType[], queuedUIBeat: UIBeatType) => {
+
+      this.setState(({ UIBarsAndBeats }) => {
+        for (const orientation in UIBarsAndBeats) {
+          UIBarsAndBeats[orientation].playing = queuedUIBeat;
+        }
+
+        let beatPreviewTimer = null;
+
+        if (queuedUIBeats.length) {
+          beatPreviewTimer = setTimeout(
+            () => updatePlayingBeat(queuedUIBeats, queuedUIBeats.shift()),
+            queuedUIBeat.durationMs,
+          );
+        }
+
+        return {
+          UIBarsAndBeats,
+          beatPreviewTimer,
+        };
+      });
+    };
+
+    updatePlayingBeat(copyQueuedUIBeats, copyQueuedUIBeats.shift());
+  }
+
+  private getBarFromBeat({ barOrder }: UIBeatType) {
+    const { UIBars } = this.props;
+
+    return UIBars[barOrder];
   }
 }
 
