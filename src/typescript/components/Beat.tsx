@@ -66,7 +66,7 @@ class Beat extends React.Component<BeatProps, BeatState> {
         <span className="circle circle-hollow"></span>
         <span className={circleSolidClassNames}></span>
         <div className="beat-order-container">
-          <span>{order}</span>
+          <span>{order + 1}</span>
         </div>
       </div>
     );
