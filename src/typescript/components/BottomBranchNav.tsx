@@ -190,14 +190,22 @@ class BottomBranchNav extends React.Component<BottomBranchNavProps, BottomBranch
   }
 
   private handlePreviewingBackClick() {
-    this.setState(({ beatPreviewTimer }) => {
+    this.setState(({ beatPreviewTimer, UIBarsAndBeats }) => {
       clearTimeout(beatPreviewTimer);
+
+      for (const orientation in UIBarsAndBeats) {
+        delete UIBarsAndBeats[orientation].playing;
+        delete UIBarsAndBeats[orientation].queued;
+      }
 
       return {
         status: BottomBranchNavStatus.PREVIEWABLE,
         beatPreviewTimer: null,
       };
     });
+
+    WebAudioService.getInstance()
+                   .stop();
   }
 
   private handleCreateBranchClick() {

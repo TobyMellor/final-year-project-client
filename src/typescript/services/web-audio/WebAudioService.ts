@@ -20,6 +20,7 @@ class WebAudioService {
 
   private _audioContext: AudioContext;
   private _audioBuffer: AudioBuffer;
+  private _audioBufferSourceNodes: AudioBufferSourceNode[] = [];
 
   private _tracks: TrackModel[] = [];
   private _playingTrack: TrackModel = null;
@@ -142,7 +143,7 @@ class WebAudioService {
   public async previewBeatsWithOrders(beatOrders: number[], beatOnEndedCallbackFn: () => void) {
     const previewingBeats = await this._playingTrack.getBeatsWithOrders(beatOrders);
 
-    BeatQueueManager.clear();
+    this.stop();
 
     return this.queueBeatsForPlaying({ beats: previewingBeats }, beatOnEndedCallbackFn);
   }
@@ -159,7 +160,17 @@ class WebAudioService {
     source.connect(this._audioContext.destination);
     source.start(when, offset, duration);
 
+    this._audioBufferSourceNodes.push(source);
+
     return source;
+  }
+
+  public stop() {
+    // Stop all queued samples, then clear them from memory
+    this._audioBufferSourceNodes.forEach(source => source.stop());
+    this._audioBufferSourceNodes = [];
+
+    BeatQueueManager.clear();
   }
 
   // Signal that we're ready to receive beats to play
