@@ -35,10 +35,6 @@ class AudioAnalysisModel {
   private _bars: BarModel[];
   private _beats: BeatModel[];
   private _segments: SegmentModel[];
-  private _maxTimbre: number;
-  private _minTimbre: number;
-  private _maxLoudness: number;
-  private _minLoudness: number;
 
   constructor({
     track,
@@ -74,19 +70,11 @@ class AudioAnalysisModel {
       bars,
       beats,
       segments,
-      maxTimbre,
-      minTimbre,
-      maxLoudness,
-      minLoudness,
      } = trackFactory.createBarsBeatsAndSegments(barsInput, beatsInput, segmentsInput);
 
     this._bars = bars;
     this._beats = beats;
     this._segments = segments;
-    this._maxTimbre = maxTimbre;
-    this._minTimbre = minTimbre;
-    this._maxLoudness = maxLoudness;
-    this._minLoudness = minLoudness;
   }
 
   public get track(): TrackModel | null {
@@ -108,20 +96,8 @@ class AudioAnalysisModel {
     return this._bars;
   }
 
-  public get maxTimbre(): number {
-    return this._maxTimbre;
-  }
-
-  public get minTimbre(): number {
-    return this._minTimbre;
-  }
-
-  public get maxLoudness(): number {
-    return this._maxLoudness;
-  }
-
-  public get minLoudness(): number {
-    return this._minLoudness;
+  public get segments(): SegmentModel[] {
+    return this._segments;
   }
 }
 

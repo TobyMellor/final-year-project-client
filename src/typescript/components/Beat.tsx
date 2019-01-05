@@ -83,10 +83,14 @@ class Beat extends React.Component<BeatProps, BeatState> {
 
   private getCircleColour(timbreNormalized: number): string {
     const availableColours = [
+      'light-black',
+      'dark-black',
       'light-purple',
       'dark-purple',
       'light-blue',
       'dark-blue',
+      'light-turquoise',
+      'dark-turquoise',
       'light-green',
       'dark-green',
       'light-yellow',
@@ -102,11 +106,13 @@ class Beat extends React.Component<BeatProps, BeatState> {
 
   private getCircleSize(loudnessNormalized: number): string {
     const availableSizes = [
+      'xxs',
       'xs',
       'sm',
       'md',
       'lg',
       'xl',
+      'xxl',
     ];
 
     return this.getCorrespondingClassName(availableSizes, loudnessNormalized);

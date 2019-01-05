@@ -7,15 +7,8 @@ export type TimeIdentifier = {
   secs: number,
 };
 
-export interface CreateBarsBeatsAndSegments extends CreateSegments {
+export interface CreateBarsBeatsAndSegments {
   bars: BarModel[];
   beats: BeatModel[];
-}
-
-export interface CreateSegments {
   segments: SegmentModel[];
-  maxTimbre: number;
-  minTimbre: number;
-  maxLoudness: number;
-  minLoudness: number;
 }

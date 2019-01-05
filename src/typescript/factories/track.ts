@@ -12,7 +12,7 @@ import {
   GetAnAudioAnalysisResponseSegment,
 } from '../types/spotify-responses';
 import TimeIntervalModel from '../models/audio-analysis/TimeInterval';
-import { CreateBarsBeatsAndSegments, CreateSegments } from '../types/general';
+import { CreateBarsBeatsAndSegments } from '../types/general';
 
 export async function createTrack(ID: string): Promise<TrackModel> {
   return GetATrack.request(ID);
@@ -39,13 +39,7 @@ export function createBarsBeatsAndSegments(
   beatsInput: GetAnAudioAnalysisResponseTimeInterval[],
   segmentsInput: GetAnAudioAnalysisResponseSegment[],
 ): CreateBarsBeatsAndSegments {
-  const {
-    segments,
-    maxTimbre,
-    minTimbre,
-    maxLoudness,
-    minLoudness,
-  } = createSegments(segmentsInput);
+  const segments = createSegments(segmentsInput);
   const beats = createBeats(beatsInput, segments);
   const bars = createBars(barsInput, beats);
 
@@ -53,40 +47,19 @@ export function createBarsBeatsAndSegments(
     bars,
     beats,
     segments,
-    maxTimbre,
-    minTimbre,
-    maxLoudness,
-    minLoudness,
   };
 }
 
 function createSegments(
   segmentsInput: GetAnAudioAnalysisResponseSegment[],
-): CreateSegments {
-  let maxTimbre: number = null;
-  let minTimbre: number = null;
-  let maxLoudness: number = null;
-  let minLoudness: number = null;
-
+): SegmentModel[] {
   const segments = segmentsInput.map((segmentInput, order) => {
     const segment = new SegmentModel({ ...segmentInput, order });
-    const { timbre, maxLoudness: loudness } = segment;
-
-    maxTimbre = Math.max(maxTimbre, timbre);
-    minTimbre = Math.min(minTimbre, timbre);
-    maxLoudness = Math.max(maxLoudness, loudness);
-    minLoudness = Math.min(minLoudness, loudness);
 
     return segment;
   });
 
-  return {
-    segments,
-    maxTimbre,
-    minTimbre,
-    maxLoudness,
-    minLoudness,
-  };
+  return segments;
 }
 
 function createBeats(

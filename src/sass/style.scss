@@ -187,24 +187,30 @@ canvas {
                 bottom: 0;
                 left: 0;
 
-                &.circle-light-purple { background-color: $light-purple; }
-                &.circle-dark-purple  { background-color: $dark-purple;  }
-                &.circle-light-blue   { background-color: $light-blue;   }
-                &.circle-dark-blue    { background-color: $dark-blue;    }
-                &.circle-light-green  { background-color: $light-green;  }
-                &.circle-dark-green   { background-color: $dark-green;   }
-                &.circle-light-yellow { background-color: $light-yellow; }
-                &.circle-dark-yellow  { background-color: $dark-yellow;  }
-                &.circle-light-orange { background-color: $light-orange; }
-                &.circle-dark-orange  { background-color: $dark-orange;  }
-                &.circle-light-red    { background-color: $light-red;    }
-                &.circle-dark-red     { background-color: $dark-red;     }
+                &.circle-light-black     { background-color: $light-black;     }
+                &.circle-dark-black      { background-color: $dark-black;      }
+                &.circle-light-purple    { background-color: $light-purple;    }
+                &.circle-dark-purple     { background-color: $dark-purple;     }
+                &.circle-light-blue      { background-color: $light-blue;      }
+                &.circle-dark-blue       { background-color: $dark-blue;       }
+                &.circle-light-turquoise { background-color: $light-turquoise; }
+                &.circle-dark-turquoise  { background-color: $dark-turquoise;  }
+                &.circle-light-green     { background-color: $light-green;     }
+                &.circle-dark-green      { background-color: $dark-green;      }
+                &.circle-light-yellow    { background-color: $light-yellow;    }
+                &.circle-dark-yellow     { background-color: $dark-yellow;     }
+                &.circle-light-orange    { background-color: $light-orange;    }
+                &.circle-dark-orange     { background-color: $dark-orange;     }
+                &.circle-light-red       { background-color: $light-red;       }
+                &.circle-dark-red        { background-color: $dark-red;        }
 
-                &.circle-xs { width: 22px; height: 22px; }
-                &.circle-sm { width: 28px; height: 28px; }
-                &.circle-md { width: 34px; height: 34px; }
-                &.circle-lg { width: 42px; height: 42px; }
-                &.circle-xl { width: 46px; height: 46px; }
+                &.circle-xxs { width: 18px; height: 18px; }
+                &.circle-xs  { width: 22px; height: 22px; }
+                &.circle-sm  { width: 28px; height: 28px; }
+                &.circle-md  { width: 34px; height: 34px; }
+                &.circle-lg  { width: 42px; height: 42px; }
+                &.circle-xl  { width: 46px; height: 46px; }
+                &.circle-xxl { width: 50px; height: 50px; }
               }
             }
 
