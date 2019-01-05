@@ -2,22 +2,22 @@ import * as conversions from './conversions';
 import WorldPoint from '../points/WorldPoint';
 
 class Circle {
-  private center: WorldPoint;
-  private innerRadius: number;
-  private outerRadius: number;
-
   constructor(
-    center: WorldPoint,
-    innerRadius: number,
-    outerRadius: number,
-  ) {
-    this.center = center;
-    this.innerRadius = innerRadius;
-    this.outerRadius = outerRadius;
-  }
+    private _center: WorldPoint,
+    private _innerRadius: number,
+    private _outerRadius: number = _innerRadius,
+  ) {}
 
   public getCircumference(): number {
-    return this.outerRadius * 2;
+    return this._outerRadius * 2;
+  }
+
+  public getPointOnCircle(angleRadians: number, shouldUseOuterRadius: boolean = true): WorldPoint {
+    const radius = shouldUseOuterRadius ? this._outerRadius : this._innerRadius;
+    const x = (radius * Math.cos(angleRadians)) + this._center.x;
+    const y = (radius * Math.sin(angleRadians)) + this._center.y;
+
+    return WorldPoint.getPoint(x, y);
   }
 }
 

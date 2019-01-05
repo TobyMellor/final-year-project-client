@@ -2,8 +2,11 @@ import Scene from './Scene';
 import SongCircle from './SongCircle';
 import WorldPoint from './points/WorldPoint';
 import BranchModel from '../../../models/branches/Branch';
+import Updatable, { NamedMesh } from './Updatable';
 
-class BezierCurve {
+class BezierCurve extends Updatable {
+  protected _namedMeshes: [NamedMesh] = [null];
+
   constructor(
     private scene: Scene,
     private songCircle: SongCircle,
@@ -12,7 +15,11 @@ class BezierCurve {
     private toPercentage: number,
     private lineWidth: number,
   ) {
+    super();
+
     this.renderBezierCurve(scene, songCircle, fromPercentage, toPercentage, lineWidth);
+
+    scene.add(this);
   }
 
   private renderBezierCurve(
@@ -23,6 +30,7 @@ class BezierCurve {
     lineWidth: number,
   ) {
     const THREE = Scene.THREE;
+
     const fromPoint = WorldPoint.getPointOnCircleFromPercentage(songCircle,
                                                                 fromPercentage);
     const centerPoint = songCircle.center;
@@ -42,10 +50,14 @@ class BezierCurve {
     const material = new THREE.LineBasicMaterial({ color : 0x2F3640 });
 
     // Create the final object to add to the scene
-    const bezierCurve = new THREE.Line(geometry, material);
-    bezierCurve.position.set(0, 0, centerPoint.z + 0.0001);
+    const bezierCurve = super.createNamedMesh(geometry, material);
+    bezierCurve.mesh.position.set(0, 0, centerPoint.z + 0.0001);
 
-    scene.add(bezierCurve);
+    return bezierCurve;
+  }
+
+  public updatePosition() {
+    //
   }
 }
 

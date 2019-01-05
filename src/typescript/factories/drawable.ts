@@ -7,14 +7,14 @@ import BranchModel from '../models/branches/Branch';
 import BranchService from '../services/branch/BranchService';
 
 export async function renderParentSongCircle(scene: Scene, track: TrackModel): Promise<SongCircle> {
-  const pointOnCircle = WorldPoint.getPoint(0, 0);
   const radius = 1;
   const lineWidth = getLineWidthForSong(radius);
   const parentSongCircle = new SongCircle(scene,
                                           track,
-                                          pointOnCircle,
-                                          1,
+                                          radius,
                                           lineWidth,
+                                          null,
+                                          -1,
                                           0xFFFFFF);
 
   const { branches } = await BranchService.getInstance();
@@ -31,15 +31,12 @@ export function renderChildSongCircle(
 ): SongCircle {
   const radius = getRadiusForSong(parentSongCircle, track);
   const lineWidth = getLineWidthForSong(radius);
-  const pointOnCircle = WorldPoint.getPointOnCircleFromPercentage(parentSongCircle,
-                                                                  percentage,
-                                                                  radius,
-                                                                  lineWidth);
   const childSongCircle = new SongCircle(scene,
                                          track,
-                                         pointOnCircle,
                                          radius,
-                                         lineWidth);
+                                         lineWidth,
+                                         parentSongCircle,
+                                         percentage);
 
   return childSongCircle;
 }

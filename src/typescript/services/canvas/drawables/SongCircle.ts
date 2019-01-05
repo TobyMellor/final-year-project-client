@@ -2,8 +2,10 @@ import Track from '../../../models/audio-analysis/Track';
 import WorldPoint from './points/WorldPoint';
 import Scene from './Scene';
 import * as conversions from './utils/conversions';
+import Updatable, { NamedMesh } from './Updatable';
+import Circle from './utils/Circle';
 
-class SongCircle {
+class SongCircle extends Updatable {
   private static WHITE_COLOUR: Uint8Array = new Uint8Array([255, 255, 255, 255]);
   private static BLACK_COLOUR: Uint8Array = new Uint8Array([0, 0, 0, 255]);
   private static TRANSPARENT_OVERLAY: number[] = [1, 1, 1, 1]; // Colour to overlay textures with
@@ -11,33 +13,35 @@ class SongCircle {
   private static CIRCLE_RESOLUTION = 1;
   private static DEGREES_IN_CIRCLE = 360;
 
+  protected _namedMeshes: [NamedMesh, NamedMesh, NamedMesh];
+
   constructor(
     scene: Scene,
     public track: Track,
-    public center: WorldPoint,
     public radius: number,
-    public lineWidth: number,
+    private _lineWidth: number,
+    private _parentSongCircle: SongCircle = null,
+    private _percentage: number = -1,
     backgroundColour: number = null, // If present, this overrides the album art
   ) {
+    super();
 
-    // Make smaller circles (songs with a smaller durations) appear in front
-    // So, give smaller circles a smaller Z
-    // One trillion isn't special here, it's just making Z small
-    const oneTrillion = 1000000000;
-    this.center.z = Scene.Z_BASE_DISTANCE - track.duration.ms / oneTrillion;
+    const circleMesh = this.getCircle(track, this.center, radius, backgroundColour);
+    const circleOutlineMesh = this.getCircleOutline(this.center, radius, _lineWidth);
 
-    this.renderCircle(scene, track, center, radius, backgroundColour);
-    this.renderCircleOutline(scene, center, radius, lineWidth);
-    this.renderText(scene, track, center, radius, lineWidth);
+    this._namedMeshes = [circleMesh, circleOutlineMesh, null];
+
+    this.renderText(scene, track, this.center, radius, _lineWidth);
+
+    scene.add(this);
   }
 
-  private renderCircle(
-    scene: any,
+  private getCircle(
     track: Track,
     center: WorldPoint,
     radius: number,
     backgroundColour: number,
-  ) {
+  ): NamedMesh {
     const THREE = Scene.THREE;
     const geometry = new THREE.CircleGeometry(radius, SongCircle.DEGREES_IN_CIRCLE);
     let material;
@@ -50,39 +54,41 @@ class SongCircle {
       material = new THREE.MeshBasicMaterial({ color: backgroundColour });
     }
 
-    const circle = new THREE.Mesh(geometry, material);
-    circle.position.set(center.x, center.y, center.z);
+    const circle =  super.createNamedMesh(geometry, material);
+    circle.mesh.position.set(center.x, center.y, center.z - 0.0001);
 
-    scene.add(circle);
+    return circle;
   }
 
-  private renderCircleOutline(
-    scene: Scene,
+  private getCircleOutline(
     center: WorldPoint,
     radius: number,
     lineWidth: number,
-  ) {
+  ): NamedMesh {
     const THREE = Scene.THREE;
     const geometry = new THREE.Geometry();
 
     for (let i = 0; i <= SongCircle.DEGREES_IN_CIRCLE; i += SongCircle.CIRCLE_RESOLUTION) {
-      const numberOfVertices = 4;
-      const nextVertexCount = i * numberOfVertices;
-      const theta = conversions.degreesToRadians(nextVertexCount);
+      const NUMBER_OF_VERTICES = 4;
+      const nextVertexCount = i * NUMBER_OF_VERTICES;
+      const angleRadians = conversions.degreesToRadians(nextVertexCount);
+      const circle = new Circle(WorldPoint.getPoint(0, 0), radius, radius + lineWidth);
+      const innerPoint = circle.getPointOnCircle(angleRadians, false);
+      const outerPoint = circle.getPointOnCircle(angleRadians, true);
 
-      const inner = new THREE.Vector3(Math.cos(theta) * radius + center.x,
-                                      Math.sin(theta) * radius + center.y,
-                                      center.z);
-      const outer = new THREE.Vector3(Math.cos(theta) * (radius + lineWidth) + center.x,
-                                      Math.sin(theta) * (radius + lineWidth) + center.y,
-                                      center.z);
+      const innerVector = new THREE.Vector3(innerPoint.x,
+                                            innerPoint.y,
+                                            0);
+      const outerVector = new THREE.Vector3(outerPoint.x,
+                                            outerPoint.y,
+                                            0);
 
-      const previousVertex2 = geometry.vertices[geometry.vertices.length - 2] || inner;
-      const previousVertex1 = geometry.vertices[geometry.vertices.length - 1] || outer;
+      const previousVertex2 = geometry.vertices[geometry.vertices.length - 2] || innerVector;
+      const previousVertex1 = geometry.vertices[geometry.vertices.length - 1] || outerVector;
 
       geometry.vertices.push(
-        previousVertex2, previousVertex1, inner,
-        previousVertex1, inner, outer);
+        previousVertex2, previousVertex1, innerVector,
+        previousVertex1, innerVector, outerVector);
       geometry.faces.push(
         new THREE.Face3(nextVertexCount, nextVertexCount + 1, nextVertexCount + 2),
         new THREE.Face3(nextVertexCount + 1, nextVertexCount + 2, nextVertexCount + 3),
@@ -90,10 +96,11 @@ class SongCircle {
     }
 
     const material = new THREE.MeshBasicMaterial({ color: 0x2F3640 });
-    const circleOutline = new THREE.Mesh(geometry, material);
-    circleOutline.drawMode = THREE.TriangleStripDrawMode;
+    const circleOutline = super.createNamedMesh(geometry, material);
+    circleOutline.mesh.position.set(center.x, center.y, center.z);
+    circleOutline.mesh.drawMode = THREE.TriangleStripDrawMode;
 
-    scene.add(circleOutline);
+    return circleOutline;
   }
 
   private renderText(
@@ -108,10 +115,10 @@ class SongCircle {
 
     loader.load('/dist/fonts/san-fransisco/regular.json', (font: any) => {
       let fontSize = 0.5;
-      let predictedWidth = null;
-      let text = null;
+      let predictedWidth: number = null;
+      let text: THREE.Mesh = null;
 
-      function generateText(fontSize: number) {
+      const generateText = (fontSize: number): THREE.Mesh => {
         const geometry = new THREE.TextGeometry(track.name, {
           font,
           size: fontSize,
@@ -124,7 +131,7 @@ class SongCircle {
         const text = new THREE.Mesh(geometry, material);
 
         return text;
-      }
+      };
 
       const circumference = radius * 2;
       const padding = lineWidth * 4;
@@ -139,8 +146,41 @@ class SongCircle {
 
       text.position.set(center.x, center.y, center.z + 0.00002);
 
-      scene.add(text);
+      this._namedMeshes[2] = super.nameMesh(text);
+
+      scene.add(this);
     });
+  }
+
+  public get center(): WorldPoint {
+    if (!this._parentSongCircle) {
+      return WorldPoint.getPoint(0, 0);
+    }
+
+    const centerWorldPoint = WorldPoint.getCenterPointOfCircleFromPercentage(this._parentSongCircle,
+                                                                             this._percentage,
+                                                                             this.radius,
+                                                                             this._lineWidth);
+
+    // Make smaller circles (songs with a smaller durations) appear in front
+    // So, give smaller circles a smaller Z
+    // One trillion isn't special here, it's just making Z small
+    const oneTrillion = 1000000000;
+    centerWorldPoint.z = Scene.Z_BASE_DISTANCE - this.track.duration.ms / oneTrillion;
+
+    return centerWorldPoint;
+  }
+
+  public updatePosition() {
+    const { x, y, z } = this.center;
+    const [circleMesh, circleOutlineMesh, textMesh] = this._namedMeshes;
+
+    circleMesh.mesh.position.set(x, y, z);
+    circleOutlineMesh.mesh.position.set(x, y, z);
+
+    if (textMesh) {
+      textMesh.mesh.position.set(x, y, z + 0.00002);
+    }
   }
 }
 

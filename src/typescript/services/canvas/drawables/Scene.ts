@@ -1,4 +1,8 @@
 import CanvasService from '../CanvasService';
+import * as conversions from './utils/conversions';
+import WorldPoint from './points/WorldPoint';
+import Updatable from './Updatable';
+import SongCircle from '../../canvas/drawables/SongCircle';
 
 export type Drawable = {
   meshes: THREE.Mesh[];
@@ -21,6 +25,9 @@ class Scene {
   private camera: THREE.Camera = null;
   private renderer: THREE.WebGLRenderer = null;
 
+  private updatables: Set<Updatable> = new Set();
+  private lastRenderSecs: number = null;
+
   private constructor(
     whereToDraw: HTMLCanvasElement,
   ) {
@@ -41,8 +48,6 @@ class Scene {
     this.scene = scene;
     this.camera = camera;
     this.renderer = renderer;
-
-    requestAnimationFrame(() => this.render());
   }
 
   public static getInstance(whereToDraw: HTMLCanvasElement): Scene {
@@ -53,19 +58,45 @@ class Scene {
     return this._instance = new this(whereToDraw);
   }
 
-  public add(...meshes: THREE.Mesh[]): this {
-    this.scene.add(...meshes);
+  public add(updatable: Updatable) {
+    const namedMeshes = updatable.getNamedMeshes();
 
-    return this;
+    // Add each mesh to the scene if they don't already exist
+    namedMeshes.forEach(({ UUID, mesh }) => {
+      const object = this.scene.getObjectByName(UUID);
+
+      if (!object) {
+        this.scene.add(mesh);
+      }
+    });
+
+    this.updatables.add(updatable);
   }
 
-  public delete(...meshes: THREE.Mesh[]): this {
-    this.scene.remove(...meshes);
-
-    return this;
+  private updatePositions() {
+    this.updatables.forEach((updatable) => {
+      updatable.updatePosition();
+    });
   }
 
-  public render() {
+  public deleteMeshesByUUIDs(...UUIDs: string[]) {
+    UUIDs.forEach(UUID => this.scene.getObjectByName(UUID));
+  }
+
+  public render(nowSecs: number) {
+    const rotationSpeed = 10;
+
+    // Get the time passed since the last time this fn was called
+    const deltaSecs = nowSecs - this.lastRenderSecs;
+
+    // Update the last time this fn was called to now (for future calls)
+    this.lastRenderSecs = nowSecs;
+
+    // Add rotation to all points in the World, update all positions
+    WorldPoint.rotationOffsetPercentage += rotationSpeed * deltaSecs;
+    this.updatePositions();
+
+    // Re-render everything on the scene through THREE.js
     this.renderer.render(this.scene, this.camera);
   }
 }

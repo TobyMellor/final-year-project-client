@@ -9,7 +9,7 @@
 import Dispatcher from '../../events/Dispatcher';
 import TrackModel from '../../models/audio-analysis/Track';
 import Scene from '../canvas/drawables/Scene';
-import * as DrawableFactory from '../../factories/drawable';
+import * as drawableFactory from '../../factories/drawable';
 import * as conversions from './drawables/utils/conversions';
 import { FYPEvent } from '../../types/enums';
 
@@ -25,10 +25,10 @@ class CanvasService {
     Dispatcher.getInstance()
               .on(FYPEvent.PlayingTrackBranchesAnalyzed, this, this.setSongCircles);
 
-    const render = (now: number) => {
-      if (Math.random() < 0.05) {
-        scene.render();
-      }
+    const render = (nowMs: number) => {
+      const nowSecs = conversions.millisecondsToSeconds(nowMs);
+
+      scene.render(nowSecs);
 
       requestAnimationFrame(render);
     };
@@ -47,12 +47,12 @@ class CanvasService {
   public async setSongCircles(
     { playingTrack, childTracks }: { playingTrack: TrackModel, childTracks: TrackModel[] },
   ) {
-    const parentSongCircle = await DrawableFactory.renderParentSongCircle(this.scene, playingTrack);
+    const parentSongCircle = await drawableFactory.renderParentSongCircle(this.scene, playingTrack);
 
     childTracks.forEach((childTrack) => {
       const percentage = conversions.getRandomInteger();
 
-      return DrawableFactory.renderChildSongCircle(this.scene,
+      return drawableFactory.renderChildSongCircle(this.scene,
                                                    parentSongCircle,
                                                    childTrack,
                                                    percentage);

@@ -1,7 +1,7 @@
 import Point from './Point';
 import * as conversions from '../utils/conversions';
 import SongCircle from '../SongCircle';
-import { mat4 } from 'gl-matrix';
+import Circle from '../utils/Circle';
 
 /**
  * World Point
@@ -10,33 +10,50 @@ import { mat4 } from 'gl-matrix';
  * independent from the camera
  */
 class WorldPoint extends Point {
+  public static rotationOffsetPercentage: number = 0;
+
   constructor(x: number, y: number, z: number = 1) {
     super(x, y, z);
   }
 
-  static getPoint(x: number, y: number, z: number = 1): WorldPoint {
+  public static getPoint(x: number, y: number, z: number = 1): WorldPoint {
     return new WorldPoint(x, y, z);
   }
 
-  static getPointOnCircleFromPercentage(
+  public static getCenterPointOfCircleFromPercentage(
     { center: parentCircleCenter, radius: parentCircleRadius }: SongCircle,
     percentage: number,
     ourCircleRadius: number = 0,
     ourCircleLineWidth: number = 1,
-  ) {
+  ): WorldPoint {
 
     // Angle where our circle will sit from the parent's center point
-    const angle: number = conversions.percentageToRadians(percentage);
+    const angleRadians = this.getAngleFromPercentage(percentage);
 
     // Distance from our circles center to the parent's center point
     const centerToCenterDistance: number = parentCircleRadius +
                                            ourCircleRadius +
                                            ourCircleLineWidth;
+    const circle = new Circle(parentCircleCenter, centerToCenterDistance);
 
-    const x = parentCircleCenter.x + (centerToCenterDistance * Math.cos(angle));
-    const y = parentCircleCenter.y + (centerToCenterDistance * Math.sin(angle));
+    return circle.getPointOnCircle(angleRadians);
+  }
 
-    return new WorldPoint(x, y, 1);
+  public static getPointOnCircleFromPercentage(
+    { center: parentCircleCenter, radius: parentCircleRadius }: SongCircle,
+    percentage: number,
+  ): WorldPoint {
+    const angleRadians = this.getAngleFromPercentage(percentage);
+    const circle = new Circle(parentCircleCenter, parentCircleRadius);
+
+    return circle.getPointOnCircle(angleRadians);
+  }
+
+  private static getAngleFromPercentage(percentage: number): number {
+    const percentageWithOffset = percentage + this.rotationOffsetPercentage;
+    const angle: number = conversions.percentageToRadians(percentageWithOffset);
+
+    return angle;
   }
 }
 
