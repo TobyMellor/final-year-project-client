@@ -139,8 +139,7 @@ canvas {
             margin-left: -16px;
             cursor: pointer;
             bottom: 0;
-            transition: bottom 0.25s ease, margin 0.25s ease;
-            transition: opacity 1s ease;
+            transition: bottom 0.25s ease, margin 0.25s ease, opacity 1s ease;
 
             // Animate a move upwards when hovering
             &:hover {
@@ -356,7 +355,7 @@ canvas {
   }
 
   50% {
-    transform: scale3d(1.1, 1.1, 1.1);
+    transform: scale3d(1.15, 1.15, 1.15);
   }
 
   to {

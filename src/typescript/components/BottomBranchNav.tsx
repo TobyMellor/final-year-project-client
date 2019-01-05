@@ -11,14 +11,14 @@ interface BottomBranchNavProps {
 }
 
 export enum BeatListOrientation {
-  TOP,
-  BOTTOM,
+  TOP = 'top',
+  BOTTOM = 'bottom',
 }
 
 interface BottomBranchNavState {
   status: BottomBranchNavStatus;
   UIBarsAndBeats: {
-    [key: number]: { // Key is an orientation in BeatListOrientation
+    [key: string]: { // Key is an orientation in BeatListOrientation
       queued?: UIBeatType[],
       playing?: UIBeatType,
       selected?: UIBeatType,
@@ -179,7 +179,9 @@ class BottomBranchNav extends React.Component<BottomBranchNavProps, BottomBranch
     this.playBeatPaths(topSelectedBar,
                        bottomSelectedBar,
                        topSelectedBeat,
-                       bottomSelectedBeat);
+                       bottomSelectedBeat,
+                       BeatListOrientation.TOP,
+                       BeatListOrientation.BOTTOM);
   }
 
   private handlePreviewingBackClick() {
@@ -209,18 +211,28 @@ class BottomBranchNav extends React.Component<BottomBranchNavProps, BottomBranch
     destinationBar: UIBarType,
     originBeat: UIBeatType,
     destinationBeat: UIBeatType,
+    startOrientation: BeatListOrientation,
+    endOrientation: BeatListOrientation,
   ) {
-    const pathBeats = [
-      ...this.getAdjacentBeats(originBar, originBeat, true, true),
-      ...this.getAdjacentBeats(destinationBar, destinationBeat, false, false),
+    const queuedUIBeats = [
+      ...this.getAdjacentBeats(originBar,
+                               originBeat,
+                               true,
+                               true,
+                               startOrientation as any),
+      ...this.getAdjacentBeats(destinationBar,
+                               destinationBeat,
+                               false,
+                               false,
+                               endOrientation as any),
     ];
-    const pathBeatOrders = pathBeats.map(beat => beat.order);
+    const queuedUIBeatOrders = queuedUIBeats.map(beat => beat.order);
 
-    // TODO: Find more permanent solution to get around scheduling delay
+    // FIXME: We can fix this by scheduling the path to play in the future!
     setTimeout(
       () => {
-        this.updatePlayingBeats(pathBeats);
-        this.updateQueuedBeats(pathBeats);
+        this.updatePlayingBeats(queuedUIBeats);
+        this.updateQueuedBeats(queuedUIBeats);
       },
       750);
 
@@ -232,12 +244,17 @@ class BottomBranchNav extends React.Component<BottomBranchNavProps, BottomBranch
       if (status === BottomBranchNavStatus.PREVIEWING) {
 
         // Reverse the originBeat and destinationBeat
-        this.playBeatPaths(destinationBar, originBar, destinationBeat, originBeat);
+        this.playBeatPaths(destinationBar,
+                           originBar,
+                           destinationBeat,
+                           originBeat,
+                           endOrientation,
+                           startOrientation);
       }
     };
 
     WebAudioService.getInstance()
-                   .previewBeatsWithOrders(pathBeatOrders,
+                   .previewBeatsWithOrders(queuedUIBeatOrders,
                                            callbackFn.bind(this));
   }
 
@@ -246,7 +263,8 @@ class BottomBranchNav extends React.Component<BottomBranchNavProps, BottomBranch
     anchorBeat: UIBeatType,
     shouldReturnBeatsBefore: boolean,
     shouldIncludeInputBeat: boolean,
-  ): UIBeatType[] {
+    orientation: string,
+  ): QueuedUIBeat[] {
     const { beats: anchorBarBeats, order: anchorBarOrder } = anchorBar;
     const anchorBeatOrder = anchorBeat.order;
 
@@ -272,13 +290,24 @@ class BottomBranchNav extends React.Component<BottomBranchNavProps, BottomBranch
       adjacentBeats.push(anchorBeat);
     }
 
-    return adjacentBeats.sort((a, b) => a.order - b.order);
+    const queuedUIBeats = adjacentBeats.map((beat) => {
+      return {
+        ...beat,
+        orientation,
+      };
+    });
+
+    return queuedUIBeats.sort((a, b) => a.order - b.order);
   }
 
-  private updateQueuedBeats(queuedUIBeats: UIBeatType[]) {
+  private updateQueuedBeats(queuedUIBeats: QueuedUIBeat[]) {
     this.setState(({ UIBarsAndBeats }) => {
       for (const orientation in UIBarsAndBeats) {
-        UIBarsAndBeats[orientation].queued = queuedUIBeats;
+        const queuedUIBeatsForOrientation = queuedUIBeats.filter((beat) => {
+          return beat.orientation === orientation;
+        });
+
+        UIBarsAndBeats[orientation].queued = queuedUIBeatsForOrientation;
       }
 
       return {
@@ -287,14 +316,18 @@ class BottomBranchNav extends React.Component<BottomBranchNavProps, BottomBranch
     });
   }
 
-  private updatePlayingBeats(queuedUIBeats: UIBeatType[]) {
+  private updatePlayingBeats(queuedUIBeats: QueuedUIBeat[]) {
     const copyQueuedUIBeats = [...queuedUIBeats];
 
-    const updatePlayingBeat = (queuedUIBeats: UIBeatType[], queuedUIBeat: UIBeatType) => {
+    const updatePlayingBeat = (queuedUIBeats: QueuedUIBeat[], queuedUIBeat: QueuedUIBeat) => {
 
       this.setState(({ UIBarsAndBeats }) => {
         for (const orientation in UIBarsAndBeats) {
-          UIBarsAndBeats[orientation].playing = queuedUIBeat;
+          if (orientation === queuedUIBeat.orientation) {
+            UIBarsAndBeats[orientation].playing = queuedUIBeat;
+          } else {
+            delete UIBarsAndBeats[orientation].playing;
+          }
         }
 
         let beatPreviewTimer = null;
@@ -328,6 +361,10 @@ export enum BottomBranchNavStatus {
   CHOOSE_SECOND_BEAT = 'choose_second_beat',
   PREVIEWABLE = 'previewable',
   PREVIEWING = 'previewing',
+}
+
+interface QueuedUIBeat extends UIBeatType {
+  orientation: string;
 }
 
 export default BottomBranchNav;
