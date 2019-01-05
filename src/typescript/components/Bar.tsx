@@ -9,6 +9,7 @@ export interface BarProps {
   queuedUIBeats?: UIBeatType[];
   playingUIBeat?: UIBeatType;
   selectedUIBeat: UIBeatType | null;
+  disabledUIBeats: UIBeatType[];
   parentComponent: BeatList;
   signalClickToParentFn: (
     parentComponent: BeatList,
@@ -27,7 +28,7 @@ class Bar extends React.Component<BarProps, BarState> {
     super(props);
 
     this.state = {
-      highestZIndex: 0,
+      highestZIndex: 1,
     };
   }
 
@@ -38,12 +39,14 @@ class Bar extends React.Component<BarProps, BarState> {
       const isQueued = this.isBeatQueued(beat.order);
       const isPlaying = this.isBeatPlaying(beat.order);
       const isSelected = this.isBeatSelected(beat.order);
+      const isDisabled = this.isBeatDisabled(beat.order);
 
       return <Beat key={beat.order}
                    UIBeat={beat}
                    isQueued={isQueued}
                    isPlaying={isPlaying}
                    isSelected={isSelected}
+                   isDisabled={isDisabled}
                    increaseHighestZIndexFn={this.increaseHighestZIndex.bind(this)}
                    signalClickToParentFn={this.signalClickToParent}
                    parentComponent={this} />;
@@ -83,6 +86,12 @@ class Bar extends React.Component<BarProps, BarState> {
     const { selectedUIBeat } = this.props;
 
     return this.isBarSelected() && selectedUIBeat.order === beatOrder;
+  }
+
+  private isBeatDisabled(beatOrder: number) {
+    const { disabledUIBeats } = this.props;
+
+    return disabledUIBeats && disabledUIBeats.some(beat => beat.order === beatOrder);
   }
 
   private increaseHighestZIndex(): number {

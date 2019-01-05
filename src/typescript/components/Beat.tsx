@@ -8,6 +8,7 @@ export interface BeatProps {
   isQueued: boolean;
   isPlaying: boolean;
   isSelected: boolean;
+  isDisabled: boolean;
   parentComponent: Bar;
   signalClickToParentFn: (
     parentComponent: Bar,
@@ -18,7 +19,7 @@ export interface BeatProps {
 }
 
 interface BeatState {
-  hoverCount: number;
+  hoverCount?: number;
   scrollReturnTimer: NodeJS.Timeout | null;
 }
 
@@ -37,7 +38,6 @@ class Beat extends React.Component<BeatProps, BeatState> {
 
     this.beatElement = React.createRef();
     this.state = {
-      hoverCount: 0,
       scrollReturnTimer: null,
     };
   }
@@ -51,7 +51,7 @@ class Beat extends React.Component<BeatProps, BeatState> {
   }
 
   render() {
-    const { isQueued, isPlaying, isSelected, UIBeat } = this.props;
+    const { isQueued, isPlaying, isSelected, isDisabled, UIBeat } = this.props;
     const { order, timbreNormalized, loudnessNormalized } = UIBeat;
     const circleColour = this.getCircleColour(timbreNormalized);
     const circleSize = this.getCircleSize(loudnessNormalized);
@@ -62,6 +62,7 @@ class Beat extends React.Component<BeatProps, BeatState> {
         queued: isQueued,
         playing: isPlaying,
         selected: isSelected,
+        disabled: isDisabled,
       },
     );
 
@@ -132,6 +133,12 @@ class Beat extends React.Component<BeatProps, BeatState> {
   }
 
   private handleClick() {
+    const { isDisabled } = this.props;
+
+    if (isDisabled) {
+      return;
+    }
+
     this.props.signalClickToParentFn(this.props.parentComponent,
                                      this.props.UIBeat,
                                      this.handleParentScroll.bind(this));

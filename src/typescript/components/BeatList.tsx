@@ -8,6 +8,7 @@ export interface BeatListProps {
   UIBars: UIBarType[];
   queuedUIBeats?: UIBeatType[];
   playingUIBeat?: UIBeatType;
+  disabledUIBeats?: UIBeatType[];
   parentComponent: BottomBranchNav;
   signalClickToParentFn: (
     parentComponent: BottomBranchNav,
@@ -36,7 +37,14 @@ class BeatList extends React.Component<BeatListProps, BeatListState> {
   }
 
   render() {
-    const { orientation, UIBars, isHidden, queuedUIBeats, playingUIBeat } = this.props;
+    const {
+      orientation,
+      UIBars,
+      isHidden,
+      queuedUIBeats,
+      playingUIBeat,
+      disabledUIBeats,
+    } = this.props;
     const scrollbarClassNames = cx(
       'horizontal-scrollbar',
       {
@@ -54,6 +62,7 @@ class BeatList extends React.Component<BeatListProps, BeatListState> {
                   queuedUIBeats={queuedUIBeats}
                   playingUIBeat={playingUIBeat}
                   selectedUIBeat={selectedUIBeat}
+                  disabledUIBeats={disabledUIBeats}
                   signalClickToParentFn={this.handleClick}
                   parentComponent={this} />;
     });

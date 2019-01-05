@@ -22,6 +22,7 @@ interface BottomBranchNavState {
       queued?: UIBeatType[],
       playing?: UIBeatType,
       selected?: UIBeatType,
+      disabled?: UIBeatType[],
     },
   };
   beatPreviewTimer: NodeJS.Timeout;
@@ -75,12 +76,14 @@ class BottomBranchNav extends React.Component<BottomBranchNavProps, BottomBranch
                           UIBars={UIBars}
                           queuedUIBeats={UIBarsAndBeats[BeatListOrientation.TOP].queued}
                           playingUIBeat={UIBarsAndBeats[BeatListOrientation.TOP].playing}
+                          disabledUIBeats={UIBarsAndBeats[BeatListOrientation.TOP].disabled}
                           orientation={BeatListOrientation.TOP} />
                 <BeatList parentComponent={this}
                           signalClickToParentFn={this.handleBeatListClick}
                           UIBars={UIBars}
                           queuedUIBeats={UIBarsAndBeats[BeatListOrientation.BOTTOM].queued}
                           playingUIBeat={UIBarsAndBeats[BeatListOrientation.BOTTOM].playing}
+                          disabledUIBeats={UIBarsAndBeats[BeatListOrientation.BOTTOM].disabled}
                           isHidden={status === BottomBranchNavStatus.CHOOSE_FIRST_BEAT}
                           orientation={BeatListOrientation.BOTTOM}  />
               </div>
@@ -138,8 +141,10 @@ class BottomBranchNav extends React.Component<BottomBranchNavProps, BottomBranch
 
       if (isOrientationTop) {
         UIBarsAndBeats[BeatListOrientation.TOP].selected = selectedUIBeat;
+        UIBarsAndBeats[BeatListOrientation.BOTTOM].disabled = [selectedUIBeat];
       } else {
         UIBarsAndBeats[BeatListOrientation.BOTTOM].selected = selectedUIBeat;
+        UIBarsAndBeats[BeatListOrientation.TOP].disabled = [selectedUIBeat];
       }
 
       return {
@@ -228,13 +233,12 @@ class BottomBranchNav extends React.Component<BottomBranchNavProps, BottomBranch
     ];
     const queuedUIBeatOrders = queuedUIBeats.map(beat => beat.order);
 
-    // FIXME: We can fix this by scheduling the path to play in the future!
     setTimeout(
       () => {
         this.updatePlayingBeats(queuedUIBeats);
         this.updateQueuedBeats(queuedUIBeats);
       },
-      750);
+      queuedUIBeats[0].durationMs);
 
     // Play the opposite branch
     const callbackFn = () => {

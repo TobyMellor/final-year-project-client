@@ -140,6 +140,7 @@ canvas {
             cursor: pointer;
             bottom: 0;
             transition: bottom 0.25s ease, margin 0.25s ease, opacity 1s ease;
+            z-index: 1;
 
             // Animate a move upwards when hovering
             &:hover {
@@ -149,6 +150,20 @@ canvas {
             &:first-child {
               .beat-order-container > span {
                 color: $text-black;
+              }
+            }
+
+            &.disabled {
+              opacity: 0.25;
+              cursor: initial;
+              z-index: 0 !important;
+
+              &:hover {
+                bottom: initial;
+              }
+
+              .beat-order-container span {
+                color: $light-red;
               }
             }
 
@@ -268,13 +283,19 @@ canvas {
   border: 1px solid $dark-white;
   border-bottom: 3px solid $light-black !important;
   border-radius: 8px;
+  transition: background-color 0.1s ease-in-out,
+              border-bottom 0.1s ease-in-out,
+              border-color 0.1s ease-in-out;
 
   &:hover {
     border-bottom: 2px solid $light-black !important;
   }
 
   &.start-fade, &.end-fade {
-    transition: opacity 0.2s ease;
+    transition: opacity 0.2s ease,
+                background-color 0.1s ease-in-out,
+                border-bottom 0.1s ease-in-out,
+                border-color 0.1s ease-in-out;
   }
 
   &.start-fade {
@@ -290,9 +311,11 @@ canvas {
     background-color: $dark-green;
     border-color: $dark-green;
 
-    &:hover {
-      background-color: $light-green;
-      border-color: transparent;
+    &:not(:disabled):not(.disabled) {
+      &:hover, &:focus, &:active {
+        background-color: $light-green;
+        border-color: transparent;
+      }
     }
   }
 }
