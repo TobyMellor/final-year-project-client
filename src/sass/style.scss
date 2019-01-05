@@ -215,6 +215,7 @@ canvas {
                 font-weight: $bold;
                 font-size: 18px;
                 color: $text-faded;
+                transition: color 0.25s ease;
               }
             }
           }
