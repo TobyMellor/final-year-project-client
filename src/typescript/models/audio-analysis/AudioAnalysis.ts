@@ -6,85 +6,98 @@ import TrackModel from './Track';
 import WebAudioService from '../../services/web-audio/WebAudioService';
 import * as conversions from '../../services/canvas/drawables/utils/conversions';
 import { TimeIdentifier } from '../../types/general';
+import * as trackFactory from '../../factories/track';
 
 interface Input extends GetAnAudioAnalysisResponse {
   trackID: string;
 }
 
 class AudioAnalysisModel {
-  private trackID: string;
-  private endOfFadeIn: TimeIdentifier;
-  private startOfFadeOut: TimeIdentifier;
-  private tempo: {
+  private _trackID: string;
+  private _endOfFadeIn: TimeIdentifier;
+  private _startOfFadeOut: TimeIdentifier;
+  private _tempo: {
     value: number,
     confidence: number,
   };
-  private timeSignature: {
+  private _timeSignature: {
     value: number,
     confidence: number,
   };
-  private key: {
+  private _key: {
     value: number,
     confidence: number,
   };
-  private mode: {
+  private _mode: {
     value: number,
     confidence: number,
   };
-  private bars: BarModel[];
-  private beats: BeatModel[];
-  private segments: SegmentModel[];
+  private _bars: BarModel[];
+  private _beats: BeatModel[];
+  private _segments: SegmentModel[];
 
-  constructor({ track, bars, beats, segments, trackID }: Input) {
-    this.trackID = trackID;
+  constructor({
+    track,
+    bars: barsInput,
+    beats: beatsInput,
+    segments: segmentsInput,
+    trackID,
+  }: Input) {
+    this._trackID = trackID;
 
     // Track Analysis
-    this.endOfFadeIn = conversions.getTimeIdentifierFromSeconds(track.end_of_fade_in);
-    this.startOfFadeOut = conversions.getTimeIdentifierFromSeconds(track.start_of_fade_out);
-    this.tempo = {
+    this._endOfFadeIn = conversions.getTimeIdentifierFromSeconds(track.end_of_fade_in);
+    this._startOfFadeOut = conversions.getTimeIdentifierFromSeconds(track.start_of_fade_out);
+    this._tempo = {
       value: track.tempo,
       confidence: track.tempo_confidence,
     };
-    this.timeSignature = {
+    this._timeSignature = {
       value: track.time_signature,
       confidence: track.time_signature_confidence,
     };
-    this.key = {
+    this._key = {
       value: track.key,
       confidence: track.key_confidence,
     };
-    this.mode = {
+    this._mode = {
       value: track.mode,
       confidence: track.mode_confidence,
     };
 
-    // Bars Analysis
-    this.bars = bars.map(bar => new BarModel(bar));
+    // Bars, Beats and Segments Analysis
+    const {
+      bars,
+      beats,
+      segments,
+     } = trackFactory.createBarsBeatsAndSegments(barsInput, beatsInput, segmentsInput);
 
-    // Beats Analysis
-    this.beats = beats.map(beat => new BeatModel(beat));
-
-    // Segment Analysis
-    this.segments = segments.map(segment => new SegmentModel(segment));
+    this._bars = bars;
+    this._beats = beats;
+    this._segments = segments;
   }
 
-  public getTrack(): TrackModel | null {
+  public get track(): TrackModel | null {
     const webAudioService = WebAudioService.getInstance();
-    const track = webAudioService.getTrack(this.trackID);
+    const track = webAudioService.getTrack(this._trackID);
 
     return track;
   }
 
-  public getTrackID(): string {
-    return this.trackID;
+  public get trackID(): string {
+    return this._trackID;
   }
 
-  public getBeats(): BeatModel[] {
-    return this.beats;
+  public get beats(): BeatModel[] {
+    return this._beats;
   }
 
-  public getBars(): BarModel[] {
-    return this.bars;
+  public get bars(): BarModel[] {
+    return this._bars;
+  }
+
+  public get segments(): SegmentModel[] {
+    return this._segments;
   }
 }
 

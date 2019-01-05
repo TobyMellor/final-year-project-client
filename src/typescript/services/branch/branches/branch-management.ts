@@ -15,10 +15,7 @@ export async function generateBranches(track: TrackModel): Promise<BranchModel[]
   return [];
 }
 
-export function getMockForTrack(audioAnalysis: AudioAnalysisModel): BranchModel[] {
-  const trackID = audioAnalysis.getTrackID();
-  const beats = audioAnalysis.getBeats();
-
+export function getMockForTrack({ trackID, beats }: AudioAnalysisModel): BranchModel[] {
   if (trackID === '4RVbK6cV0VqWdpCDcx3hiT') { // Reborn
     return [
       ...branchFactory.createBranches(beats[10], beats[50]),

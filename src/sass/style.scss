@@ -1,8 +1,13 @@
 @import 'colours';
 
+$default-font: -apple-system, BlinkMacSystemFont, sans-serif;
+$bold: 600;
+
 body {
-  background-color: $cloudy-white;
-  font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+  background-color: $white;
+  font-family: $default-font;
+  margin: 0;
+  padding: 0;
 }
 
 canvas {
@@ -13,5 +18,377 @@ canvas {
 .song-circle-text {
   position: absolute;
   color: $white;
-  font-weight: 600;
+  font-weight: $bold;
+}
+
+.bottom-branch-nav {
+  $bottomBranchNavWidth: 64px * 12;
+
+  max-width: $bottomBranchNavWidth;
+  position: fixed;
+  right: 0;
+  left: 0;
+  bottom: 0;
+
+  .modal-title {
+    font-size: 24px;
+    font-weight: $bold;
+    color: $text-black;
+    font-family: $default-font;
+  }
+
+  .modal-header {
+    .modal-title {
+      padding-left: 8px;
+    }
+
+    .close {
+      padding: 22px;
+    }
+  }
+
+  .modal-footer {
+    height: 75px;
+    transition: height 0.25s ease, padding 0.25s ease;
+    justify-content: center;
+
+
+    &.modal-footer-collapsed {
+      border: none;
+      height: 0;
+      padding: 0;
+    }
+  }
+
+  .bottom-branch-nav-body {
+    padding-top: 16px;
+    padding-bottom: 16px;
+
+    .horizontal-scrollbar {
+      &.hidden, &.hidden .bars {
+        height: 0;
+        overflow-x: hidden;
+      }
+
+      .bars {
+        display: flex;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        height: 64px + 46px; // Height of beat, plus extra room
+        transition: opacity 0.25s ease, height 0.5s ease;
+        padding-top: 10px;
+
+        // Ensure left/right beats can scroll to the middle
+        // 64px is the width of the beat, 16px margin of each beat
+        padding-left: $bottomBranchNavWidth / 2 - 64px + 15px;
+
+        // Apparently you can't add right padding to increase the scroll range
+        // https://blog.alexandergottlieb.com/overflow-scroll-and-the-right-padding-problem-a-css-only-solution-6d442915b3f4
+        .bar:last-child:after {
+          content: '';
+          width: $bottomBranchNavWidth / 2 - 16px - 17px;
+        }
+
+        scrollbar-width: none;
+        &::-webkit-scrollbar {
+          width: 0px;
+          background: transparent;
+        }
+
+        &.selected {
+          .bar {
+            opacity: 0.5;
+
+            &.selected {
+              opacity: 1;
+              margin-left: 16px;
+
+              .beat {
+                opacity: 0.5;
+                margin-left: 2px;
+                margin-right: 2px;
+
+                &:first-child {
+                  margin-left: 0;
+                }
+
+                &:last-child {
+                  margin-right: 0;
+                }
+
+                &.selected {
+                  opacity: 1;
+                  bottom: 10px;
+                }
+              }
+            }
+          }
+        }
+
+        .bar {
+          display: inherit;
+          margin-left: 16px + 16px; // Negative -16px margin-left
+          margin-right: 16px;
+          transition: opacity 1s ease;
+
+          .beat {
+            position: relative;
+            width: 64px;
+            height: 64px;
+            flex: 0 0 auto;
+            margin-left: -16px;
+            cursor: pointer;
+            bottom: 0;
+            transition: bottom 0.25s ease, margin 0.25s ease, opacity 1s ease;
+            z-index: 1;
+
+            // Animate a move upwards when hovering
+            &:hover {
+              bottom: 10px;
+            }
+
+            &:first-child {
+              .beat-order-container > span {
+                color: $text-black;
+              }
+            }
+
+            &.disabled {
+              opacity: 0.25;
+              cursor: initial;
+              z-index: 0 !important;
+
+              &:hover {
+                bottom: initial;
+              }
+
+              .beat-order-container span {
+                color: $light-red;
+              }
+            }
+
+            .circle {
+              display: inline-block;
+              border-radius: 50%;
+
+              &.circle-hollow {
+                width: 100%;
+                height: 100%;
+                border: 5px solid $dark-black;
+                background-color: $white;
+              }
+
+              &.circle-solid {
+                background-color: $dark-black;
+                position: absolute;
+                margin: auto;
+                top: 0;
+                right: 0;
+                bottom: 0;
+                left: 0;
+
+                &.circle-light-black     { background-color: $light-black;     }
+                &.circle-dark-black      { background-color: $dark-black;      }
+                &.circle-light-purple    { background-color: $light-purple;    }
+                &.circle-dark-purple     { background-color: $dark-purple;     }
+                &.circle-light-blue      { background-color: $light-blue;      }
+                &.circle-dark-blue       { background-color: $dark-blue;       }
+                &.circle-light-turquoise { background-color: $light-turquoise; }
+                &.circle-dark-turquoise  { background-color: $dark-turquoise;  }
+                &.circle-light-green     { background-color: $light-green;     }
+                &.circle-dark-green      { background-color: $dark-green;      }
+                &.circle-light-yellow    { background-color: $light-yellow;    }
+                &.circle-dark-yellow     { background-color: $dark-yellow;     }
+                &.circle-light-orange    { background-color: $light-orange;    }
+                &.circle-dark-orange     { background-color: $dark-orange;     }
+                &.circle-light-red       { background-color: $light-red;       }
+                &.circle-dark-red        { background-color: $dark-red;        }
+
+                &.circle-xxs { width: 18px; height: 18px; }
+                &.circle-xs  { width: 22px; height: 22px; }
+                &.circle-sm  { width: 28px; height: 28px; }
+                &.circle-md  { width: 34px; height: 34px; }
+                &.circle-lg  { width: 42px; height: 42px; }
+                &.circle-xl  { width: 46px; height: 46px; }
+                &.circle-xxl { width: 50px; height: 50px; }
+              }
+            }
+
+            .beat-order-container {
+              text-align: center;
+
+              & > span {
+                font-weight: $bold;
+                font-size: 18px;
+                color: $text-faded;
+                transition: color 0.25s ease;
+              }
+            }
+          }
+        }
+      }
+
+      &.invert-scrollbar {
+        transform: rotateX(180deg);
+
+        .beat-order-container {
+          transform: rotateX(180deg);
+        }
+      }
+    }
+
+    &.previewable, &.previewing {
+      .horizontal-scrollbar .bars.selected .bar.selected .beat.selected {
+        bottom: 42px;
+      }
+    }
+
+    &.previewing {
+      .horizontal-scrollbar .bars.selected {
+        .bar {
+          opacity: 0.5;
+
+          &.queued {
+            opacity: 1;
+
+            .beat {
+              &.queued {
+                opacity: 1;
+              }
+
+              &.playing {
+                animation: pulse 0.25s ease;
+
+                &:first-child {
+                  animation: big-pulse 0.25s ease;
+                }
+
+                &.selected {
+                  animation: bounce 1.25s ease;
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+.modal .modal-title-feedback {
+  color: $text-faded;
+  margin: 10px 0 0 12px;
+  font-size: 18px;
+
+  font-weight: 400;
+}
+
+.btn {
+  font-weight: $bold;
+  padding-left: 16px;
+  padding-right: 16px;
+  border: 1px solid $dark-white;
+  border-bottom: 3px solid $light-black !important;
+  border-radius: 8px;
+  transition: background-color 0.1s ease-in-out,
+              border-bottom 0.1s ease-in-out,
+              border-color 0.1s ease-in-out;
+
+  &:hover {
+    border-bottom: 2px solid $light-black !important;
+  }
+
+  &.start-fade, &.end-fade {
+    transition: opacity 0.2s ease,
+                background-color 0.1s ease-in-out,
+                border-bottom 0.1s ease-in-out,
+                border-color 0.1s ease-in-out;
+  }
+
+  &.start-fade {
+    height: 0;
+    opacity: 0;
+  }
+
+  &.end-fade {
+    opacity: 1;
+  }
+
+  &.btn-success {
+    background-color: $dark-green;
+    border-color: $dark-green;
+
+    &:not(:disabled):not(.disabled) {
+      &:hover, &:focus, &:active {
+        background-color: $light-green;
+        border-color: transparent;
+      }
+    }
+  }
+}
+
+// Originally authored by https://daneden.github.io/animate.css
+@keyframes bounce {
+  from,
+  11.1%,
+  to {
+    transform: translate3d(0, 0, 0);
+  }
+
+  22.2% {
+    transform: skewX(-6deg) skewY(-6deg);
+  }
+
+  33.3% {
+    transform: skewX(3deg) skewY(3deg);
+  }
+
+  44.4% {
+    transform: skewX(-1.5deg) skewY(-1.5deg);
+  }
+
+  55.5% {
+    transform: skewX(0.75deg) skewY(0.75deg);
+  }
+
+  66.6% {
+    transform: skewX(-0.375deg) skewY(-0.375deg);
+  }
+
+  77.7% {
+    transform: skewX(0.1875deg) skewY(0.1875);
+  }
+
+  88.8% {
+    transform: skewX(-0.09375deg) skewY(-0.09375deg);
+  }
+}
+
+// Originally authored by https://daneden.github.io/animate.css
+@keyframes pulse {
+  from {
+    transform: scale3d(1, 1, 1);
+  }
+
+  50% {
+    transform: scale3d(1.05, 1.05, 1.05);
+  }
+
+  to {
+    transform: scale3d(1, 1, 1);
+  }
+}
+
+@keyframes big-pulse {
+  from {
+    transform: scale3d(1, 1, 1);
+  }
+
+  50% {
+    transform: scale3d(1.15, 1.15, 1.15);
+  }
+
+  to {
+    transform: scale3d(1, 1, 1);
+  }
 }

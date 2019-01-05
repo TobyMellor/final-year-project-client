@@ -4,6 +4,7 @@ import AudioAnalysisModel from './AudioAnalysis';
 import * as trackFactory from '../../factories/track';
 import * as conversions from '../../services/canvas/drawables/utils/conversions';
 import { TimeIdentifier } from '../../types/general';
+import BeatModel from './Beat';
 
 export type Input = {
   album: AlbumModel | AlbumInput;
@@ -17,17 +18,17 @@ export type Input = {
 };
 
 class TrackModel {
-  private album: AlbumModel;
+  private _album: AlbumModel;
 
   // Loaded in when it becomes parent song
-  private audioFeatures: AudioFeaturesModel | null;
-  private audioAnalysis: AudioAnalysisModel | null;
+  private _audioFeatures: AudioFeaturesModel | null;
+  private _audioAnalysis: AudioAnalysisModel | null;
 
-  private duration: TimeIdentifier;
-  private explicit: boolean;
-  private ID: string;
-  private name: string;
-  private URI: string;
+  private _duration: TimeIdentifier;
+  private _isExplicit: boolean;
+  private _ID: string;
+  private _name: string;
+  private _URI: string;
 
   constructor({
     album,
@@ -39,69 +40,86 @@ class TrackModel {
     name,
     uri,
   }: Input) {
-    this.album = album instanceof AlbumModel ? album : new AlbumModel(album);
-    this.audioFeatures = audioFeatures || null;
-    this.audioAnalysis = audioAnalysis || null;
-    this.duration = conversions.getTimeIdentifierFromMilliseconds(duration_ms);
-    this.explicit = explicit;
-    this.ID = id;
-    this.name = name;
-    this.URI = uri;
+    this._album = album instanceof AlbumModel ? album : new AlbumModel(album);
+    this._audioFeatures = audioFeatures || null;
+    this._audioAnalysis = audioAnalysis || null;
+    this._duration = conversions.getTimeIdentifierFromMilliseconds(duration_ms);
+    this._isExplicit = explicit;
+    this._ID = id;
+    this._name = name;
+    this._URI = uri;
   }
 
-  public getAlbum() {
-    return this.album;
+  public get album() {
+    return this._album;
   }
 
-  public getAudioFeatures(): Promise<AudioFeaturesModel> {
-    return this.audioFeatures
-      ? Promise.resolve(this.audioFeatures)
+  public get audioFeatures(): Promise<AudioFeaturesModel> {
+    return this._audioFeatures
+      ? Promise.resolve(this._audioFeatures)
       : trackFactory.addAudioFeatures(this);
   }
 
   public setAudioFeatures(audioFeatures: AudioFeaturesModel) {
-    this.audioFeatures = audioFeatures;
+    this._audioFeatures = audioFeatures;
   }
 
   public async getAudioAnalysis(): Promise<AudioAnalysisModel> {
-    return this.audioAnalysis
-      ? Promise.resolve(this.audioAnalysis)
+    return this._audioAnalysis
+      ? Promise.resolve(this._audioAnalysis)
       : trackFactory.addAudioAnalysis(this);
   }
 
   public setAudioAnalysis(audioAnalysis: AudioAnalysisModel) {
-    this.audioAnalysis = audioAnalysis;
+    this._audioAnalysis = audioAnalysis;
   }
 
-  public getDuration() {
-    return this.duration;
+  public get duration() {
+    return this._duration;
   }
 
-  public isExplicit() {
-    return this.explicit;
+  public get isExplicit() {
+    return this._isExplicit;
   }
 
-  public getBestImageURL(): string | null {
-    const album = this.album;
-    const images = album.getImages();
+  public get bestImageURL(): string | null {
+    const { images } = this._album;
 
     if (images.length > 0) {
-      return images[0].getUrl();
+      return images[0].URL;
     }
 
     return null;
   }
 
-  public getID() {
-    return this.ID;
+  public get ID() {
+    return this._ID;
   }
 
-  public getName() {
-    return this.name;
+  public get name() {
+    return this._name;
   }
 
-  public getURI() {
-    return this.URI;
+  public get URI() {
+    return this._URI;
+  }
+
+  public async getBeats(): Promise<BeatModel[]> {
+    const { beats } = await this.getAudioAnalysis();
+
+    return beats;
+  }
+
+  public async getBeatsWithOrders(beatOrders: number[]): Promise<BeatModel[]> {
+    const beats = await this.getBeats();
+    const beatsWithOrders: BeatModel[] = [];
+
+    // Find the beats with the correct .order, ensure the requested order is kept
+    beatOrders.forEach((beatOrder, i) => {
+      beatsWithOrders[i] = beats[beatOrder];
+    });
+
+    return beatsWithOrders;
   }
 }
 

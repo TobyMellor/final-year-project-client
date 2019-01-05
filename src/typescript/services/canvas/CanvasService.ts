@@ -16,7 +16,7 @@ import { FYPEvent } from '../../types/enums';
 class CanvasService {
   private static _instance: CanvasService = null;
 
-  private scene: Scene = null;
+  public scene: Scene = null;
 
   private constructor(canvas: HTMLCanvasElement) {
     const scene = this.scene = Scene.getInstance(canvas);
@@ -60,10 +60,6 @@ class CanvasService {
 
     Dispatcher.getInstance()
               .dispatch(FYPEvent.PlayingTrackRendered);
-  }
-
-  public getScene() {
-    return this.scene;
   }
 }
 

@@ -11,30 +11,20 @@ class SongCircle {
   private static CIRCLE_RESOLUTION = 1;
   private static DEGREES_IN_CIRCLE = 360;
 
-  private track: Track;
-
-  private radius: number;
-  private lineWidth: number;
-  private center: WorldPoint;
-
   constructor(
     scene: Scene,
-    track: Track,
-    center: WorldPoint,
-    radius: number,
-    lineWidth: number,
+    public track: Track,
+    public center: WorldPoint,
+    public radius: number,
+    public lineWidth: number,
     backgroundColour: number = null, // If present, this overrides the album art
   ) {
-    this.track = track;
-    this.center = center;
-    this.radius = radius;
-    this.lineWidth = lineWidth;
 
     // Make smaller circles (songs with a smaller durations) appear in front
     // So, give smaller circles a smaller Z
     // One trillion isn't special here, it's just making Z small
     const oneTrillion = 1000000000;
-    this.center.z = Scene.Z_BASE_DISTANCE - track.getDuration().ms / oneTrillion;
+    this.center.z = Scene.Z_BASE_DISTANCE - track.duration.ms / oneTrillion;
 
     this.renderCircle(scene, track, center, radius, backgroundColour);
     this.renderCircleOutline(scene, center, radius, lineWidth);
@@ -53,7 +43,7 @@ class SongCircle {
     let material;
 
     if (backgroundColour === null) {
-      const texture = new THREE.TextureLoader().load(track.getBestImageURL());
+      const texture = new THREE.TextureLoader().load(track.bestImageURL);
 
       material = new THREE.MeshBasicMaterial({ color: 0xFFFFFF, map: texture });
     } else {
@@ -122,7 +112,7 @@ class SongCircle {
       let text = null;
 
       function generateText(fontSize: number) {
-        const geometry = new THREE.TextGeometry(track.getName(), {
+        const geometry = new THREE.TextGeometry(track.name, {
           font,
           size: fontSize,
           height: 0,
@@ -151,22 +141,6 @@ class SongCircle {
 
       scene.add(text);
     });
-  }
-
-  public getRadius(): number {
-    return this.radius;
-  }
-
-  public getLineWidth(): number {
-    return this.lineWidth;
-  }
-
-  public getCenter(): WorldPoint {
-    return this.center;
-  }
-
-  public getTrack(): Track {
-    return this.track;
   }
 }
 

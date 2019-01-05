@@ -57,11 +57,11 @@ interface SimplifiedAlbum extends SimplifiedObjectModel {
   release_date_precision: string;
 }
 
-export type GetAnAudioAnalysisResponseTimeInterval = {
-  start: number,
-  duration: number,
-  confidence: number,
-};
+export interface GetAnAudioAnalysisResponseTimeInterval {
+  start: number;
+  duration: number;
+  confidence: number;
+}
 
 export type GetAnAudioAnalysisResponseSection = {
   start: number,
@@ -77,17 +77,14 @@ export type GetAnAudioAnalysisResponseSection = {
   time_signature_confidence: number,
 };
 
-export type GetAnAudioAnalysisResponseSegment = {
-  start: number,
-  duration: number,
-  confidence: number,
-  loudness_start: number,
-  loudness_max_time: number,
-  loudness_max: number,
-  loudness_end: number,
-  pitches: number[],
-  timbre: number[],
-};
+export interface GetAnAudioAnalysisResponseSegment extends GetAnAudioAnalysisResponseTimeInterval {
+  loudness_start: number;
+  loudness_max_time: number;
+  loudness_max: number;
+  loudness_end: number;
+  pitches: number[];
+  timbre: number[];
+}
 
 /**
  * |-------------------------------------------------------------------|

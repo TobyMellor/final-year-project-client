@@ -16,7 +16,7 @@ import BeatModel from '../../models/audio-analysis/Beat';
 class BranchService {
   private static _instance: BranchService;
 
-  private branches: BranchModel[] = [];
+  public branches: BranchModel[] = [];
 
   private constructor() {
 
@@ -31,10 +31,6 @@ class BranchService {
 
   public static getInstance(): BranchService {
     return this._instance || (this._instance = new this());
-  }
-
-  public getBranches(): BranchModel[] {
-    return this.branches;
   }
 
   private async setBranches(data: { playingTrack: TrackModel, childTracks: TrackModel[] }) {
@@ -57,14 +53,12 @@ class BranchService {
       lastQueuedBeat: BeatModel | null,
     },
   ) {
-    const audioAnalysis = await playingTrack.getAudioAnalysis();
-    const beats = audioAnalysis.getBeats();
-    const branches = this.getBranches();
+    const { beats } = await playingTrack.getAudioAnalysis();
     let lastQueuedBeatInPreviousBatch = lastQueuedBeat;
 
     for (let i = 0; i < beatBatchCount; i += 1) {
       lastQueuedBeatInPreviousBatch = this.dispatchBeatBatch(beats,
-                                                             branches,
+                                                             this.branches,
                                                              lastQueuedBeatInPreviousBatch);
     }
   }
@@ -81,16 +75,18 @@ class BranchService {
     lastQueuedBeatInPreviousBatch: BeatModel | null,
   ): BeatModel {
     const lastQueuedBeatInPreviousBatchStartMs = lastQueuedBeatInPreviousBatch
-                                               ? lastQueuedBeatInPreviousBatch.getStartMs()
+                                               ? lastQueuedBeatInPreviousBatch.startMs
                                                : 0;
 
     const futureBranches = this.getFutureBranches(branches, lastQueuedBeatInPreviousBatchStartMs);
-    const bestBranch = this.getBestBranch(futureBranches);
-    const branchOriginBeatStartMs = bestBranch.getOriginBeat().getStartMs();
+    const {
+      originBeat: branchOriginBeat,
+      destinationBeat: branchDestinationBeat,
+    } = this.getBestBranch(futureBranches);
+    const branchOriginBeatStartMs = branchOriginBeat.startMs;
     const beatsToBranchOrigin = this.getBeatsBetween(beats,
                                                      lastQueuedBeatInPreviousBatchStartMs,
                                                      branchOriginBeatStartMs);
-    const branchDestinationBeat = bestBranch.getDestinationBeat();
     const beatBatch = [...beatsToBranchOrigin, branchDestinationBeat];
 
     Dispatcher.getInstance()
@@ -104,8 +100,7 @@ class BranchService {
 
   private getBeatsBetween(beats: BeatModel[], fromMs: number, toMs: number): BeatModel[] {
     return beats.filter((beat) => {
-      const beatStartMs = beat.getStartMs();
-      const beatEndMs = beatStartMs + beat.getDurationMs();
+      const [beatStartMs, beatEndMs] = beat.startAndEndMs;
 
       // Don't include the lastQueuedBeatInPreviousBatch, and don't include
       // the Branch's Origin Beat either
@@ -121,8 +116,8 @@ class BranchService {
       return branches;
     }
 
-    return branches.filter((branch) => {
-      const branchStartMs = branch.getOriginBeat().getStartMs();
+    return branches.filter(({ originBeat }) => {
+      const branchStartMs = originBeat.startMs;
 
       return branchStartMs > beyondTimeMs;
     });

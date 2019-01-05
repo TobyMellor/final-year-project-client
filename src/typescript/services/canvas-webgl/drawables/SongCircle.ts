@@ -35,14 +35,14 @@ class SongCircle extends Drawable {
     // So, give smaller circles a smaller Z
     // One trillion isn't special here, it's just making Z small
     const oneTrillion = 1000000000;
-    center.z = 1 - track.getDuration().ms / oneTrillion;
+    center.z = 1 - track.duration.ms / oneTrillion;
 
     const isParentSongCircle: boolean = center.x === 0 && center.y === 0;
     const circleDrawableInput = this.getDrawableInput(gl,
                                                       new Circle(center,
                                                                  0,
                                                                  radius),
-                                                      backgroundColour || track.getBestImageURL(),
+                                                      backgroundColour || track.bestImageURL,
                                                       textureOverlayVector,
                                                       !isParentSongCircle ? track : null);
     const circleEdgeDrawableInput = this.getDrawableInput(gl,
@@ -75,12 +75,14 @@ class SongCircle extends Drawable {
     };
 
     if (trackForLabelling) {
+      const { ID, name, album } = trackForLabelling;
+
       drawableInput.textInformation = {
-        heading: trackForLabelling.getName(),
-        subheading: trackForLabelling.getAlbum().getName(),
+        heading: name,
+        subheading: album.name,
         worldPoint: this.center,
         containerWorldWidth: circle.getCircumference(),
-        uniqueIdentifier: trackForLabelling.getID(),
+        uniqueIdentifier: ID,
       };
     }
 

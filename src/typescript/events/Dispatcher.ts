@@ -1,4 +1,4 @@
-import DispatcherEvent, { CallbackFn } from './DispatcherEvent';
+import DispatcherEvent, { Callback } from './DispatcherEvent';
 import * as loggerService from '../services/logging/logger';
 import config from '../config';
 import { FYPEvent } from '../types/enums';
@@ -30,25 +30,19 @@ class Dispatcher {
     }
   }
 
-  on(eventName: string, context: Object, callbackFn: CallbackFn) {
+  on(eventName: string, context: Object, callbackFn: Callback['callbackFn']) {
     loggerService.debug(`Listener for ${eventName} registered!`);
 
     // If this is the first time we've seen this event, register it
     if (!this.events[eventName]) {
-      this.events[eventName] = new DispatcherEvent(eventName, context);
+      this.events[eventName] = new DispatcherEvent(eventName);
     }
 
     return this.events[eventName]
-               .registerCallback(callbackFn);
-  }
-
-  off(eventName: string, callbackFn: CallbackFn) {
-    const event = this.events[eventName];
-
-    if (event) {
-      event.unregisterCallback(callbackFn);
-      delete this.events[eventName];
-    }
+               .registerCallback({
+                 context,
+                 callbackFn,
+               });
   }
 }
 

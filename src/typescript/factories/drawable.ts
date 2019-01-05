@@ -17,8 +17,7 @@ export async function renderParentSongCircle(scene: Scene, track: TrackModel): P
                                           lineWidth,
                                           0xFFFFFF);
 
-  const branchService = await BranchService.getInstance();
-  const branches = await branchService.getBranches();
+  const { branches } = await BranchService.getInstance();
   branches.forEach(branch => renderBezierCurves(scene, parentSongCircle, branch));
 
   return parentSongCircle;
@@ -50,9 +49,8 @@ export function renderBezierCurves(
   songCircle: SongCircle,
   branch: BranchModel,
 ) {
-  const trackDuration = songCircle.getTrack().getDuration();
-  const earliestBeat = branch.getEarliestBeat();
-  const latestBeat = branch.getLatestBeat();
+  const trackDuration = songCircle.track.duration;
+  const { earliestBeat, latestBeat } = branch;
 
   const earliestPercentage = earliestBeat.getPercentageInTrack(trackDuration);
   const latestPercentage = latestBeat.getPercentageInTrack(trackDuration);
@@ -67,11 +65,13 @@ export function renderBezierCurves(
                   lineWidth);
 }
 
-function getRadiusForSong(parentSongCircle: SongCircle, childTrack: TrackModel): number {
-  const parentTrack = parentSongCircle.getTrack();
-  const relativeSize = childTrack.getDuration().ms / parentTrack.getDuration().ms;
+function getRadiusForSong(
+  { track: parentTrack, radius: parentRadius }: SongCircle,
+  childTrack: TrackModel,
+): number {
+  const relativeSize = childTrack.duration.ms / parentTrack.duration.ms;
 
-  return relativeSize * parentSongCircle.getRadius();
+  return relativeSize * parentRadius;
 }
 
 function getLineWidthForSong(radius: number): number {
