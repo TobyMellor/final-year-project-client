@@ -1,7 +1,7 @@
 import * as React from 'react';
 import Bar from './Bar';
 import cx from 'classnames';
-import BottomBranchNav, { BottomBranchNavStatus, BeatListOrientation } from './BottomBranchNav';
+import BottomBranchNav, { BeatListOrientation } from './BottomBranchNav';
 import { UIBarType, UIBeatType } from '../services/ui/entities';
 
 export interface BeatListProps {
@@ -14,6 +14,11 @@ export interface BeatListProps {
     parentComponent: BottomBranchNav,
     beatListOrientation: BeatListOrientation,
     UIBeat: UIBeatType,
+  ) => void;
+  signalScrollToParentFn: (
+    parentComponent: BottomBranchNav,
+    beatListOrientation: BeatListOrientation,
+    currentTarget: Element,
   ) => void;
   isHidden?: boolean;
   orientation: BeatListOrientation;
@@ -114,8 +119,12 @@ class BeatList extends React.Component<BeatListProps, BeatListState> {
                                               selectedUIBeat);
   }
 
-  private handleScroll() {
-    this.state.scrollCallbackFn();
+  private handleScroll({ currentTarget }: React.UIEvent) {
+    const { parentComponent, orientation, signalScrollToParentFn } = this.props;
+    const { scrollCallbackFn } = this.state;
+
+    scrollCallbackFn();
+    signalScrollToParentFn(parentComponent, orientation, currentTarget);
   }
 }
 

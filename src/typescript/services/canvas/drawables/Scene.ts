@@ -71,7 +71,6 @@ class Scene {
   }
 
   public render(nowSecs: number) {
-    const rotationSpeed = 10;
 
     // Get the time passed since the last time this fn was called
     const deltaSecs = nowSecs - this.lastRenderSecs;
@@ -79,9 +78,9 @@ class Scene {
     // Update the last time this fn was called to now (for future calls)
     this.lastRenderSecs = nowSecs;
 
-    // Add rotation to all points in the World, update all positions
-    WorldPoint.rotationOffsetPercentage += rotationSpeed * deltaSecs;
-    Rotation.rotationOffsetPercentage += rotationSpeed * deltaSecs;
+    // TODO: Update various rotation values, pinheads, etc here
+    // WorldPoint.rotationOffsetPercentage += 10 * deltaSecs;
+    // Rotation.rotationOffsetPercentage += 10 * deltaSecs;
 
     this.update();
 

@@ -12,6 +12,8 @@ import Scene from '../canvas/drawables/Scene';
 import * as drawableFactory from '../../factories/drawable';
 import * as conversions from './drawables/utils/conversions';
 import { FYPEvent } from '../../types/enums';
+import WorldPoint from './drawables/utils/WorldPoint';
+import Rotation from './drawables/utils/Rotation';
 
 class CanvasService {
   private static _instance: CanvasService = null;
@@ -60,6 +62,11 @@ class CanvasService {
 
     Dispatcher.getInstance()
               .dispatch(FYPEvent.PlayingTrackRendered);
+  }
+
+  public async updateCanvasRotation(percentage: number) {
+    WorldPoint.rotationOffsetPercentage = percentage;
+    Rotation.rotationOffsetPercentage = percentage;
   }
 }
 

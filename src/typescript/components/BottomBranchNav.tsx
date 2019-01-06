@@ -5,6 +5,7 @@ import cx from 'classnames';
 import Button, { SuccessButton } from './Button';
 import { UIBarType, UIBeatType } from '../services/ui/entities';
 import WebAudioService from '../services/web-audio/WebAudioService';
+import CanvasService from '../services/canvas/CanvasService';
 
 interface BottomBranchNavProps {
   UIBars: UIBarType[];
@@ -26,12 +27,19 @@ interface BottomBranchNavState {
     },
   };
   beatPreviewTimer: NodeJS.Timeout;
+  lastFocusedBeatList: BeatListOrientation | null;
+  isScrollingLocked: boolean;
 }
 
 class BottomBranchNav extends React.Component<BottomBranchNavProps, BottomBranchNavState> {
+  private scrollTrackerContainerElement: React.RefObject<HTMLDivElement>;
+  private scrollTrackerElement: React.RefObject<HTMLDivElement>;
+
   constructor(props: BottomBranchNavProps) {
     super(props);
 
+    this.scrollTrackerElement = React.createRef();
+    this.scrollTrackerContainerElement = React.createRef();
     this.state = {
       status: BottomBranchNavStatus.CHOOSE_FIRST_BEAT,
       UIBarsAndBeats: {
@@ -39,6 +47,8 @@ class BottomBranchNav extends React.Component<BottomBranchNavProps, BottomBranch
         [BeatListOrientation.BOTTOM]: {},
       },
       beatPreviewTimer: null,
+      lastFocusedBeatList: null,
+      isScrollingLocked: false,
     };
   }
 
@@ -73,6 +83,7 @@ class BottomBranchNav extends React.Component<BottomBranchNavProps, BottomBranch
               <div className={bottomBranchNavBodyClassNames}>
                 <BeatList parentComponent={this}
                           signalClickToParentFn={this.handleBeatListClick}
+                          signalScrollToParentFn={this.handleScroll}
                           UIBars={UIBars}
                           queuedUIBeats={UIBarsAndBeats[BeatListOrientation.TOP].queued}
                           playingUIBeat={UIBarsAndBeats[BeatListOrientation.TOP].playing}
@@ -80,12 +91,18 @@ class BottomBranchNav extends React.Component<BottomBranchNavProps, BottomBranch
                           orientation={BeatListOrientation.TOP} />
                 <BeatList parentComponent={this}
                           signalClickToParentFn={this.handleBeatListClick}
+                          signalScrollToParentFn={this.handleScroll}
                           UIBars={UIBars}
                           queuedUIBeats={UIBarsAndBeats[BeatListOrientation.BOTTOM].queued}
                           playingUIBeat={UIBarsAndBeats[BeatListOrientation.BOTTOM].playing}
                           disabledUIBeats={UIBarsAndBeats[BeatListOrientation.BOTTOM].disabled}
                           isHidden={status === BottomBranchNavStatus.CHOOSE_FIRST_BEAT}
                           orientation={BeatListOrientation.BOTTOM}  />
+              </div>
+              <div ref={this.scrollTrackerContainerElement}
+                   style={ { overflowX: 'scroll' } }
+                   onScroll={this.handleScrollTracker.bind(this)}>
+                <div ref={this.scrollTrackerElement}>...</div>
               </div>
             </div>
             {modalFooterElement}
@@ -212,6 +229,68 @@ class BottomBranchNav extends React.Component<BottomBranchNavProps, BottomBranch
     console.log('Our work here is done!');
   }
 
+  private handleScroll(
+    thisComponent: BottomBranchNav,
+    beatListOrientation: BeatListOrientation,
+    currentTarget: Element,
+  ) {
+    function scrollTo(left: number) {
+      // Scroll the scrollTracker smoothly to the new position
+      scrollTrackerContainerElement.scrollTo({
+        left,
+        behavior: 'smooth',
+      });
+    }
+
+    const { lastFocusedBeatList, isScrollingLocked } = thisComponent.state;
+    const scrollTrackerElement = thisComponent.scrollTrackerElement.current;
+    const scrollTrackerContainerElement = thisComponent.scrollTrackerContainerElement.current;
+
+    if (!lastFocusedBeatList) {
+      scrollTrackerElement.style.width = `${currentTarget.scrollWidth}px`;
+    }
+
+    if (!isScrollingLocked) {
+      // The focused beat list has changed, set the state for next time
+      if (!lastFocusedBeatList || lastFocusedBeatList !== beatListOrientation) {
+        thisComponent.setState({
+          lastFocusedBeatList: beatListOrientation,
+        });
+      }
+
+      // Keep the scroll tracker in sync with the beat list
+      if (!lastFocusedBeatList || lastFocusedBeatList === beatListOrientation) {
+        scrollTrackerContainerElement.scrollLeft = currentTarget.scrollLeft;
+      } else {
+
+        // Lock the scrolling
+        thisComponent.setState(() => {
+          return {
+            isScrollingLocked: true,
+          };
+        });
+      }
+    } else {
+      scrollTo(currentTarget.scrollLeft);
+    }
+  }
+
+  private handleScrollTracker() {
+    function getScrollPercentage({ scrollLeft, scrollWidth, clientWidth }: Element) {
+      const totalScrollWidth = scrollWidth - clientWidth;
+      const scrollDecimal = scrollLeft / totalScrollWidth;
+      const scrollPercentage = 100 * scrollDecimal;
+
+      return scrollPercentage;
+    }
+
+    const scrollTrackerContainerElement = this.scrollTrackerContainerElement.current;
+    const scrollPercentage = getScrollPercentage(scrollTrackerContainerElement);
+
+    CanvasService.getInstance()
+                 .updateCanvasRotation(scrollPercentage);
+  }
+
   private getInstructionForStatus(): string {
     const status = this.state.status;
     const instruction = Translator.react.bottom_branch_nav[status];
@@ -332,7 +411,6 @@ class BottomBranchNav extends React.Component<BottomBranchNavProps, BottomBranch
     const copyQueuedUIBeats = [...queuedUIBeats];
 
     const updatePlayingBeat = (queuedUIBeats: QueuedUIBeat[], queuedUIBeat: QueuedUIBeat) => {
-
       this.setState(({ UIBarsAndBeats }) => {
         for (const orientation in UIBarsAndBeats) {
           if (orientation === queuedUIBeat.orientation) {
