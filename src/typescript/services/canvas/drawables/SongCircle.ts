@@ -35,11 +35,7 @@ class SongCircle extends Updatable {
     super.addAll(scene);
   }
 
-  private addCircle(
-    track: Track,
-    radius: number,
-    backgroundColour: number,
-  ) {
+  private addCircle(track: Track, radius: number, backgroundColour: number) {
     const geometry = new THREE.CircleGeometry(radius, SongCircle.DEGREES_IN_CIRCLE);
     let material;
 
@@ -51,19 +47,14 @@ class SongCircle extends Updatable {
       material = new THREE.MeshBasicMaterial({ color: backgroundColour });
     }
 
-    const position = WorldPoint.getPoint(0, 0, -0.0001);
-
     super.createAndAddMesh({
       geometry,
       material,
-      position,
+      renderOrder: 0,
     });
   }
 
-  private addCircleOutline(
-    radius: number,
-    lineWidth: number,
-  ) {
+  private addCircleOutline(radius: number, lineWidth: number) {
     const geometry = new THREE.Geometry();
 
     for (let i = 0; i <= SongCircle.DEGREES_IN_CIRCLE; i += SongCircle.CIRCLE_RESOLUTION) {
@@ -99,14 +90,11 @@ class SongCircle extends Updatable {
       geometry,
       material,
       drawMode: THREE.TriangleStripDrawMode,
+      renderOrder: 1,
     });
   }
 
-  private addText(
-    track: Track,
-    radius: number,
-    lineWidth: number,
-  ) {
+  private addText(track: Track, radius: number, lineWidth: number) {
     const loader = new THREE.FontLoader();
 
     loader.load('/dist/fonts/san-fransisco/regular.json', (font: any) => {
@@ -141,11 +129,9 @@ class SongCircle extends Updatable {
         predictedWidth = box.getSize(center).x;
       }
 
-      const position = WorldPoint.getPoint(0, 0, 0.00002);
-
       super.addMesh({
-        position,
         mesh: text,
+        renderOrder: 2,
       });
     });
   }
@@ -160,13 +146,17 @@ class SongCircle extends Updatable {
                                                                              this.radius,
                                                                              this._lineWidth);
 
-    // Make smaller circles (songs with a smaller durations) appear in front
-    // So, give smaller circles a smaller Z
-    // One trillion isn't special here, it's just making Z small
-    const oneTrillion = 1000000000;
-    centerWorldPoint.z = Scene.Z_BASE_DISTANCE - this.track.duration.ms / oneTrillion;
+    centerWorldPoint.z = Scene.Z_BASE_DISTANCE;
 
     return centerWorldPoint;
+  }
+
+  protected getRenderOrder(): number {
+    if (!this._parentSongCircle) {
+      return -10000000;
+    }
+
+    return -this.track.duration.ms;
   }
 }
 

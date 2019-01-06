@@ -44,12 +44,16 @@ class BezierCurve extends Updatable {
     const material = new THREE.LineBasicMaterial({ color: 0x2F3640 });
     const bezierCurve = new THREE.Line(geometry, material);
 
-    super.addMesh({ mesh: bezierCurve, rotation: Rotation.getRotationFromPercentage(0) });
+    super.addMesh({
+      mesh: bezierCurve,
+      rotation: Rotation.getRotationFromPercentage(0),
+      renderOrder: 0,
+    });
   }
 
   public get center(): WorldPoint {
     const { x, y, z } = this.songCircle.center;
-    const position = WorldPoint.getPoint(x, y, z + 0.0001);
+    const position = WorldPoint.getPoint(x, y, z);
 
     return position;
   }
@@ -58,6 +62,10 @@ class BezierCurve extends Updatable {
     const rotation = Rotation.getRotationFromPercentage(0);
 
     return rotation;
+  }
+
+  protected getRenderOrder() {
+    return 0;
   }
 }
 

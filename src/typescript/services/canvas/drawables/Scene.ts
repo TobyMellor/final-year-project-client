@@ -67,10 +67,7 @@ class Scene {
   }
 
   private update() {
-    this.updatables.forEach((updatable) => {
-      updatable.updatePosition();
-      updatable.updateRotation();
-    });
+    this.updatables.forEach(updatable => updatable.update());
   }
 
   public render(nowSecs: number) {
@@ -85,6 +82,7 @@ class Scene {
     // Add rotation to all points in the World, update all positions
     WorldPoint.rotationOffsetPercentage += rotationSpeed * deltaSecs;
     Rotation.rotationOffsetPercentage += rotationSpeed * deltaSecs;
+
     this.update();
 
     // Re-render everything on the scene through THREE.js
