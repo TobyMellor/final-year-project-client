@@ -1,8 +1,10 @@
 import CanvasService from '../CanvasService';
 import * as conversions from './utils/conversions';
-import WorldPoint from './points/WorldPoint';
+import WorldPoint from './utils/WorldPoint';
 import Updatable from './Updatable';
 import SongCircle from '../../canvas/drawables/SongCircle';
+import * as THREE from 'three';
+import Rotation from './utils/Rotation';
 
 export type Drawable = {
   meshes: THREE.Mesh[];
@@ -10,7 +12,6 @@ export type Drawable = {
 
 class Scene {
   private static _instance: Scene = null;
-  public static THREE = require('three');
 
   public static BUFFER_NUM_COMPONENTS: number = 3; // How many dimensions?
   public static Z_BASE_DISTANCE = -5;
@@ -31,13 +32,13 @@ class Scene {
   private constructor(
     whereToDraw: HTMLCanvasElement,
   ) {
-    const scene = new Scene.THREE.Scene();
-    const camera = new Scene.THREE.PerspectiveCamera(Scene.CAMERA_FOV_DEGREES,
-                                                     Scene.CAMERA_ASPECT_RATIO,
-                                                     Scene.CAMERA_Z_CLIP_NEAR,
-                                                     Scene.CAMERA_Z_CLIP_FAR);
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(Scene.CAMERA_FOV_DEGREES,
+                                               Scene.CAMERA_ASPECT_RATIO,
+                                               Scene.CAMERA_Z_CLIP_NEAR,
+                                               Scene.CAMERA_Z_CLIP_FAR);
 
-    const renderer = new Scene.THREE.WebGLRenderer({
+    const renderer = new THREE.WebGLRenderer({
       canvas: whereToDraw,
       antialias: true,
     });
@@ -59,28 +60,17 @@ class Scene {
   }
 
   public add(updatable: Updatable) {
-    const namedMeshes = updatable.getNamedMeshes();
+    const mesh = updatable.getMesh();
 
-    // Add each mesh to the scene if they don't already exist
-    namedMeshes.forEach(({ UUID, mesh }) => {
-      const object = this.scene.getObjectByName(UUID);
-
-      if (!object) {
-        this.scene.add(mesh);
-      }
-    });
-
+    this.scene.add(mesh);
     this.updatables.add(updatable);
   }
 
-  private updatePositions() {
+  private update() {
     this.updatables.forEach((updatable) => {
       updatable.updatePosition();
+      updatable.updateRotation();
     });
-  }
-
-  public deleteMeshesByUUIDs(...UUIDs: string[]) {
-    UUIDs.forEach(UUID => this.scene.getObjectByName(UUID));
   }
 
   public render(nowSecs: number) {
@@ -94,7 +84,8 @@ class Scene {
 
     // Add rotation to all points in the World, update all positions
     WorldPoint.rotationOffsetPercentage += rotationSpeed * deltaSecs;
-    this.updatePositions();
+    Rotation.rotationOffsetPercentage += rotationSpeed * deltaSecs;
+    this.update();
 
     // Re-render everything on the scene through THREE.js
     this.renderer.render(this.scene, this.camera);

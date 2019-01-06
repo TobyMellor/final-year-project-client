@@ -52,10 +52,10 @@ class CanvasService {
     childTracks.forEach((childTrack) => {
       const percentage = conversions.getRandomInteger();
 
-      return drawableFactory.renderChildSongCircle(this.scene,
-                                                   parentSongCircle,
-                                                   childTrack,
-                                                   percentage);
+      drawableFactory.renderChildSongCircle(this.scene,
+                                            parentSongCircle,
+                                            childTrack,
+                                            percentage);
     });
 
     Dispatcher.getInstance()

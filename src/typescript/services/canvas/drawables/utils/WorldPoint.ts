@@ -1,7 +1,6 @@
-import Point from './Point';
-import * as conversions from '../utils/conversions';
+import Primitive from './Primitive';
 import SongCircle from '../SongCircle';
-import Circle from '../utils/Circle';
+import Circle from './Circle';
 
 /**
  * World Point
@@ -9,15 +8,24 @@ import Circle from '../utils/Circle';
  * Universal coordinates that objects share,
  * independent from the camera
  */
-class WorldPoint extends Point {
+class WorldPoint extends Primitive {
+  // What percentage we need to rotate by so "0%" appears at the top
+  public static rotationBaseOffsetPercentage = 90;
+
+  // In addition to rotationBaseOffsetPercentage, what percentage about the
+  // origin should all WorldPoints be rotated by?
   public static rotationOffsetPercentage: number = 0;
 
-  constructor(x: number, y: number, z: number = 1) {
+  private constructor(x: number, y: number, z: number = 1) {
     super(x, y, z);
   }
 
   public static getPoint(x: number, y: number, z: number = 1): WorldPoint {
     return new WorldPoint(x, y, z);
+  }
+
+  public static getOrigin(): WorldPoint {
+    return new WorldPoint(0, 0, 0);
   }
 
   public static getCenterPointOfCircleFromPercentage(
@@ -28,7 +36,7 @@ class WorldPoint extends Point {
   ): WorldPoint {
 
     // Angle where our circle will sit from the parent's center point
-    const angleRadians = this.getAngleFromPercentage(percentage);
+    const angleRadians = super.getAngleFromPercentage(percentage, this.rotationOffsetPercentage);
 
     // Distance from our circles center to the parent's center point
     const centerToCenterDistance: number = parentCircleRadius +
@@ -43,17 +51,10 @@ class WorldPoint extends Point {
     { center: parentCircleCenter, radius: parentCircleRadius }: SongCircle,
     percentage: number,
   ): WorldPoint {
-    const angleRadians = this.getAngleFromPercentage(percentage);
+    const angleRadians = super.getAngleFromPercentage(percentage, this.rotationOffsetPercentage);
     const circle = new Circle(parentCircleCenter, parentCircleRadius);
 
     return circle.getPointOnCircle(angleRadians);
-  }
-
-  private static getAngleFromPercentage(percentage: number): number {
-    const percentageWithOffset = percentage + this.rotationOffsetPercentage;
-    const angle: number = conversions.percentageToRadians(percentageWithOffset);
-
-    return angle;
   }
 }
 

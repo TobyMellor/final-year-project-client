@@ -1,6 +1,6 @@
 import SongCircle from '../services/canvas/drawables/SongCircle';
 import TrackModel from '../models/audio-analysis/Track';
-import WorldPoint from '../services/canvas/drawables/points/WorldPoint';
+import WorldPoint from '../services/canvas/drawables/utils/WorldPoint';
 import Scene from '../services/canvas/drawables/Scene';
 import BezierCurve from '../services/canvas/drawables/BezierCurve';
 import BranchModel from '../models/branches/Branch';

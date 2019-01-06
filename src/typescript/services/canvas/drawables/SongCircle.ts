@@ -1,8 +1,8 @@
 import Track from '../../../models/audio-analysis/Track';
-import WorldPoint from './points/WorldPoint';
+import WorldPoint from './utils/WorldPoint';
 import Scene from './Scene';
 import * as conversions from './utils/conversions';
-import Updatable, { NamedMesh } from './Updatable';
+import Updatable from './Updatable';
 import Circle from './utils/Circle';
 import * as THREE from 'three';
 
@@ -13,8 +13,6 @@ class SongCircle extends Updatable {
   private static DARKEN_OVERLAY: number[] = [0.4, 0.4, 0.4, 1];
   private static CIRCLE_RESOLUTION = 1;
   private static DEGREES_IN_CIRCLE = 360;
-
-  protected _namedMeshes: [NamedMesh, NamedMesh, NamedMesh];
 
   constructor(
     scene: Scene,
@@ -27,22 +25,21 @@ class SongCircle extends Updatable {
   ) {
     super();
 
-    const circleMesh = this.getCircle(track, this.center, radius, backgroundColour);
-    const circleOutlineMesh = this.getCircleOutline(this.center, radius, _lineWidth);
+    this.addCircle(track, radius, backgroundColour);
+    this.addCircleOutline(radius, _lineWidth);
 
-    this._namedMeshes = [circleMesh, circleOutlineMesh, null];
+    if (_parentSongCircle) {
+      this.addText(track, radius, _lineWidth);
+    }
 
-    this.renderText(scene, track, this.center, radius, _lineWidth);
-
-    scene.add(this);
+    super.addAll(scene);
   }
 
-  private getCircle(
+  private addCircle(
     track: Track,
-    center: WorldPoint,
     radius: number,
     backgroundColour: number,
-  ): NamedMesh {
+  ) {
     const geometry = new THREE.CircleGeometry(radius, SongCircle.DEGREES_IN_CIRCLE);
     let material;
 
@@ -54,17 +51,19 @@ class SongCircle extends Updatable {
       material = new THREE.MeshBasicMaterial({ color: backgroundColour });
     }
 
-    const circle =  super.createNamedMesh(geometry, material);
-    circle.mesh.position.set(center.x, center.y, center.z - 0.0001);
+    const position = WorldPoint.getPoint(0, 0, -0.0001);
 
-    return circle;
+    super.createAndAddMesh({
+      geometry,
+      material,
+      position,
+    });
   }
 
-  private getCircleOutline(
-    center: WorldPoint,
+  private addCircleOutline(
     radius: number,
     lineWidth: number,
-  ): NamedMesh {
+  ) {
     const geometry = new THREE.Geometry();
 
     for (let i = 0; i <= SongCircle.DEGREES_IN_CIRCLE; i += SongCircle.CIRCLE_RESOLUTION) {
@@ -95,17 +94,16 @@ class SongCircle extends Updatable {
     }
 
     const material = new THREE.MeshBasicMaterial({ color: 0x2F3640 });
-    const circleOutline = super.createNamedMesh(geometry, material);
-    circleOutline.mesh.position.set(center.x, center.y, center.z);
-    circleOutline.mesh.drawMode = THREE.TriangleStripDrawMode;
 
-    return circleOutline;
+    super.createAndAddMesh({
+      geometry,
+      material,
+      drawMode: THREE.TriangleStripDrawMode,
+    });
   }
 
-  private renderText(
-    scene: Scene,
+  private addText(
     track: Track,
-    center: WorldPoint,
     radius: number,
     lineWidth: number,
   ) {
@@ -143,17 +141,18 @@ class SongCircle extends Updatable {
         predictedWidth = box.getSize(center).x;
       }
 
-      text.position.set(center.x, center.y, center.z + 0.00002);
+      const position = WorldPoint.getPoint(0, 0, 0.00002);
 
-      this._namedMeshes[2] = super.nameMesh(text);
-
-      scene.add(this);
+      super.addMesh({
+        position,
+        mesh: text,
+      });
     });
   }
 
   public get center(): WorldPoint {
     if (!this._parentSongCircle) {
-      return WorldPoint.getPoint(0, 0);
+      return WorldPoint.getPoint(0, 0, Scene.Z_BASE_DISTANCE);
     }
 
     const centerWorldPoint = WorldPoint.getCenterPointOfCircleFromPercentage(this._parentSongCircle,
@@ -168,18 +167,6 @@ class SongCircle extends Updatable {
     centerWorldPoint.z = Scene.Z_BASE_DISTANCE - this.track.duration.ms / oneTrillion;
 
     return centerWorldPoint;
-  }
-
-  public updatePosition() {
-    const { x, y, z } = this.center;
-    const [circleMesh, circleOutlineMesh, textMesh] = this._namedMeshes;
-
-    circleMesh.mesh.position.set(x, y, z);
-    circleOutlineMesh.mesh.position.set(x, y, z);
-
-    if (textMesh) {
-      textMesh.mesh.position.set(x, y, z + 0.00002);
-    }
   }
 }
 

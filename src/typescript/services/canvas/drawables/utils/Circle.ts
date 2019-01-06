@@ -1,5 +1,5 @@
 import * as conversions from './conversions';
-import WorldPoint from '../points/WorldPoint';
+import WorldPoint from './WorldPoint';
 
 class Circle {
   constructor(
