@@ -4,6 +4,7 @@ import Scene from './Scene';
 import * as conversions from './utils/conversions';
 import Updatable, { NamedMesh } from './Updatable';
 import Circle from './utils/Circle';
+import * as THREE from 'three';
 
 class SongCircle extends Updatable {
   private static WHITE_COLOUR: Uint8Array = new Uint8Array([255, 255, 255, 255]);
@@ -42,7 +43,6 @@ class SongCircle extends Updatable {
     radius: number,
     backgroundColour: number,
   ): NamedMesh {
-    const THREE = Scene.THREE;
     const geometry = new THREE.CircleGeometry(radius, SongCircle.DEGREES_IN_CIRCLE);
     let material;
 
@@ -65,7 +65,6 @@ class SongCircle extends Updatable {
     radius: number,
     lineWidth: number,
   ): NamedMesh {
-    const THREE = Scene.THREE;
     const geometry = new THREE.Geometry();
 
     for (let i = 0; i <= SongCircle.DEGREES_IN_CIRCLE; i += SongCircle.CIRCLE_RESOLUTION) {
@@ -110,7 +109,6 @@ class SongCircle extends Updatable {
     radius: number,
     lineWidth: number,
   ) {
-    const THREE = Scene.THREE;
     const loader = new THREE.FontLoader();
 
     loader.load('/dist/fonts/san-fransisco/regular.json', (font: any) => {
@@ -141,7 +139,8 @@ class SongCircle extends Updatable {
         text = generateText(fontSize);
 
         const box = new THREE.Box3().setFromObject(text);
-        predictedWidth = box.getSize().x;
+        const center = new THREE.Vector3();
+        predictedWidth = box.getSize(center).x;
       }
 
       text.position.set(center.x, center.y, center.z + 0.00002);
