@@ -51,20 +51,20 @@ class Beat extends React.Component<BeatProps, BeatState> {
     }
   }
 
-  // shouldComponentUpdate(nextProps: BeatProps) {
-  //   const { isQueued, isPlaying, isSelected, isDisabled, zIndex } = this.props;
-  //   const shouldUpdate = isQueued !== nextProps.isQueued ||
-  //                        isPlaying !== nextProps.isPlaying ||
-  //                        isSelected !== nextProps.isSelected ||
-  //                        isDisabled !== nextProps.isDisabled ||
-  //                        zIndex !== nextProps.zIndex;
+  shouldComponentUpdate(nextProps: BeatProps) {
+    const { isQueued, isPlaying, isSelected, isDisabled, zIndex } = this.props;
+    const shouldUpdate = isQueued !== nextProps.isQueued ||
+                         isPlaying !== nextProps.isPlaying ||
+                         isSelected !== nextProps.isSelected ||
+                         isDisabled !== nextProps.isDisabled ||
+                         zIndex !== nextProps.zIndex;
 
-  //   if (shouldUpdate) {
-  //     return true;
-  //   }
+    if (shouldUpdate) {
+      return true;
+    }
 
-  //   return false;
-  // }
+    return false;
+  }
 
   render() {
     const { isQueued, isPlaying, isSelected, isDisabled, UIBeat, zIndex } = this.props;

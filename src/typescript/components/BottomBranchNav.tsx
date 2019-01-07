@@ -47,18 +47,21 @@ class BottomBranchNav extends React.Component<BottomBranchNavProps, BottomBranch
     this.scrollTrackerContainerElement = React.createRef();
     this.bottomBranchNavBodyElement = React.createRef();
 
-    const defaultBeatListState: any = {
-      queued: [],
-      playing: null,
-      selected: null,
-      disabled: [],
-    };
-
     this.state = {
       status: BottomBranchNavStatus.CHOOSE_FIRST_BEAT,
       beatLists: {
-        [BeatListOrientation.TOP]: defaultBeatListState,
-        [BeatListOrientation.BOTTOM]: defaultBeatListState,
+        [BeatListOrientation.TOP]: {
+          queued: [],
+          playing: null,
+          selected: null,
+          disabled: [],
+        },
+        [BeatListOrientation.BOTTOM]: {
+          queued: [],
+          playing: null,
+          selected: null,
+          disabled: [],
+        },
       },
       beatPreviewTimer: null,
       lastFocusedBeatList: null,
