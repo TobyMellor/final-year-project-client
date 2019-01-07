@@ -157,6 +157,10 @@ class Beat extends React.Component<BeatProps, BeatState> {
       return;
     }
 
+    // Fake a scroll event immediately so we can start rotating
+    // before the expansion animation
+    this.triggerScrollEvent();
+
     this.props.signalClickToParentFn(this.props.parentComponent,
                                      this.props.UIBeat,
                                      this.handleParentScroll.bind(this));
@@ -182,6 +186,12 @@ class Beat extends React.Component<BeatProps, BeatState> {
 
       return { scrollReturnTimer: timer };
     });
+  }
+
+  private triggerScrollEvent() {
+    const beatElement = this.beatElement.current;
+
+    beatElement.dispatchEvent(new Event('scroll'));
   }
 
   private scrollBeatIntoView() {

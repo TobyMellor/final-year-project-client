@@ -227,7 +227,12 @@ class BottomBranchNav extends React.Component<BottomBranchNavProps, BottomBranch
       thisComponent.setState({
         scrollPriorityBeatList: beatListOrientation,
         status: BottomBranchNavStatus.CHOOSE_SECOND_BEAT,
+        lastFocusedBeatList: BeatListOrientation.BOTTOM,
       }, () => {
+        const componentWidth = thisComponent.bottomBranchNavBodyElement.current.clientWidth;
+
+        // Scroll to the rough start location on the bottom nav
+        thisComponent.smoothlyCatchUpScrollTracker(componentWidth / 2);
 
         // For smoothness, only allow the bottom beat list to scroll for 1s
         setTimeout(() => {
@@ -384,7 +389,7 @@ class BottomBranchNav extends React.Component<BottomBranchNavProps, BottomBranch
 
     // Check if we've caught up to the last scrollLeft target that was set
     if (isCaughtUpToTarget) {
-      const newScrollLeftTarget = beatLists[lastFocusedBeatList].lastKnownScrollPosition;
+      const newScrollLeftTarget = beatLists[lastFocusedBeatList].lastKnownScrollPosition || null;
       const isCaughtUpToNewTarget = this.isScrollTrackerCaughtUp(scrollLeft, newScrollLeftTarget);
 
       // Set a new scrollLeft target if the scrollTracker is still not synced
@@ -415,10 +420,10 @@ class BottomBranchNav extends React.Component<BottomBranchNavProps, BottomBranch
     return scrollPercentage;
   }
 
-  private isScrollTrackerCaughtUp(scrollLeft: number, scrollLeftTarget: number): boolean {
+  private isScrollTrackerCaughtUp(scrollLeft: number, scrollLeftTarget: number | null): boolean {
     const THRESHOLD = 1000;
 
-    return Math.abs(scrollLeft - scrollLeftTarget) <= THRESHOLD;
+    return !scrollLeftTarget || Math.abs(scrollLeft - scrollLeftTarget) <= THRESHOLD;
   }
 
   private getInstructionForStatus(): string {
