@@ -9,9 +9,12 @@
 import Dispatcher from '../../events/Dispatcher';
 import TrackModel from '../../models/audio-analysis/Track';
 import Scene from '../canvas/drawables/Scene';
-import * as DrawableFactory from '../../factories/drawable';
-import * as conversions from './drawables/utils/conversions';
+import * as drawableFactory from '../../factories/drawable';
+import * as conversions from '../../utils/conversions';
+import * as utils from '../../utils/misc';
 import { FYPEvent } from '../../types/enums';
+import WorldPoint from './drawables/utils/WorldPoint';
+import Rotation from './drawables/utils/Rotation';
 
 class CanvasService {
   private static _instance: CanvasService = null;
@@ -25,10 +28,10 @@ class CanvasService {
     Dispatcher.getInstance()
               .on(FYPEvent.PlayingTrackBranchesAnalyzed, this, this.setSongCircles);
 
-    const render = (now: number) => {
-      if (Math.random() < 0.05) {
-        scene.render();
-      }
+    const render = (nowMs: number) => {
+      const nowSecs = conversions.millisecondsToSeconds(nowMs);
+
+      scene.render(nowSecs);
 
       requestAnimationFrame(render);
     };
@@ -47,19 +50,24 @@ class CanvasService {
   public async setSongCircles(
     { playingTrack, childTracks }: { playingTrack: TrackModel, childTracks: TrackModel[] },
   ) {
-    const parentSongCircle = await DrawableFactory.renderParentSongCircle(this.scene, playingTrack);
+    const parentSongCircle = await drawableFactory.renderParentSongCircle(this.scene, playingTrack);
 
     childTracks.forEach((childTrack) => {
-      const percentage = conversions.getRandomInteger();
+      const percentage = utils.getRandomInteger();
 
-      return DrawableFactory.renderChildSongCircle(this.scene,
-                                                   parentSongCircle,
-                                                   childTrack,
-                                                   percentage);
+      drawableFactory.renderChildSongCircle(this.scene,
+                                            parentSongCircle,
+                                            childTrack,
+                                            percentage);
     });
 
     Dispatcher.getInstance()
               .dispatch(FYPEvent.PlayingTrackRendered);
+  }
+
+  public async updateCanvasRotation(percentage: number) {
+    WorldPoint.rotationOffsetPercentage = percentage;
+    Rotation.rotationOffsetPercentage = percentage;
   }
 }
 

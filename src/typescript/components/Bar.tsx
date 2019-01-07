@@ -3,11 +3,12 @@ import Beat from './Beat';
 import cx from 'classnames';
 import BeatList from './BeatList';
 import { UIBarType, UIBeatType } from '../services/ui/entities';
+import * as utils from '../utils/misc';
 
 export interface BarProps {
   UIBar: UIBarType;
-  queuedUIBeats?: UIBeatType[];
-  playingUIBeat?: UIBeatType;
+  queuedUIBeats: UIBeatType[];
+  playingUIBeat: UIBeatType | null;
   selectedUIBeat: UIBeatType | null;
   disabledUIBeats: UIBeatType[];
   parentComponent: BeatList;
@@ -20,37 +21,58 @@ export interface BarProps {
 }
 
 interface BarState {
-  highestZIndex: number;
+  zIndexes: number[];
 }
 
 class Bar extends React.Component<BarProps, BarState> {
   constructor(props: BarProps) {
     super(props);
 
+    const { beats } = props.UIBar;
+
     this.state = {
-      highestZIndex: 1,
+      zIndexes: Array<number>(beats.length).fill(1),
     };
+  }
+
+  shouldComponentUpdate(nextProps: BarProps) {
+    const { queuedUIBeats, playingUIBeat, selectedUIBeat, disabledUIBeats } = this.props;
+    const shouldUpdate = !utils.areArraysEqual(queuedUIBeats, nextProps.queuedUIBeats) ||
+                         playingUIBeat !== nextProps.playingUIBeat ||
+                         selectedUIBeat !== nextProps.selectedUIBeat ||
+                         !utils.areArraysEqual(disabledUIBeats, nextProps.disabledUIBeats);
+
+    if (shouldUpdate) {
+      return true;
+    }
+
+    return false;
   }
 
   render() {
     const { beats } = this.props.UIBar;
+    const { zIndexes } = this.state;
 
-    const beatElements = beats.map((beat) => {
-      const isQueued = this.isBeatQueued(beat.order);
-      const isPlaying = this.isBeatPlaying(beat.order);
-      const isSelected = this.isBeatSelected(beat.order);
-      const isDisabled = this.isBeatDisabled(beat.order);
+    const beatElements = beats.map((beat, beatOffsetInBar) => {
+      const beatOrder = beat.order;
+      const isQueued = this.isBeatQueued(beatOrder);
+      const isPlaying = this.isBeatPlaying(beatOrder);
+      const isSelected = this.isBeatSelected(beatOrder);
+      const isDisabled = this.isBeatDisabled(beatOrder);
+      const zIndex = zIndexes[beatOffsetInBar];
 
-      return <Beat key={beat.order}
+      return <Beat key={beatOrder}
                    UIBeat={beat}
                    isQueued={isQueued}
                    isPlaying={isPlaying}
                    isSelected={isSelected}
                    isDisabled={isDisabled}
-                   increaseHighestZIndexFn={this.increaseHighestZIndex.bind(this)}
+                   zIndex={zIndex}
+                   increaseHighestZIndexFn={this.increaseHighestZIndex.bind(this, beatOffsetInBar)}
                    signalClickToParentFn={this.signalClickToParent}
                    parentComponent={this} />;
     });
+
     const barClassNames = cx(
       'bar',
       {
@@ -94,14 +116,16 @@ class Bar extends React.Component<BarProps, BarState> {
     return disabledUIBeats && disabledUIBeats.some(beat => beat.order === beatOrder);
   }
 
-  private increaseHighestZIndex(): number {
-    this.setState(({ highestZIndex }) => {
+  private increaseHighestZIndex(beatOffsetInBar: number) {
+    this.setState(({ zIndexes }) => {
+      const highestZIndex = Math.max(...zIndexes) + 1;
+
+      zIndexes[beatOffsetInBar] = highestZIndex;
+
       return {
-        highestZIndex: highestZIndex + 1,
+        zIndexes,
       };
     });
-
-    return this.state.highestZIndex;
   }
 
   private signalClickToParent(

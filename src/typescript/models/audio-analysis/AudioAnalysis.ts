@@ -4,7 +4,7 @@ import BeatModel from './Beat';
 import SegmentModel from './Segment';
 import TrackModel from './Track';
 import WebAudioService from '../../services/web-audio/WebAudioService';
-import * as conversions from '../../services/canvas/drawables/utils/conversions';
+import * as conversions from '../../utils/conversions';
 import { TimeIdentifier } from '../../types/general';
 import * as trackFactory from '../../factories/track';
 

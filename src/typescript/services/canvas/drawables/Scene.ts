@@ -1,4 +1,10 @@
 import CanvasService from '../CanvasService';
+import * as conversions from '../../../utils/conversions';
+import WorldPoint from './utils/WorldPoint';
+import Updatable from './Updatable';
+import SongCircle from '../../canvas/drawables/SongCircle';
+import * as THREE from 'three';
+import Rotation from './utils/Rotation';
 
 export type Drawable = {
   meshes: THREE.Mesh[];
@@ -6,7 +12,6 @@ export type Drawable = {
 
 class Scene {
   private static _instance: Scene = null;
-  public static THREE = require('three');
 
   public static BUFFER_NUM_COMPONENTS: number = 3; // How many dimensions?
   public static Z_BASE_DISTANCE = -5;
@@ -21,16 +26,19 @@ class Scene {
   private camera: THREE.Camera = null;
   private renderer: THREE.WebGLRenderer = null;
 
+  private updatables: Set<Updatable> = new Set();
+  private lastRenderSecs: number = null;
+
   private constructor(
     whereToDraw: HTMLCanvasElement,
   ) {
-    const scene = new Scene.THREE.Scene();
-    const camera = new Scene.THREE.PerspectiveCamera(Scene.CAMERA_FOV_DEGREES,
-                                                     Scene.CAMERA_ASPECT_RATIO,
-                                                     Scene.CAMERA_Z_CLIP_NEAR,
-                                                     Scene.CAMERA_Z_CLIP_FAR);
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(Scene.CAMERA_FOV_DEGREES,
+                                               Scene.CAMERA_ASPECT_RATIO,
+                                               Scene.CAMERA_Z_CLIP_NEAR,
+                                               Scene.CAMERA_Z_CLIP_FAR);
 
-    const renderer = new Scene.THREE.WebGLRenderer({
+    const renderer = new THREE.WebGLRenderer({
       canvas: whereToDraw,
       antialias: true,
     });
@@ -41,8 +49,6 @@ class Scene {
     this.scene = scene;
     this.camera = camera;
     this.renderer = renderer;
-
-    requestAnimationFrame(() => this.render());
   }
 
   public static getInstance(whereToDraw: HTMLCanvasElement): Scene {
@@ -53,19 +59,32 @@ class Scene {
     return this._instance = new this(whereToDraw);
   }
 
-  public add(...meshes: THREE.Mesh[]): this {
-    this.scene.add(...meshes);
+  public add(updatable: Updatable) {
+    const mesh = updatable.getMesh();
 
-    return this;
+    this.scene.add(mesh);
+    this.updatables.add(updatable);
   }
 
-  public delete(...meshes: THREE.Mesh[]): this {
-    this.scene.remove(...meshes);
-
-    return this;
+  private update() {
+    this.updatables.forEach(updatable => updatable.update());
   }
 
-  public render() {
+  public render(nowSecs: number) {
+
+    // Get the time passed since the last time this fn was called
+    const deltaSecs = nowSecs - this.lastRenderSecs;
+
+    // Update the last time this fn was called to now (for future calls)
+    this.lastRenderSecs = nowSecs;
+
+    // TODO: Update various rotation values, pinheads, etc here
+    // WorldPoint.rotationOffsetPercentage += 10 * deltaSecs;
+    // Rotation.rotationOffsetPercentage += 10 * deltaSecs;
+
+    this.update();
+
+    // Re-render everything on the scene through THREE.js
     this.renderer.render(this.scene, this.camera);
   }
 }

@@ -1,19 +1,24 @@
 import * as React from 'react';
 import Bar from './Bar';
 import cx from 'classnames';
-import BottomBranchNav, { BottomBranchNavStatus, BeatListOrientation } from './BottomBranchNav';
+import BottomBranchNav, { BeatListOrientation } from './BottomBranchNav';
 import { UIBarType, UIBeatType } from '../services/ui/entities';
 
 export interface BeatListProps {
   UIBars: UIBarType[];
-  queuedUIBeats?: UIBeatType[];
-  playingUIBeat?: UIBeatType;
-  disabledUIBeats?: UIBeatType[];
+  queuedUIBeats: UIBeatType[];
+  playingUIBeat: UIBeatType | null;
+  disabledUIBeats: UIBeatType[];
   parentComponent: BottomBranchNav;
   signalClickToParentFn: (
     parentComponent: BottomBranchNav,
     beatListOrientation: BeatListOrientation,
     UIBeat: UIBeatType,
+  ) => void;
+  signalScrollToParentFn: (
+    parentComponent: BottomBranchNav,
+    beatListOrientation: BeatListOrientation,
+    currentTarget: Element,
   ) => void;
   isHidden?: boolean;
   orientation: BeatListOrientation;
@@ -41,9 +46,6 @@ class BeatList extends React.Component<BeatListProps, BeatListState> {
       orientation,
       UIBars,
       isHidden,
-      queuedUIBeats,
-      playingUIBeat,
-      disabledUIBeats,
     } = this.props;
     const scrollbarClassNames = cx(
       'horizontal-scrollbar',
@@ -56,6 +58,7 @@ class BeatList extends React.Component<BeatListProps, BeatListState> {
 
     const barElements = UIBars.map((UIBar) => {
       const selectedUIBeat = this.getSelectedUIBeat(UIBar);
+      const [queuedUIBeats, playingUIBeat, disabledUIBeats] = this.getImportantBeats(UIBar);
 
       return <Bar key={UIBar.order}
                   UIBar={UIBar}
@@ -95,6 +98,20 @@ class BeatList extends React.Component<BeatListProps, BeatListState> {
     return null;
   }
 
+  private getImportantBeats(UIBar: UIBarType): [UIBeatType[], UIBeatType, UIBeatType[]] {
+    const { queuedUIBeats, playingUIBeat, disabledUIBeats } = this.props;
+    const UIBeats = [...queuedUIBeats, playingUIBeat, ...disabledUIBeats];
+    const doesBarContainImportantBeats = UIBeats.some((UIBeat) => {
+      return UIBeat && UIBeat.barOrder === UIBar.order;
+    });
+
+    if (doesBarContainImportantBeats) {
+      return [queuedUIBeats, playingUIBeat, disabledUIBeats];
+    }
+
+    return [[], null, []];
+  }
+
   // TODO: Find a better way to do this, we shouldn't be passing down
   //       the parents instance to its children
   private handleClick(
@@ -114,8 +131,12 @@ class BeatList extends React.Component<BeatListProps, BeatListState> {
                                               selectedUIBeat);
   }
 
-  private handleScroll() {
-    this.state.scrollCallbackFn();
+  private handleScroll({ currentTarget }: React.UIEvent) {
+    const { parentComponent, orientation, signalScrollToParentFn } = this.props;
+    const { scrollCallbackFn } = this.state;
+
+    scrollCallbackFn();
+    signalScrollToParentFn(parentComponent, orientation, currentTarget);
   }
 }
 

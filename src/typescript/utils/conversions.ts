@@ -1,5 +1,5 @@
-import Scene from '../Scene';
-import { TimeIdentifier } from '../../../../types/general';
+import { TimeIdentifier } from '../types/general';
+import Scene from '../services/canvas/drawables/Scene';
 
 export function degreesToRadians(degrees: number) {
   const radians = degrees * (Math.PI / 180);
@@ -13,24 +13,23 @@ export function radiansToDegrees(radians: number) {
   return degrees % 360;
 }
 
-export function percentageToDegrees(percentage: number) {
-  // How many degrees we need to rotate circles so "0%" appears at the top
-  const OFFSET_AMOUNT_DEGREES = 90;
+export function percentageToDegrees(
+  percentage: number,
+  offsetAmountDegrees: number,
+) {
   const decimal = percentage / 100;
 
   // Inverse so percentage is clockwise, to make
   // 25% appear on the right of the circle instead of the left
   const inversedDecimal = 1 - decimal;
   const degrees = inversedDecimal * 360;
-
-  // How many degrees we need to rotate circles so "0%" appears at the top
-  const degreesOffset = degrees + OFFSET_AMOUNT_DEGREES;
+  const degreesOffset = degrees + offsetAmountDegrees;
 
   return degreesOffset % 360;
 }
 
 export function percentageToRadians(percentage: number) {
-  const degrees = percentageToDegrees(percentage);
+  const degrees = percentageToDegrees(percentage, 90);
   const radians = degreesToRadians(degrees);
 
   return radians;
@@ -54,10 +53,6 @@ export function worldWidthToAbsoluteWidth(
 
 export function decimalToPercentage(decimal: number): number {
   return decimal * 100;
-}
-
-export function getRandomInteger(): number {
-  return Math.round(Math.random() * 100);
 }
 
 export function secondsToMilliseconds(seconds: number): number {
