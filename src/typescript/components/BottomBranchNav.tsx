@@ -152,7 +152,7 @@ class BottomBranchNav extends React.Component<BottomBranchNavProps, BottomBranch
                           orientation={BeatListOrientation.BOTTOM}  />
               </div>
               <div ref={this.scrollTrackerContainerElement}
-                   style={ { overflowX: 'scroll' } }
+                   className="scroll-tracker"
                    onScroll={this.handleScrollTracker.bind(this)}>
                 <div ref={this.scrollTrackerElement}>...</div>
               </div>

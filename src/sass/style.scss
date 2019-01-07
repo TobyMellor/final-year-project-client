@@ -272,6 +272,15 @@ canvas {
         }
       }
     }
+
+    & + .scroll-tracker {
+      overflow-x: scroll;
+      height: 1px;
+
+      // FIXME: Either of these break when going from .CHOOSE_FIRST_BEAT to .CHOOSE_SECOND_BEAT
+      // visibility: hidden;
+      // height: 0px;
+    }
   }
 }
 
