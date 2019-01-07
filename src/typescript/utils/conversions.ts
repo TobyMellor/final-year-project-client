@@ -1,5 +1,5 @@
-import Scene from '../Scene';
-import { TimeIdentifier } from '../../../../types/general';
+import { TimeIdentifier } from '../types/general';
+import Scene from '../services/canvas/drawables/Scene';
 
 export function degreesToRadians(degrees: number) {
   const radians = degrees * (Math.PI / 180);
@@ -55,10 +55,6 @@ export function decimalToPercentage(decimal: number): number {
   return decimal * 100;
 }
 
-export function getRandomInteger(): number {
-  return Math.round(Math.random() * 100);
-}
-
 export function secondsToMilliseconds(seconds: number): number {
   return seconds * 1000;
 }
@@ -79,18 +75,4 @@ export function getTimeIdentifierFromMilliseconds(ms: number): TimeIdentifier {
     ms,
     secs: millisecondsToSeconds(ms),
   };
-}
-
-export function areArraysEqual<T>(arr1: T[], arr2: T[]): boolean {
-  if (arr1.length !== arr2.length) {
-    return false;
-  }
-
-  for (let i = 0; i < arr1.length; i += 1) {
-    if (arr1[i] !== arr2[i]) {
-      return false;
-    }
-  }
-
-  return true;
 }

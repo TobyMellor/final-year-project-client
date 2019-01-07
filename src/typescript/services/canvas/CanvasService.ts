@@ -10,7 +10,8 @@ import Dispatcher from '../../events/Dispatcher';
 import TrackModel from '../../models/audio-analysis/Track';
 import Scene from '../canvas/drawables/Scene';
 import * as drawableFactory from '../../factories/drawable';
-import * as conversions from './drawables/utils/conversions';
+import * as conversions from '../../utils/conversions';
+import * as utils from '../../utils/misc';
 import { FYPEvent } from '../../types/enums';
 import WorldPoint from './drawables/utils/WorldPoint';
 import Rotation from './drawables/utils/Rotation';
@@ -52,7 +53,7 @@ class CanvasService {
     const parentSongCircle = await drawableFactory.renderParentSongCircle(this.scene, playingTrack);
 
     childTracks.forEach((childTrack) => {
-      const percentage = conversions.getRandomInteger();
+      const percentage = utils.getRandomInteger();
 
       drawableFactory.renderChildSongCircle(this.scene,
                                             parentSongCircle,

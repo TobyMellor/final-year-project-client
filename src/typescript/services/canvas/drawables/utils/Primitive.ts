@@ -1,4 +1,4 @@
-import * as conversions from './conversions';
+import * as conversions from '../../../../utils/conversions';
 
 abstract class Primitive {
   public static rotationBaseOffsetPercentage: number = 0;

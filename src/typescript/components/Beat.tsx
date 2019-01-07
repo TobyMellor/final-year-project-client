@@ -15,7 +15,8 @@ export interface BeatProps {
     UIBeat: UIBeatType,
     scrollCallbackFn: () => void,
   ) => void;
-  increaseHighestZIndexFn: () => number;
+  zIndex: number;
+  increaseHighestZIndexFn: () => void;
 }
 
 interface BeatState {
@@ -50,8 +51,23 @@ class Beat extends React.Component<BeatProps, BeatState> {
     }
   }
 
+  // shouldComponentUpdate(nextProps: BeatProps) {
+  //   const { isQueued, isPlaying, isSelected, isDisabled, zIndex } = this.props;
+  //   const shouldUpdate = isQueued !== nextProps.isQueued ||
+  //                        isPlaying !== nextProps.isPlaying ||
+  //                        isSelected !== nextProps.isSelected ||
+  //                        isDisabled !== nextProps.isDisabled ||
+  //                        zIndex !== nextProps.zIndex;
+
+  //   if (shouldUpdate) {
+  //     return true;
+  //   }
+
+  //   return false;
+  // }
+
   render() {
-    const { isQueued, isPlaying, isSelected, isDisabled, UIBeat } = this.props;
+    const { isQueued, isPlaying, isSelected, isDisabled, UIBeat, zIndex } = this.props;
     const { order, timbreNormalized, loudnessNormalized } = UIBeat;
     const circleColour = this.getCircleColour(timbreNormalized);
     const circleSize = this.getCircleSize(loudnessNormalized);
@@ -69,7 +85,7 @@ class Beat extends React.Component<BeatProps, BeatState> {
     return (
       <div ref={this.beatElement}
            className={beatClassName}
-           style={{ zIndex: this.state.hoverCount }}
+           style={{ zIndex }}
            onMouseEnter={this.increaseHoverCount.bind(this)}
            onClick={this.handleClick.bind(this)}>
         <span className="circle circle-hollow"></span>
@@ -131,11 +147,7 @@ class Beat extends React.Component<BeatProps, BeatState> {
   }
 
   private increaseHoverCount() {
-    const highestZIndex = this.props.increaseHighestZIndexFn();
-
-    this.setState({
-      hoverCount: highestZIndex,
-    });
+    this.props.increaseHighestZIndexFn();
   }
 
   private handleClick() {
@@ -157,15 +169,13 @@ class Beat extends React.Component<BeatProps, BeatState> {
   private handleParentScroll() {
     const SCROLL_BACK_AFTER_MS = 2500;
 
-    const timer = setTimeout(
-      () => {
-        if (!this.props.isSelected) {
-          return;
-        }
+    const timer = setTimeout(() => {
+      if (!this.props.isSelected) {
+        return;
+      }
 
-        this.scrollBeatIntoView();
-      },
-      SCROLL_BACK_AFTER_MS);
+      this.scrollBeatIntoView();
+    }, SCROLL_BACK_AFTER_MS);
 
     this.setState(({ scrollReturnTimer }) => {
       clearTimeout(scrollReturnTimer);

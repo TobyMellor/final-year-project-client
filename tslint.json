@@ -3,6 +3,6 @@
     "rules": {
         "variable-name": [false],
         "import-name": false,
-        "align": false,
+        "align": false
     }
 }

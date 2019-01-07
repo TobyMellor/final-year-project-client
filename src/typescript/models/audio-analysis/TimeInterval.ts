@@ -1,5 +1,5 @@
 import { GetAnAudioAnalysisResponseTimeInterval } from '../../types/spotify-responses';
-import * as conversions from '../../services/canvas/drawables/utils/conversions';
+import * as conversions from '../../utils/conversions';
 import { TimeIdentifier } from '../../types/general';
 
 interface Input extends GetAnAudioAnalysisResponseTimeInterval {

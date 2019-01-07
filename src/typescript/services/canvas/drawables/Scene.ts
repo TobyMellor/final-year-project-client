@@ -1,5 +1,5 @@
 import CanvasService from '../CanvasService';
-import * as conversions from './utils/conversions';
+import * as conversions from '../../../utils/conversions';
 import WorldPoint from './utils/WorldPoint';
 import Updatable from './Updatable';
 import SongCircle from '../../canvas/drawables/SongCircle';

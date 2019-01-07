@@ -2,7 +2,7 @@ import AlbumModel, { Input as AlbumInput } from '../Album';
 import AudioFeaturesModel from '../audio-features/AudioFeatures';
 import AudioAnalysisModel from './AudioAnalysis';
 import * as trackFactory from '../../factories/track';
-import * as conversions from '../../services/canvas/drawables/utils/conversions';
+import * as conversions from '../../utils/conversions';
 import { TimeIdentifier } from '../../types/general';
 import BeatModel from './Beat';
 

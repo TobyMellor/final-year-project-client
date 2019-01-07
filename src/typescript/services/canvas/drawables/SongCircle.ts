@@ -1,7 +1,7 @@
 import Track from '../../../models/audio-analysis/Track';
 import WorldPoint from './utils/WorldPoint';
 import Scene from './Scene';
-import * as conversions from './utils/conversions';
+import * as conversions from '../../../utils/conversions';
 import Updatable from './Updatable';
 import Circle from './utils/Circle';
 import * as THREE from 'three';

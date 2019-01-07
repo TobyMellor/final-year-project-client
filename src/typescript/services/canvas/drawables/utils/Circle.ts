@@ -1,4 +1,4 @@
-import * as conversions from './conversions';
+import * as conversions from '../../../../utils/misc';
 import WorldPoint from './WorldPoint';
 
 class Circle {
