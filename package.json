@@ -55,7 +55,7 @@
     "babel-jest": "^24.0.0",
     "bootstrap": "^4.2.1",
     "gl-matrix": "^2.8.1",
-    "react": "^16.7.0",
-    "react-dom": "^16.7.0"
+    "react": "next",
+    "react-dom": "next"
   }
 }
