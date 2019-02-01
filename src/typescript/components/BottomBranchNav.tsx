@@ -185,16 +185,16 @@ class BottomBranchNav extends React.Component<BottomBranchNavProps, BottomBranch
       <div className="modal-footer">
         <SuccessButton key="preview"
                        label="Preview"
-                       onClickFn={this.handlePreviewClick.bind(this)}
+                       onButtonClick={this.handlePreviewClick.bind(this)}
                        shouldHide={isPreviewing}
                        shouldFadeIn={true} />
         <Button key="previewing_back"
                 label="Back"
-                onClickFn={this.handlePreviewingBackClick.bind(this)}
+                onButtonClick={this.handlePreviewingBackClick.bind(this)}
                 shouldHide={!isPreviewing} />
         <SuccessButton key="previewing_create_branch"
                        label="Create Branch"
-                       onClickFn={this.handleCreateBranchClick.bind(this)}
+                       onButtonClick={this.handleCreateBranchClick.bind(this)}
                        shouldHide={!isPreviewing} />
       </div>
     );

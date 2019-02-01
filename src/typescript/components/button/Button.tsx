@@ -1,16 +1,17 @@
 import * as React from 'react';
 import cx from 'classnames';
+import ui from '../../config/ui';
 
 interface ButtonProps {
   colourClassName?: ButtonColour;
-  onClickFn: () => void;
+  onButtonClick: () => void;
   label: string;
   shouldFadeIn?: boolean;
   shouldHide?: boolean;
 }
 
 interface ButtonState {
-  hasRendered: boolean;
+  hasFadeFinished: boolean;
 }
 
 class Button extends React.Component<ButtonProps, ButtonState> {
@@ -18,34 +19,45 @@ class Button extends React.Component<ButtonProps, ButtonState> {
     super(props);
 
     this.state = {
-      hasRendered: false,
+      hasFadeFinished: false,
     };
   }
 
   componentDidMount() {
-    setTimeout(
-      () => {
-        this.setState({
-          hasRendered: true,
-        });
-      },
-      100);
+    // After the fade animation has completed,
+    // update the state
+    setTimeout(() => {
+      this.setState({
+        hasFadeFinished: true,
+      });
+    }, ui.button.fadeAnimationDurationMs);
+  }
+
+  handleClick() {
+    this.props.onButtonClick();
   }
 
   render() {
-    const { colourClassName, onClickFn, label, shouldFadeIn, shouldHide } = this.props;
-    const { hasRendered } = this.state;
+    const { colourClassName, label, shouldFadeIn, shouldHide } = this.props;
+    const { hasFadeFinished } = this.state;
     const classNames = cx(
       'btn',
       colourClassName,
       {
-        'start-fade': shouldFadeIn && !hasRendered,
-        'end-fade': shouldFadeIn && hasRendered,
+        'start-fade': shouldFadeIn && !hasFadeFinished,
+        'end-fade': shouldFadeIn && hasFadeFinished,
         'd-none': shouldHide,
       },
     );
 
-    return <button type="button" className={classNames} onClick={onClickFn}>{label}</button>;
+    return (
+      <button type="button"
+              className={classNames}
+              onClick={this.handleClick.bind(this)}
+      >
+        {label}
+      </button>
+    );
   }
 }
 
