@@ -9,14 +9,11 @@ export interface BeatListProps {
   queuedUIBeats: UIBeatType[];
   playingUIBeat: UIBeatType | null;
   disabledUIBeats: UIBeatType[];
-  parentComponent: BottomBranchNav;
-  signalClickToParentFn: (
-    parentComponent: BottomBranchNav,
+  onBeatClick: (
     beatListOrientation: BeatListOrientation,
     UIBeat: UIBeatType,
   ) => void;
-  signalScrollToParentFn: (
-    parentComponent: BottomBranchNav,
+  onBeatListScroll: (
     beatListOrientation: BeatListOrientation,
     currentTarget: Element,
   ) => void;
@@ -66,14 +63,17 @@ class BeatList extends React.Component<BeatListProps, BeatListState> {
                   playingUIBeat={playingUIBeat}
                   selectedUIBeat={selectedUIBeat}
                   disabledUIBeats={disabledUIBeats}
-                  signalClickToParentFn={this.handleClick}
-                  parentComponent={this} />;
+                  onBeatClick={
+                    (UIBar, UIBeat, scrollCallbackFn) => (
+                      this.handleBeatClick(UIBar, UIBeat, scrollCallbackFn)
+                    )
+                  } />;
     });
 
     return (
       <div className={scrollbarClassNames}>
         <div className={barsClassNames}
-             onScroll={this.handleScroll.bind(this)}>
+             onScroll={this.handleBeatListScroll.bind(this)}>
           {barElements}
         </div>
       </div>
@@ -112,31 +112,27 @@ class BeatList extends React.Component<BeatListProps, BeatListState> {
     return [[], null, []];
   }
 
-  // TODO: Find a better way to do this, we shouldn't be passing down
-  //       the parents instance to its children
-  private handleClick(
-    thisComponent: BeatList,
+  private handleBeatClick(
     selectedUIBar: UIBarType,
     selectedUIBeat: UIBeatType,
     scrollCallbackFn: () => void,
   ) {
-    thisComponent.setState({
+    this.setState({
       selectedUIBar,
       selectedUIBeat,
       scrollCallbackFn,
     });
 
-    thisComponent.props.signalClickToParentFn(thisComponent.props.parentComponent,
-                                              thisComponent.props.orientation,
-                                              selectedUIBeat);
+    this.props.onBeatClick(this.props.orientation,
+                           selectedUIBeat);
   }
 
-  private handleScroll({ currentTarget }: React.UIEvent) {
-    const { parentComponent, orientation, signalScrollToParentFn } = this.props;
+  private handleBeatListScroll({ currentTarget }: React.UIEvent) {
+    const { orientation, onBeatListScroll } = this.props;
     const { scrollCallbackFn } = this.state;
 
     scrollCallbackFn();
-    signalScrollToParentFn(parentComponent, orientation, currentTarget);
+    onBeatListScroll(orientation, currentTarget);
   }
 }
 

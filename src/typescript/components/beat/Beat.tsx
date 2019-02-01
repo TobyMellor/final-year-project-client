@@ -1,7 +1,8 @@
 import * as React from 'react';
 import cx from 'classnames';
-import Bar from './Bar';
-import { UIBeatType } from '../services/ui/entities';
+import Bar from '../Bar';
+import { UIBeatType } from '../../services/ui/entities';
+import ui from '../../config/ui';
 
 export interface BeatProps {
   UIBeat: UIBeatType;
@@ -9,14 +10,12 @@ export interface BeatProps {
   isPlaying: boolean;
   isSelected: boolean;
   isDisabled: boolean;
-  parentComponent: Bar;
-  signalClickToParentFn: (
-    parentComponent: Bar,
+  onBeatClick: (
     UIBeat: UIBeatType,
     scrollCallbackFn: () => void,
   ) => void;
   zIndex: number;
-  increaseHighestZIndexFn: () => void;
+  onBeatMouseEnter: () => void;
 }
 
 interface BeatState {
@@ -86,7 +85,7 @@ class Beat extends React.Component<BeatProps, BeatState> {
       <div ref={this.beatElement}
            className={beatClassName}
            style={{ zIndex }}
-           onMouseEnter={this.increaseHoverCount.bind(this)}
+           onMouseEnter={this.handleMouseEnter.bind(this)}
            onClick={this.handleClick.bind(this)}>
         <span className="circle circle-hollow"></span>
         <span className={circleSolidClassNames}></span>
@@ -98,40 +97,11 @@ class Beat extends React.Component<BeatProps, BeatState> {
   }
 
   private getCircleColour(timbreNormalized: number): string {
-    const availableColours = [
-      'light-black',
-      'dark-black',
-      'light-purple',
-      'dark-purple',
-      'light-blue',
-      'dark-blue',
-      'light-turquoise',
-      'dark-turquoise',
-      'light-green',
-      'dark-green',
-      'light-yellow',
-      'dark-yellow',
-      'light-orange',
-      'dark-orange',
-      'light-red',
-      'dark-red',
-    ];
-
-    return this.getCorrespondingClassName(availableColours, timbreNormalized);
+    return this.getCorrespondingClassName(ui.beat.availableColours, timbreNormalized);
   }
 
   private getCircleSize(loudnessNormalized: number): string {
-    const availableSizes = [
-      'xxs',
-      'xs',
-      'sm',
-      'md',
-      'lg',
-      'xl',
-      'xxl',
-    ];
-
-    return this.getCorrespondingClassName(availableSizes, loudnessNormalized);
+    return this.getCorrespondingClassName(ui.beat.availableSizes, loudnessNormalized);
   }
 
   private getCorrespondingClassName(array: string[], numberNormalized: number): string {
@@ -146,8 +116,8 @@ class Beat extends React.Component<BeatProps, BeatState> {
     return 0 <= number && number <= 1;
   }
 
-  private increaseHoverCount() {
-    this.props.increaseHighestZIndexFn();
+  private handleMouseEnter() {
+    this.props.onBeatMouseEnter();
   }
 
   private handleClick() {
@@ -161,25 +131,21 @@ class Beat extends React.Component<BeatProps, BeatState> {
     // before the expansion animation
     this.triggerScrollEvent();
 
-    this.props.signalClickToParentFn(this.props.parentComponent,
-                                     this.props.UIBeat,
-                                     this.handleParentScroll.bind(this));
+    this.props.onBeatClick(this.props.UIBeat,
+                           this.handleParentScroll.bind(this));
 
     // Scroll to the circle, after all animations have finished
-    const EXPAND_ANIMATION_TIME_MS = 450;
-    setTimeout(() => this.scrollBeatIntoView(), EXPAND_ANIMATION_TIME_MS);
+    setTimeout(() => this.scrollBeatIntoView(), ui.beat.expandAnimationDurationMs);
   }
 
   private handleParentScroll() {
-    const SCROLL_BACK_AFTER_MS = 2500;
-
     const timer = setTimeout(() => {
       if (!this.props.isSelected) {
         return;
       }
 
       this.scrollBeatIntoView();
-    }, SCROLL_BACK_AFTER_MS);
+    }, ui.beat.scrollBackAfterMs);
 
     this.setState(({ scrollReturnTimer }) => {
       clearTimeout(scrollReturnTimer);
@@ -208,12 +174,10 @@ class Beat extends React.Component<BeatProps, BeatState> {
     const beatListElement = beatElement.parentElement
                                        .parentElement;
     const beatListWidth = beatListElement.clientWidth;
-    const BEAT_WIDTH_PX = 64;
-    const BEAT_LEFT_MARGIN_PX = 16;
 
     // Scroll the beat list so the first beat is aligned left
     // This list gets given padding, so the first beat can scroll to the center
-    beatListElement.scrollLeft = (beatListWidth / 2) - BEAT_WIDTH_PX + BEAT_LEFT_MARGIN_PX;
+    beatListElement.scrollLeft = (beatListWidth / 2) - ui.beat.beatMarginPx + ui.beat.beatMarginPx;
   }
 }
 

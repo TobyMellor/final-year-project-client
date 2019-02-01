@@ -1,5 +1,5 @@
 import * as React from 'react';
-import Beat from './Beat';
+import Beat from './beat/Beat';
 import cx from 'classnames';
 import BeatList from './BeatList';
 import { UIBarType, UIBeatType } from '../services/ui/entities';
@@ -11,9 +11,7 @@ export interface BarProps {
   playingUIBeat: UIBeatType | null;
   selectedUIBeat: UIBeatType | null;
   disabledUIBeats: UIBeatType[];
-  parentComponent: BeatList;
-  signalClickToParentFn: (
-    parentComponent: BeatList,
+  onBeatClick: (
     UIBar: UIBarType,
     UIBeat: UIBeatType,
     scrollCallbackFn: () => void,
@@ -68,9 +66,12 @@ class Bar extends React.Component<BarProps, BarState> {
                    isSelected={isSelected}
                    isDisabled={isDisabled}
                    zIndex={zIndex}
-                   increaseHighestZIndexFn={this.increaseHighestZIndex.bind(this, beatOffsetInBar)}
-                   signalClickToParentFn={this.signalClickToParent}
-                   parentComponent={this} />;
+                   onBeatMouseEnter={this.handleBeatMouseEnter.bind(this, beatOffsetInBar)}
+                   onBeatClick={
+                      (UIBeat, scrollCallbackFn) => (
+                        this.handleBeatClick(UIBeat, scrollCallbackFn)
+                      )
+                   } />;
     });
 
     const barClassNames = cx(
@@ -116,7 +117,7 @@ class Bar extends React.Component<BarProps, BarState> {
     return disabledUIBeats && disabledUIBeats.some(beat => beat.order === beatOrder);
   }
 
-  private increaseHighestZIndex(beatOffsetInBar: number) {
+  private handleBeatMouseEnter(beatOffsetInBar: number) {
     this.setState(({ zIndexes }) => {
       const highestZIndex = Math.max(...zIndexes) + 1;
 
@@ -128,17 +129,10 @@ class Bar extends React.Component<BarProps, BarState> {
     });
   }
 
-  private signalClickToParent(
-    thisComponent: Bar,
-    UIBeat: UIBeatType,
-    scrollCallbackFn: () => void,
-  ) {
-    const props = thisComponent.props;
-
-    props.signalClickToParentFn(props.parentComponent,
-                                props.UIBar,
-                                UIBeat,
-                                scrollCallbackFn);
+  private handleBeatClick(UIBeat: UIBeatType, scrollCallbackFn: () => void) {
+    this.props.onBeatClick(this.props.UIBar,
+                           UIBeat,
+                           scrollCallbackFn);
   }
 }
 
