@@ -404,6 +404,7 @@ class BottomBranchNav extends React.Component<BottomBranchNavProps, BottomBranch
 
     const scrollPercentage = this.getScrollPercentage(scrollLeft, scrollWidth, clientWidth);
 
+    // FIXME: All communication should be done through the UIService
     CanvasService.getInstance()
                  .updateCanvasRotation(scrollPercentage);
   }
