@@ -1,14 +1,16 @@
 import * as React from 'react';
-import Bar from './bar/Bar';
+import Bar from '../bar/Bar';
 import cx from 'classnames';
-import { BeatListOrientation } from './BottomBranchNav';
-import { UIBarType, UIBeatType } from '../services/ui/entities';
+import { BeatListOrientation } from '../BottomBranchNav';
+import { UIBarType, UIBeatType } from '../../services/ui/entities';
 
 export interface BeatListProps {
   UIBars: UIBarType[];
   queuedUIBeats: UIBeatType[];
   playingUIBeat: UIBeatType | null;
   disabledUIBeats: UIBeatType[];
+  isHidden?: boolean;
+  orientation: BeatListOrientation;
   onBeatClick: (
     beatListOrientation: BeatListOrientation,
     UIBeat: UIBeatType,
@@ -17,12 +19,9 @@ export interface BeatListProps {
     beatListOrientation: BeatListOrientation,
     currentTarget: Element,
   ) => void;
-  isHidden?: boolean;
-  orientation: BeatListOrientation;
 }
 
 interface BeatListState {
-  selectedUIBar: UIBarType;
   selectedUIBeat: UIBeatType;
   scrollCallbackFn: () => void;
 }
@@ -32,18 +31,14 @@ class BeatList extends React.Component<BeatListProps, BeatListState> {
     super(props);
 
     this.state = {
-      selectedUIBar: null,
       selectedUIBeat: null,
       scrollCallbackFn: () => {},
     };
   }
 
   render() {
-    const {
-      orientation,
-      UIBars,
-      isHidden,
-    } = this.props;
+    const { orientation, UIBars, isHidden } = this.props;
+    const barsClassNames = cx('bars', { selected: this.state.selectedUIBeat !== null });
     const scrollbarClassNames = cx(
       'horizontal-scrollbar',
       {
@@ -51,7 +46,6 @@ class BeatList extends React.Component<BeatListProps, BeatListState> {
         hidden: isHidden,
       },
     );
-    const barsClassNames = cx('bars', { selected: this.isAnyBarSelected() });
 
     const barElements = UIBars.map((UIBar) => {
       const {
@@ -68,8 +62,8 @@ class BeatList extends React.Component<BeatListProps, BeatListState> {
                   selectedBeatOrder={selectedBeatOrder}
                   disabledBeatOrders={disabledBeatOrders}
                   onBeatClick={
-                    (UIBar, UIBeat, scrollCallbackFn) => (
-                      this.handleBeatClick(UIBar, UIBeat, scrollCallbackFn)
+                    (UIBeat, scrollCallbackFn) => (
+                      this.handleBeatClick(UIBeat, scrollCallbackFn)
                     )
                   } />;
     });
@@ -84,27 +78,19 @@ class BeatList extends React.Component<BeatListProps, BeatListState> {
     );
   }
 
-  private isAnyBarSelected() {
-    return this.state.selectedUIBar != null;
-  }
-
-  private isBarSelected(UIBar: UIBarType) {
-    return this.isAnyBarSelected() && this.state.selectedUIBar.order === UIBar.order;
-  }
-
-  private getSelectedUIBeat(UIBar: UIBarType): UIBeatType {
-    const isBarSelected = this.isBarSelected(UIBar);
-
-    if (isBarSelected) {
-      return this.state.selectedUIBeat;
-    }
-
-    return null;
-  }
-
-  private getImportantBeatOrders(
-    UIBar: UIBarType,
-  ): {
+  /**
+   * An importantBeatOrder for a bar is the order of a beat that is a:
+   *  - Queued Beat, or
+   *  - Playing Beat, or
+   *  - Selected Beat, or
+   *  - Disabled Beat
+   *
+   * If we have a list of queued beats, for example, we only want to send
+   * it to the corresponding bar that it belongs to, and nothing else.
+   *
+   * @param UIBar The bar that we're getting the important beats for
+   */
+  private getImportantBeatOrders(UIBar: UIBarType): {
     queuedBeatOrders: number[],
     playingBeatOrder: number,
     selectedBeatOrder: number,
@@ -113,6 +99,7 @@ class BeatList extends React.Component<BeatListProps, BeatListState> {
     const { queuedUIBeats, playingUIBeat, disabledUIBeats } = this.props;
     const selectedUIBeat = this.state.selectedUIBeat;
 
+    // Get the order of a beat, if it exists and it belongs to the bar
     function getOrder(UIBeat: UIBeatType): number {
       if (!UIBeat || UIBeat.barOrder !== UIBar.order) {
         return -1;
@@ -121,6 +108,7 @@ class BeatList extends React.Component<BeatListProps, BeatListState> {
       return UIBeat.order;
     }
 
+    // Get the orders of beats, if they belong to the bar
     function getOrders(UIBeats: UIBeatType[]): number[] {
       return UIBeats.filter(UIBeat => UIBeat.barOrder === UIBar.order)
                     .map(UIBeat => UIBeat.order);
@@ -134,13 +122,19 @@ class BeatList extends React.Component<BeatListProps, BeatListState> {
     };
   }
 
-  private handleBeatClick(
-    selectedUIBar: UIBarType,
-    selectedUIBeat: UIBeatType,
-    scrollCallbackFn: () => void,
-  ) {
+  /**
+   * When clicking on a beat, update the selected beat and
+   * the scrollCallbackFn.
+   *
+   * The scrollCallbackFn is a function that gets executed
+   * every time this list is scrolled. It's used in the beat
+   * component for returning to the selected beat after inactivity
+   *
+   * @param selectedUIBeat The clicked UIBeat
+   * @param scrollCallbackFn
+   */
+  private handleBeatClick(selectedUIBeat: UIBeatType, scrollCallbackFn: () => void) {
     this.setState({
-      selectedUIBar,
       selectedUIBeat,
       scrollCallbackFn,
     });
@@ -151,9 +145,11 @@ class BeatList extends React.Component<BeatListProps, BeatListState> {
 
   private handleBeatListScroll({ currentTarget }: React.UIEvent) {
     const { orientation, onBeatListScroll } = this.props;
-    const { scrollCallbackFn } = this.state;
+    const scrollCallbackFn = this.state.scrollCallbackFn;
 
+    // Used in the Beat Component to return to the selected beat after inactivity
     scrollCallbackFn();
+
     onBeatListScroll(orientation, currentTarget);
   }
 }

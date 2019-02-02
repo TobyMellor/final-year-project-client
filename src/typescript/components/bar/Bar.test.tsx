@@ -4,7 +4,7 @@ import * as Adapter from 'enzyme-adapter-react-16';
 import Bar, { BarProps } from './Bar';
 import * as sinon from 'sinon';
 import ui from '../../config/ui';
-import { getMockUIBeat } from '../../utils/tests';
+import { getMockUIBeat, getMockUIBar } from '../../utils/tests';
 
 configure({ adapter: new Adapter() });
 
@@ -13,13 +13,7 @@ describe('Bar Component', () => {
 
   beforeEach(() => {
     defaultProps = {
-      UIBar: {
-        order: 5,
-        beats: [
-          getMockUIBeat(1),
-          getMockUIBeat(2),
-        ],
-      },
+      UIBar: getMockUIBar(),
       queuedBeatOrders: [],
       playingBeatOrder: -1,
       selectedBeatOrder: -1,

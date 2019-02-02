@@ -11,7 +11,6 @@ export interface BarProps {
   selectedBeatOrder: number;
   disabledBeatOrders: number[];
   onBeatClick: (
-    UIBar: UIBarType,
     UIBeat: UIBeatType,
     scrollCallbackFn: () => void,
   ) => void;
@@ -151,8 +150,7 @@ class Bar extends React.Component<BarProps, BarState> {
   }
 
   private handleBeatClick(UIBeat: UIBeatType, scrollCallbackFn: () => void) {
-    this.props.onBeatClick(this.props.UIBar,
-                           UIBeat,
+    this.props.onBeatClick(UIBeat,
                            scrollCallbackFn);
   }
 }

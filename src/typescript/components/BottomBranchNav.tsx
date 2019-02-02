@@ -1,5 +1,5 @@
 import * as React from 'react';
-import BeatList from './BeatList';
+import BeatList from './beat-list/BeatList';
 import Translator from '../../translations/Translator';
 import cx from 'classnames';
 import Button, { SuccessButton } from './button/Button';
