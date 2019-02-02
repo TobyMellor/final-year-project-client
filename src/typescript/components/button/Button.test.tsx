@@ -15,13 +15,13 @@ describe('Button Component', () => {
     const successButton = wrapperSuccess.find('button');
 
     // The properties passed in should be reflected on the button
-    expect(primaryButton.hasClass('btn-primary')).toBeTruthy();
+    expect(primaryButton.hasClass('btn-primary')).toBe(true);
     expect(primaryButton.text()).toBe('Primary Button');
-    expect(successButton.hasClass('btn-success')).toBeTruthy();
+    expect(successButton.hasClass('btn-success')).toBe(true);
     expect(successButton.text()).toBe('Success Button');
   });
 
-  it('executes the callback when clicked', () => {
+  it('executes onButtonClick when clicked', () => {
     const handleClickFn = jest.fn();
     const wrapper = mount(<PrimaryButton onButtonClick={handleClickFn} label="Test Button" />);
 
@@ -35,12 +35,12 @@ describe('Button Component', () => {
     const wrapper = mount(<PrimaryButton onButtonClick={null} label="Test Button" />);
 
     // The button should be visible by default
-    expect(doesButtonHaveClass(wrapper, 'd-none')).toBeFalsy();
+    expect(doesButtonHaveClass(wrapper, 'd-none')).toBe(false);
 
     wrapper.setProps({ shouldHide: true });
 
     // The button should be invisible if requested
-    expect(doesButtonHaveClass(wrapper, 'd-none')).toBeTruthy();
+    expect(doesButtonHaveClass(wrapper, 'd-none')).toBe(true);
   });
 
   it('fades in if required', () => {
@@ -48,14 +48,14 @@ describe('Button Component', () => {
     const wrapper = mount(<PrimaryButton onButtonClick={null} label="Test Button" />);
 
     // The button should not fade in/out by default
-    expect(doesButtonHaveClass(wrapper, 'start-fade')).toBeFalsy();
-    expect(doesButtonHaveClass(wrapper, 'end-fade')).toBeFalsy();
+    expect(doesButtonHaveClass(wrapper, 'start-fade')).toBe(false);
+    expect(doesButtonHaveClass(wrapper, 'end-fade')).toBe(false);
 
     wrapper.setProps({ shouldFadeIn: true });
 
     // The button should start to fade out initially
-    expect(doesButtonHaveClass(wrapper, 'start-fade')).toBeTruthy();
-    expect(doesButtonHaveClass(wrapper, 'end-fade')).toBeFalsy();
+    expect(doesButtonHaveClass(wrapper, 'start-fade')).toBe(true);
+    expect(doesButtonHaveClass(wrapper, 'end-fade')).toBe(false);
 
     // Fast forward to the end of the animation
     clock.tick(ui.button.fadeAnimationDurationMs);
@@ -63,8 +63,8 @@ describe('Button Component', () => {
     clock.restore();
 
     // The button should end the fade out after the animation
-    expect(doesButtonHaveClass(wrapper, 'start-fade')).toBeFalsy();
-    expect(doesButtonHaveClass(wrapper, 'end-fade')).toBeTruthy();
+    expect(doesButtonHaveClass(wrapper, 'start-fade')).toBe(false);
+    expect(doesButtonHaveClass(wrapper, 'end-fade')).toBe(true);
   });
 
   /**

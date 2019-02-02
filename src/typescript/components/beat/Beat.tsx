@@ -1,8 +1,8 @@
 import * as React from 'react';
 import cx from 'classnames';
-import Bar from '../Bar';
 import { UIBeatType } from '../../services/ui/entities';
 import ui from '../../config/ui';
+import * as utils from '../../utils/misc';
 
 export interface BeatProps {
   UIBeat: UIBeatType;
@@ -10,11 +10,8 @@ export interface BeatProps {
   isPlaying: boolean;
   isSelected: boolean;
   isDisabled: boolean;
-  onBeatClick: (
-    UIBeat: UIBeatType,
-    scrollCallbackFn: () => void,
-  ) => void;
   zIndex: number;
+  onBeatClick: (UIBeat: UIBeatType, scrollCallbackFn: () => void) => void;
   onBeatMouseEnter: () => void;
 }
 
@@ -31,8 +28,9 @@ class Beat extends React.Component<BeatProps, BeatState> {
 
     const { timbreNormalized, loudnessNormalized } = props.UIBeat;
 
-    if (!this.isNumberNormalized(timbreNormalized)
-        || !this.isNumberNormalized(loudnessNormalized)) {
+    // Only accept normalized Timbre and Loudness values between 0 and 1
+    if (!utils.isNumberNormalized(timbreNormalized)
+        || !utils.isNumberNormalized(loudnessNormalized)) {
       throw new Error('Attempted to render beats from un-normalized values!');
     }
 
@@ -45,6 +43,8 @@ class Beat extends React.Component<BeatProps, BeatState> {
   componentDidMount() {
     const { order } = this.props.UIBeat;
 
+    // Ensure that the first beat is initially visible to the left
+    // of the beat list
     if (order === 0) {
       this.scrollBeatToLeft();
     }
@@ -58,6 +58,7 @@ class Beat extends React.Component<BeatProps, BeatState> {
                          isDisabled !== nextProps.isDisabled ||
                          zIndex !== nextProps.zIndex;
 
+    // Only update if isQueued, isPOlaying, isSelected, isDisabled or zIndex has changed
     if (shouldUpdate) {
       return true;
     }
@@ -96,14 +97,33 @@ class Beat extends React.Component<BeatProps, BeatState> {
     );
   }
 
+  /**
+   * Give the beat a different colour depending on it's timbre value
+   *
+   * @param timbreNormalized The timbre of the beat, between 0 and 1
+   */
   private getCircleColour(timbreNormalized: number): string {
     return this.getCorrespondingClassName(ui.beat.availableColours, timbreNormalized);
   }
 
+  /**
+   * Give the beat a different size depending on it's loudness value
+   *
+   * @param loudnessNormalized The loudness of the beat, between 0 and 1
+   */
   private getCircleSize(loudnessNormalized: number): string {
     return this.getCorrespondingClassName(ui.beat.availableSizes, loudnessNormalized);
   }
 
+  /**
+   * Given an array of possible values and a number between 0 and 1:
+   * get the corresponding value in the array.
+   *
+   * Then, prefix the chosen value with a CSS prefix: 'circle-'
+   *
+   * @param array Possible CSS classes, appearing after circle-
+   * @param numberNormalized A value between 0 and 1 used to choose the value
+   */
   private getCorrespondingClassName(array: string[], numberNormalized: number): string {
     const index = Math.round((array.length - 1) * numberNormalized);
     const element = array[index];
@@ -112,17 +132,14 @@ class Beat extends React.Component<BeatProps, BeatState> {
     return className;
   }
 
-  private isNumberNormalized(number: number): boolean {
-    return 0 <= number && number <= 1;
-  }
-
   private handleMouseEnter() {
     this.props.onBeatMouseEnter();
   }
 
   private handleClick() {
-    const { isDisabled } = this.props;
+    const { isDisabled, UIBeat, onBeatClick } = this.props;
 
+    // Ignore the click if the beat's disabled
     if (isDisabled) {
       return;
     }
@@ -131,22 +148,28 @@ class Beat extends React.Component<BeatProps, BeatState> {
     // before the expansion animation
     this.triggerScrollEvent();
 
-    this.props.onBeatClick(this.props.UIBeat,
-                           this.handleParentScroll.bind(this));
+    onBeatClick(UIBeat, this.handleParentScroll.bind(this));
 
     // Scroll to the circle, after all animations have finished
     setTimeout(() => this.scrollBeatIntoView(), ui.beat.expandAnimationDurationMs);
   }
 
+  /**
+   * Keeps a timer. If the parent beat list hasn't scrolled for some time,
+   * then scroll this beat  back into view (if it's still selected)
+   */
   private handleParentScroll() {
     const timer = setTimeout(() => {
       if (!this.props.isSelected) {
         return;
       }
 
+      // After some time, scroll the beat back into view (if it's still selected)
       this.scrollBeatIntoView();
     }, ui.beat.scrollBackAfterMs);
 
+    // Cancel and replace any scroll timer that may exist with this one
+    // so the countdown begins again
     this.setState(({ scrollReturnTimer }) => {
       clearTimeout(scrollReturnTimer);
 
@@ -169,10 +192,14 @@ class Beat extends React.Component<BeatProps, BeatState> {
     });
   }
 
+  /**
+   * Scrolls this beat to be at the very left of the beat list nav.
+   * It's difficult in CSS, as we've given the list additional left margin
+   * to allow the user to scroll the leftmost beat to the center
+   */
   private scrollBeatToLeft() {
     const beatElement = this.beatElement.current;
-    const beatListElement = beatElement.parentElement
-                                       .parentElement;
+    const beatListElement = beatElement.parentElement.parentElement;
     const beatListWidth = beatListElement.clientWidth;
 
     // Scroll the beat list so the first beat is aligned left

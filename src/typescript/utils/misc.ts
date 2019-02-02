@@ -19,3 +19,9 @@ export function areArraysEqual<T>(arr1: T[], arr2: T[]): boolean {
 export function deepCopy<T>(obj: T): T {
   return JSON.parse(JSON.stringify(obj));
 }
+
+export function isNumberNormalized(number: number): boolean {
+  return 0 <= number && number <= 1;
+}
+
+// export function shouldUpdate
