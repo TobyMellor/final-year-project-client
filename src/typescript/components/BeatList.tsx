@@ -54,15 +54,19 @@ class BeatList extends React.Component<BeatListProps, BeatListState> {
     const barsClassNames = cx('bars', { selected: this.isAnyBarSelected() });
 
     const barElements = UIBars.map((UIBar) => {
-      const selectedUIBeat = this.getSelectedUIBeat(UIBar);
-      const [queuedUIBeats, playingUIBeat, disabledUIBeats] = this.getImportantBeats(UIBar);
+      const {
+        queuedBeatOrders,
+        playingBeatOrder,
+        selectedBeatOrder,
+        disabledBeatOrders,
+       } = this.getImportantBeatOrders(UIBar);
 
       return <Bar key={UIBar.order}
                   UIBar={UIBar}
-                  queuedUIBeats={queuedUIBeats}
-                  playingUIBeat={playingUIBeat}
-                  selectedUIBeat={selectedUIBeat}
-                  disabledUIBeats={disabledUIBeats}
+                  queuedBeatOrders={queuedBeatOrders}
+                  playingBeatOrder={playingBeatOrder}
+                  selectedBeatOrder={selectedBeatOrder}
+                  disabledBeatOrders={disabledBeatOrders}
                   onBeatClick={
                     (UIBar, UIBeat, scrollCallbackFn) => (
                       this.handleBeatClick(UIBar, UIBeat, scrollCallbackFn)
@@ -98,18 +102,36 @@ class BeatList extends React.Component<BeatListProps, BeatListState> {
     return null;
   }
 
-  private getImportantBeats(UIBar: UIBarType): [UIBeatType[], UIBeatType, UIBeatType[]] {
+  private getImportantBeatOrders(
+    UIBar: UIBarType,
+  ): {
+    queuedBeatOrders: number[],
+    playingBeatOrder: number,
+    selectedBeatOrder: number,
+    disabledBeatOrders: number[],
+  } {
     const { queuedUIBeats, playingUIBeat, disabledUIBeats } = this.props;
-    const UIBeats = [...queuedUIBeats, playingUIBeat, ...disabledUIBeats];
-    const doesBarContainImportantBeats = UIBeats.some((UIBeat) => {
-      return UIBeat && UIBeat.barOrder === UIBar.order;
-    });
+    const selectedUIBeat = this.state.selectedUIBeat;
 
-    if (doesBarContainImportantBeats) {
-      return [queuedUIBeats, playingUIBeat, disabledUIBeats];
+    function getOrder(UIBeat: UIBeatType): number {
+      if (!UIBeat || UIBeat.barOrder !== UIBar.order) {
+        return -1;
+      }
+
+      return UIBeat.order;
     }
 
-    return [[], null, []];
+    function getOrders(UIBeats: UIBeatType[]): number[] {
+      return UIBeats.filter(UIBeat => UIBeat.barOrder === UIBar.order)
+                    .map(UIBeat => UIBeat.order);
+    }
+
+    return {
+      queuedBeatOrders: getOrders(queuedUIBeats),
+      playingBeatOrder: getOrder(playingUIBeat),
+      selectedBeatOrder: getOrder(selectedUIBeat),
+      disabledBeatOrders: getOrders(disabledUIBeats),
+    };
   }
 
   private handleBeatClick(

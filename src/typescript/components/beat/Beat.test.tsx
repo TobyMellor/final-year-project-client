@@ -4,6 +4,7 @@ import * as Adapter from 'enzyme-adapter-react-16';
 import Beat, { BeatProps } from './Beat';
 import * as sinon from 'sinon';
 import ui from '../../config/ui';
+import { getMockUIBeat } from '../../utils/tests';
 
 configure({ adapter: new Adapter() });
 
@@ -13,13 +14,7 @@ describe('Beat Component', () => {
 
   beforeEach(() => {
     defaultProps = {
-      UIBeat: {
-        order: 5,
-        barOrder: 9,
-        timbreNormalized: 0.5,
-        loudnessNormalized: 0.5,
-        durationMs: 10,
-      },
+      UIBeat: getMockUIBeat(),
       isQueued: false,
       isPlaying: false,
       isSelected: false,
@@ -80,19 +75,19 @@ describe('Beat Component', () => {
     expect(scrollBeatToLeftFn).toBeCalledTimes(1);
   });
 
-  it('executes onBeatMouseOver when hovering over a beat', () => {
-    const handleBeatMouseOverFn = jest.fn();
-    const wrapper = mount(<Beat {...defaultProps} onBeatMouseEnter={handleBeatMouseOverFn} />);
+  it('executes onBeatMouseEnter when hovering over a beat', () => {
+    const handleBeatMouseEnterFn = defaultProps.onBeatMouseEnter;
+    const wrapper = mount(<Beat {...defaultProps} onBeatMouseEnter={handleBeatMouseEnterFn} />);
 
     wrapper.simulate('mouseenter');
 
     // Hovering over once should execute the callback once
-    expect(handleBeatMouseOverFn).toBeCalledTimes(1);
+    expect(handleBeatMouseEnterFn).toBeCalledTimes(1);
   });
 
   it('executes onBeatClick when clicking a beat', () => {
-    const handleBeatClickFn = jest.fn();
-    const wrapper = mount(<Beat {...defaultProps} onBeatClick={handleBeatClickFn} />);
+    const handleBeatClickFn = defaultProps.onBeatClick;
+    const wrapper = mount(<Beat {...defaultProps} />);
 
     wrapper.simulate('click');
 

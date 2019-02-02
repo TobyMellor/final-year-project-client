@@ -6,10 +6,10 @@ import * as utils from '../../utils/misc';
 
 export interface BarProps {
   UIBar: UIBarType;
-  queuedUIBeats: UIBeatType[];
-  playingUIBeat: UIBeatType | null;
-  selectedUIBeat: UIBeatType | null;
-  disabledUIBeats: UIBeatType[];
+  queuedBeatOrders: number[];
+  playingBeatOrder: number;
+  selectedBeatOrder: number;
+  disabledBeatOrders: number[];
   onBeatClick: (
     UIBar: UIBarType,
     UIBeat: UIBeatType,
@@ -33,12 +33,17 @@ class Bar extends React.Component<BarProps, BarState> {
   }
 
   shouldComponentUpdate(nextProps: BarProps, nextState: BarState) {
-    const { queuedUIBeats, playingUIBeat, selectedUIBeat, disabledUIBeats } = this.props;
-    const { zIndexes } = this.state;
-    const shouldUpdate = !utils.areArraysEqual(queuedUIBeats, nextProps.queuedUIBeats) ||
-                         playingUIBeat !== nextProps.playingUIBeat ||
-                         selectedUIBeat !== nextProps.selectedUIBeat ||
-                         !utils.areArraysEqual(disabledUIBeats, nextProps.disabledUIBeats) ||
+    const {
+      queuedBeatOrders,
+      playingBeatOrder,
+      selectedBeatOrder,
+      disabledBeatOrders,
+    } = this.props;
+    const zIndexes = this.state.zIndexes;
+    const shouldUpdate = !utils.areArraysEqual(queuedBeatOrders, nextProps.queuedBeatOrders) ||
+                         playingBeatOrder !== nextProps.playingBeatOrder ||
+                         selectedBeatOrder !== nextProps.selectedBeatOrder ||
+                         !utils.areArraysEqual(disabledBeatOrders, nextProps.disabledBeatOrders) ||
                          !utils.areArraysEqual(zIndexes, nextState.zIndexes);
 
     if (shouldUpdate) {
@@ -49,19 +54,25 @@ class Bar extends React.Component<BarProps, BarState> {
   }
 
   render() {
-    const { beats } = this.props.UIBar;
-    const { zIndexes } = this.state;
+    const {
+      UIBar,
+      queuedBeatOrders,
+      playingBeatOrder,
+      disabledBeatOrders,
+    } = this.props;
+    const UIBeats = UIBar.beats;
+    const zIndexes = this.state.zIndexes;
 
-    const beatElements = beats.map((beat, beatOffsetInBar) => {
-      const beatOrder = beat.order;
-      const isQueued = this.isBeatQueued(beatOrder);
-      const isPlaying = this.isBeatPlaying(beatOrder);
+    const beatElements = UIBeats.map((UIBeat, beatOffsetInBar) => {
+      const beatOrder = UIBeat.order;
+      const isQueued = this.isBeatOrderIn(beatOrder, ...queuedBeatOrders);
+      const isPlaying = this.isBeatOrderIn(beatOrder, playingBeatOrder);
       const isSelected = this.isBeatSelected(beatOrder);
-      const isDisabled = this.isBeatDisabled(beatOrder);
+      const isDisabled = this.isBeatOrderIn(beatOrder, ...disabledBeatOrders);
       const zIndex = zIndexes[beatOffsetInBar];
 
       return <Beat key={beatOrder}
-                   UIBeat={beat}
+                   UIBeat={UIBeat}
                    isQueued={isQueued}
                    isPlaying={isPlaying}
                    isSelected={isSelected}
@@ -78,8 +89,9 @@ class Bar extends React.Component<BarProps, BarState> {
     const barClassNames = cx(
       'bar',
       {
+        // Queued when any beat is
+        queued: UIBeats.some(UIBeat => this.isBeatOrderIn(UIBeat.order, ...queuedBeatOrders)),
         selected: this.isBarSelected(),
-        queued: beats.some(beat => this.isBeatQueued(beat.order)), // Queued when any beat is
       },
     );
 
@@ -90,34 +102,41 @@ class Bar extends React.Component<BarProps, BarState> {
     );
   }
 
-  private isBarSelected() {
-    return this.props.selectedUIBeat !== null;
-  }
-
-  private isBeatQueued(beatOrder: number) {
-    const { queuedUIBeats } = this.props;
-
-    return queuedUIBeats && queuedUIBeats.some(beat => beat.order === beatOrder);
-  }
-
-  private isBeatPlaying(beatOrder: number) {
-    const { playingUIBeat } = this.props;
-
-    return playingUIBeat && playingUIBeat.order === beatOrder;
-  }
-
+  /**
+   * A selected beat means that the user has clicked this beat.
+   * It should be highlighted and be at the center of the beat list
+   *
+   * @param beatOrder The beat order within the bar
+   */
   private isBeatSelected(beatOrder: number) {
-    const { selectedUIBeat } = this.props;
-
-    return this.isBarSelected() && selectedUIBeat.order === beatOrder;
+    return this.isBarSelected() && this.isBeatOrderIn(beatOrder, this.props.selectedBeatOrder);
   }
 
-  private isBeatDisabled(beatOrder: number) {
-    const { disabledUIBeats } = this.props;
-
-    return disabledUIBeats && disabledUIBeats.some(beat => beat.order === beatOrder);
+  /**
+   * Checks if a beat order exists in an array of beat orders
+   *
+   * @param beatOrder A beat order
+   * @param otherBeatOrders An array of beat orders
+   */
+  private isBeatOrderIn(beatOrder: number, ...otherBeatOrders: number[]) {
+    return otherBeatOrders.some((otherBeatOrder) => {
+      return otherBeatOrder === beatOrder;
+    });
   }
 
+  /**
+   * A bar is selected if any beat within is selected
+   */
+  private isBarSelected() {
+    return this.props.selectedBeatOrder !== -1;
+  }
+
+  /**
+   * When hovering over a beat, that beat should appear on top.
+   * This sets the corresponding zIndex state to become the max.
+   *
+   * @param beatOffsetInBar The beat order within a bar
+   */
   private handleBeatMouseEnter(beatOffsetInBar: number) {
     this.setState(({ zIndexes }) => {
       const copiedZIndexes = [...zIndexes];
