@@ -1,9 +1,8 @@
 import * as React from 'react';
-import Beat from './beat/Beat';
+import Beat from '../beat/Beat';
 import cx from 'classnames';
-import BeatList from './BeatList';
-import { UIBarType, UIBeatType } from '../services/ui/entities';
-import * as utils from '../utils/misc';
+import { UIBarType, UIBeatType } from '../../services/ui/entities';
+import * as utils from '../../utils/misc';
 
 export interface BarProps {
   UIBar: UIBarType;
@@ -33,12 +32,14 @@ class Bar extends React.Component<BarProps, BarState> {
     };
   }
 
-  shouldComponentUpdate(nextProps: BarProps) {
+  shouldComponentUpdate(nextProps: BarProps, nextState: BarState) {
     const { queuedUIBeats, playingUIBeat, selectedUIBeat, disabledUIBeats } = this.props;
+    const { zIndexes } = this.state;
     const shouldUpdate = !utils.areArraysEqual(queuedUIBeats, nextProps.queuedUIBeats) ||
                          playingUIBeat !== nextProps.playingUIBeat ||
                          selectedUIBeat !== nextProps.selectedUIBeat ||
-                         !utils.areArraysEqual(disabledUIBeats, nextProps.disabledUIBeats);
+                         !utils.areArraysEqual(disabledUIBeats, nextProps.disabledUIBeats) ||
+                         !utils.areArraysEqual(zIndexes, nextState.zIndexes);
 
     if (shouldUpdate) {
       return true;
@@ -119,12 +120,13 @@ class Bar extends React.Component<BarProps, BarState> {
 
   private handleBeatMouseEnter(beatOffsetInBar: number) {
     this.setState(({ zIndexes }) => {
+      const copiedZIndexes = [...zIndexes];
       const highestZIndex = Math.max(...zIndexes) + 1;
 
-      zIndexes[beatOffsetInBar] = highestZIndex;
+      copiedZIndexes[beatOffsetInBar] = highestZIndex;
 
       return {
-        zIndexes,
+        zIndexes: copiedZIndexes,
       };
     });
   }

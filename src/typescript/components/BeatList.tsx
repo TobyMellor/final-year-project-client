@@ -1,7 +1,7 @@
 import * as React from 'react';
-import Bar from './Bar';
+import Bar from './bar/Bar';
 import cx from 'classnames';
-import BottomBranchNav, { BeatListOrientation } from './BottomBranchNav';
+import { BeatListOrientation } from './BottomBranchNav';
 import { UIBarType, UIBeatType } from '../services/ui/entities';
 
 export interface BeatListProps {
