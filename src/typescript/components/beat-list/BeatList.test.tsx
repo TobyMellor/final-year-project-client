@@ -5,7 +5,7 @@ import BeatList, { BeatListProps } from './BeatList';
 import * as sinon from 'sinon';
 import ui from '../../config/ui';
 import { getMockUIBar } from '../../utils/tests';
-import { BeatListOrientation } from '../BottomBranchNav';
+import { BeatListOrientation } from '../../types/enums';
 
 configure({ adapter: new Adapter() });
 

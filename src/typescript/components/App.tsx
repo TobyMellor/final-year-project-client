@@ -1,11 +1,12 @@
 import * as React from 'react';
 import Nav from './Nav';
 import CircleCanvas from './CircleCanvas';
-import BottomBranchNav from './BottomBranchNav';
-import { UIBarType, getUIBars } from '../services/ui/entities';
+import BranchNav from './branch-nav/BranchNav';
+import { getUIBars } from '../services/ui/entities';
 import { FYPEvent } from '../types/enums';
 import Dispatcher from '../events/Dispatcher';
 import TrackModel from '../models/audio-analysis/Track';
+import { UIBarType } from '../types/general';
 
 interface AppProps {}
 
@@ -33,7 +34,7 @@ class App extends React.Component<AppProps, AppState> {
       <React.Fragment>
         <Nav />
         <CircleCanvas />
-        <BottomBranchNav UIBars={UIBars} />
+        <BranchNav UIBars={UIBars} />
       </React.Fragment>
     );
   }

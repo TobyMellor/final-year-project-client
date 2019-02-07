@@ -1,8 +1,8 @@
 import * as React from 'react';
 import Beat from '../beat/Beat';
 import cx from 'classnames';
-import { UIBarType, UIBeatType } from '../../services/ui/entities';
 import * as utils from '../../utils/misc';
+import { UIBarType, UIBeatType } from '../../types/general';
 
 export interface BarProps {
   UIBar: UIBarType;
@@ -32,24 +32,14 @@ class Bar extends React.Component<BarProps, BarState> {
   }
 
   shouldComponentUpdate(nextProps: BarProps, nextState: BarState) {
-    const {
-      queuedBeatOrders,
-      playingBeatOrder,
-      selectedBeatOrder,
-      disabledBeatOrders,
-    } = this.props;
-    const zIndexes = this.state.zIndexes;
-    const shouldUpdate = !utils.areArraysEqual(queuedBeatOrders, nextProps.queuedBeatOrders) ||
-                         playingBeatOrder !== nextProps.playingBeatOrder ||
-                         selectedBeatOrder !== nextProps.selectedBeatOrder ||
-                         !utils.areArraysEqual(disabledBeatOrders, nextProps.disabledBeatOrders) ||
-                         !utils.areArraysEqual(zIndexes, nextState.zIndexes);
-
-    if (shouldUpdate) {
-      return true;
-    }
-
-    return false;
+    return utils.shouldUpdate(
+      this.props,
+      nextProps,
+      ['queuedBeatOrders', 'playingBeatOrder', 'selectedBeatOrder', 'disabledBeatOrders'],
+      this.state,
+      nextState,
+      ['zIndexes'],
+    );
   }
 
   render() {

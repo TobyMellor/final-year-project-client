@@ -1,8 +1,8 @@
 import * as React from 'react';
 import Bar from '../bar/Bar';
 import cx from 'classnames';
-import { BeatListOrientation } from '../BottomBranchNav';
-import { UIBarType, UIBeatType } from '../../services/ui/entities';
+import { UIBarType, UIBeatType } from '../../types/general';
+import { BeatListOrientation } from '../../types/enums';
 
 export interface BeatListProps {
   UIBars: UIBarType[];
@@ -79,7 +79,7 @@ class BeatList extends React.Component<BeatListProps, BeatListState> {
   }
 
   /**
-   * An importantBeatOrder for a bar is the order of a beat that is a:
+   * An Important Beat Order for a bar is the order of a beat that is a:
    *  - Queued Beat, or
    *  - Playing Beat, or
    *  - Selected Beat, or

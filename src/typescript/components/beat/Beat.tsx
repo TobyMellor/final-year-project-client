@@ -1,8 +1,8 @@
 import * as React from 'react';
 import cx from 'classnames';
-import { UIBeatType } from '../../services/ui/entities';
 import ui from '../../config/ui';
 import * as utils from '../../utils/misc';
+import { UIBeatType } from '../../types/general';
 
 export interface BeatProps {
   UIBeat: UIBeatType;
@@ -51,19 +51,11 @@ class Beat extends React.Component<BeatProps, BeatState> {
   }
 
   shouldComponentUpdate(nextProps: BeatProps) {
-    const { isQueued, isPlaying, isSelected, isDisabled, zIndex } = this.props;
-    const shouldUpdate = isQueued !== nextProps.isQueued ||
-                         isPlaying !== nextProps.isPlaying ||
-                         isSelected !== nextProps.isSelected ||
-                         isDisabled !== nextProps.isDisabled ||
-                         zIndex !== nextProps.zIndex;
-
-    // Only update if isQueued, isPOlaying, isSelected, isDisabled or zIndex has changed
-    if (shouldUpdate) {
-      return true;
-    }
-
-    return false;
+    return utils.shouldUpdate(
+      this.props,
+      nextProps,
+      ['isQueued', 'isPlaying', 'isSelected', 'isDisabled', 'zIndex'],
+    );
   }
 
   render() {

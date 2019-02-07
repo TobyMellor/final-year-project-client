@@ -1,4 +1,4 @@
-import { UIBeatType, UIBarType } from '../services/ui/entities';
+import { UIBeatType, UIBarType } from '../types/general';
 
 export function getMockUIBeat(order: number = 1, barOrder: number = 1): UIBeatType {
   return {

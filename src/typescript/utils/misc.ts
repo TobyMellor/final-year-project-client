@@ -24,4 +24,32 @@ export function isNumberNormalized(number: number): boolean {
   return 0 <= number && number <= 1;
 }
 
-// export function shouldUpdate
+export function hasUpdated(current: any, next: any, keys: string[]) {
+  return keys.some((key) => {
+    if (Array.isArray(current[key])) {
+      return !areArraysEqual(current[key], next[key]);
+    }
+
+    return current[key] !== next[key];
+  });
+}
+
+export function shouldUpdate(
+  currentProps: any,
+  nextProps: any,
+  importantProps: string[],
+  currentState: any = null,
+  nextState: any = null,
+  importantStates: string[] = [],
+) {
+  if (hasUpdated(currentProps, nextProps, importantProps)) {
+    return true;
+  }
+
+  // Only check the props
+  if (currentState === null) {
+    return false;
+  }
+
+  return hasUpdated(currentState, nextState, importantStates);
+}

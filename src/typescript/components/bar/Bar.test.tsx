@@ -5,6 +5,7 @@ import Bar, { BarProps } from './Bar';
 import * as sinon from 'sinon';
 import ui from '../../config/ui';
 import { getMockUIBeat, getMockUIBar } from '../../utils/tests';
+import { UIBeatType } from '../../types/general';
 
 configure({ adapter: new Adapter() });
 
@@ -74,7 +75,9 @@ describe('Bar Component', () => {
   });
 
   it('should set isQueued, isPlaying, isSelected and isDisabled on child beats', () => {
-    const [firstBeatOrder, secondBeatOrder] = defaultProps.UIBar.beats.map(beat => beat.order);
+    const [firstBeatOrder, secondBeatOrder] = defaultProps.UIBar.beats.map((beat: UIBeatType) => (
+      beat.order
+    ));
     const wrapper = shallow(
       <Bar {...defaultProps}
            queuedBeatOrders={[firstBeatOrder]}

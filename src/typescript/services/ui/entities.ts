@@ -1,19 +1,7 @@
 import TrackModel from '../../models/audio-analysis/Track';
 import BarModel from '../../models/audio-analysis/Bar';
 import SegmentModel from '../../models/audio-analysis/Segment';
-
-export interface UIBeatType {
-  order: number;
-  barOrder: number;
-  timbreNormalized: number;
-  loudnessNormalized: number;
-  durationMs: number;
-}
-
-export interface UIBarType {
-  order: number;
-  beats: UIBeatType[];
-}
+import { UIBarType, UIBeatType } from '../../types/general';
 
 export async function getUIBars(track: TrackModel): Promise<UIBarType[]> {
   const { bars, segments } = await track.getAudioAnalysis();

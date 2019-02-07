@@ -12,3 +12,28 @@ export interface CreateBarsBeatsAndSegments {
   beats: BeatModel[];
   segments: SegmentModel[];
 }
+
+export type BeatListInfo = {
+  queued: UIBeatType[];
+  playing: UIBeatType;
+  selected: UIBeatType;
+  disabled: UIBeatType[];
+  lastKnownScrollPosition?: number;
+};
+
+export interface UIBeatType {
+  order: number;
+  barOrder: number;
+  timbreNormalized: number;
+  loudnessNormalized: number;
+  durationMs: number;
+}
+
+export interface UIBarType {
+  order: number;
+  beats: UIBeatType[];
+}
+
+export interface QueuedUIBeat extends UIBeatType {
+  orientation: string;
+}
