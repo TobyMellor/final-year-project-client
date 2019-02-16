@@ -17,6 +17,8 @@ export async function renderParentSongCircle(scene: Scene, track: TrackModel): P
                                           -1,
                                           0xFFFFFF);
 
+  // FIXME: Should be passed as a parameter, sent initially by the
+  // branch service
   const { branches } = await BranchService.getInstance();
   branches.forEach(branch => renderBezierCurves(scene, parentSongCircle, branch));
 
@@ -75,6 +77,6 @@ function getLineWidthForSong(radius: number): number {
   return radius * 0.1;
 }
 
-function getBezierCurveLineWidth(): number {
+export function getBezierCurveLineWidth(): number {
   return 5;
 }
