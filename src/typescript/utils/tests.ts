@@ -1,6 +1,6 @@
 import { UIBeatType, UIBarType } from '../types/general';
 
-export function getMockUIBeat(order: number = 1, barOrder: number = 1): UIBeatType {
+export function getMockUIBeat(order: number = 0, barOrder: number = 0): UIBeatType {
   return {
     order,
     barOrder,
@@ -10,12 +10,12 @@ export function getMockUIBeat(order: number = 1, barOrder: number = 1): UIBeatTy
   };
 }
 
-export function getMockUIBar(order: number = 1): UIBarType {
+export function getMockUIBar(order: number = 0): UIBarType {
   return {
     order,
     beats: [
+      getMockUIBeat(0, order),
       getMockUIBeat(1, order),
-      getMockUIBeat(2, order),
     ],
   };
 }

@@ -2,23 +2,7 @@ import * as React from 'react';
 import Beat from '../beat/Beat';
 import cx from 'classnames';
 import * as utils from '../../utils/misc';
-import { UIBarType, UIBeatType } from '../../types/general';
-
-export interface BarProps {
-  UIBar: UIBarType;
-  queuedBeatOrders: number[];
-  playingBeatOrder: number;
-  selectedBeatOrder: number;
-  disabledBeatOrders: number[];
-  onBeatClick: (
-    UIBeat: UIBeatType,
-    scrollCallbackFn: () => void,
-  ) => void;
-}
-
-interface BarState {
-  zIndexes: number[];
-}
+import { UIBeatType, BarProps, BarState } from '../../types/general';
 
 class Bar extends React.Component<BarProps, BarState> {
   constructor(props: BarProps) {

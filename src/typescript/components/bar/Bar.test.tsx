@@ -1,11 +1,9 @@
 import * as React from 'React';
 import { configure, shallow, mount } from 'enzyme';
 import * as Adapter from 'enzyme-adapter-react-16';
-import Bar, { BarProps } from './Bar';
-import * as sinon from 'sinon';
-import ui from '../../config/ui';
-import { getMockUIBeat, getMockUIBar } from '../../utils/tests';
-import { UIBeatType } from '../../types/general';
+import Bar from './Bar';
+import { getMockUIBar } from '../../utils/tests';
+import { UIBeatType, BarProps } from '../../types/general';
 
 configure({ adapter: new Adapter() });
 

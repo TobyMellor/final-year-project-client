@@ -1,16 +1,19 @@
 import * as React from 'React';
 import { configure, shallow, mount } from 'enzyme';
 import * as Adapter from 'enzyme-adapter-react-16';
-import Beat, { BeatProps } from './Beat';
+import Beat from './Beat';
 import * as sinon from 'sinon';
 import ui from '../../config/ui';
 import { getMockUIBeat } from '../../utils/tests';
+import { BeatProps } from '../../types/general';
 
 configure({ adapter: new Adapter() });
 
 describe('Beat Component', () => {
   let defaultProps: BeatProps;
   let clock: sinon.SinonFakeTimers;
+  let scrollBeatIntoViewFn: () => void;
+  let scrollBeatToLeftFn: () => void;
 
   beforeEach(() => {
     defaultProps = {
@@ -30,6 +33,11 @@ describe('Beat Component', () => {
     ui.beat.scrollBackAfterMs = 1500;
 
     clock = sinon.useFakeTimers();
+
+    // @ts-ignore
+    scrollBeatIntoViewFn = Beat.prototype.scrollBeatIntoView = jest.fn();
+    // @ts-ignore
+    scrollBeatToLeftFn = Beat.prototype.scrollBeatToLeft = jest.fn();
   });
 
   afterEach(() => {
@@ -60,18 +68,17 @@ describe('Beat Component', () => {
   });
 
   it('scrolls the first beat to the left', () => {
-    // @ts-ignore
-    const scrollBeatToLeftFn = Beat.prototype.scrollBeatToLeft = jest.fn();
     const wrapper = mount(<Beat {...defaultProps} />);
 
-    // If it's not the first beat, the beat should not be scrolled
-    expect(scrollBeatToLeftFn).toBeCalledTimes(0);
+    // The beat should be scrolled if it's the first beat (order: 0)
+    expect(scrollBeatToLeftFn).toBeCalledTimes(1);
 
     // Change the order so this beat becomes the first one
-    wrapper.setProps({ UIBeat: { ...defaultProps.UIBeat, order: 0 } });
+    wrapper.setProps({ UIBeat: { ...defaultProps.UIBeat, order: 1 } });
     wrapper.unmount().mount();
 
-    // The beat should be scrolled if it's the first beat
+    // If it's not the first beat, the beat should not be scrolled (order: 1)
+    // In other words, function shouild not be called any more times
     expect(scrollBeatToLeftFn).toBeCalledTimes(1);
   });
 
@@ -115,8 +122,6 @@ describe('Beat Component', () => {
   });
 
   it('should scroll back after the expansion animation has finished', () => {
-    // @ts-ignore
-    const scrollBeatIntoViewFn = Beat.prototype.scrollBeatIntoView = jest.fn();
     const wrapper = mount(<Beat {...defaultProps} />);
 
     // Simulate a click which starts the expansion animation
@@ -138,9 +143,6 @@ describe('Beat Component', () => {
         scrollCallbackFn = parentScrollCallbackFn;
       }
     } />);
-
-    // @ts-ignore
-    const scrollBeatIntoViewFn = Beat.prototype.scrollBeatIntoView = jest.fn();
 
     // Simulate click. This runs scrollBeatIntoView, which will give us the
     // scrollCallbackFn

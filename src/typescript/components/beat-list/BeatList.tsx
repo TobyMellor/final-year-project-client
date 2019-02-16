@@ -1,30 +1,8 @@
 import * as React from 'react';
 import Bar from '../bar/Bar';
 import cx from 'classnames';
-import { UIBarType, UIBeatType } from '../../types/general';
+import { UIBarType, UIBeatType, BeatListProps, BeatListState } from '../../types/general';
 import { BeatListOrientation } from '../../types/enums';
-
-export interface BeatListProps {
-  UIBars: UIBarType[];
-  queuedUIBeats: UIBeatType[];
-  playingUIBeat: UIBeatType | null;
-  disabledUIBeats: UIBeatType[];
-  isHidden?: boolean;
-  orientation: BeatListOrientation;
-  onBeatClick: (
-    beatListOrientation: BeatListOrientation,
-    UIBeat: UIBeatType,
-  ) => void;
-  onBeatListScroll: (
-    beatListOrientation: BeatListOrientation,
-    currentTarget: Element,
-  ) => void;
-}
-
-interface BeatListState {
-  selectedUIBeat: UIBeatType;
-  scrollCallbackFn: () => void;
-}
 
 class BeatList extends React.Component<BeatListProps, BeatListState> {
   constructor(props: BeatListProps) {

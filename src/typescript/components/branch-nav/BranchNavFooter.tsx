@@ -1,13 +1,7 @@
 import * as React from 'react';
 import { BranchNavStatus } from '../../types/enums';
 import Button, { SuccessButton } from '../button/Button';
-
-interface BranchNavFooterProps {
-  status: BranchNavStatus;
-  onPreviewClick: () => void;
-  onPreviewingBackClick: () => void;
-  onPreviewingCreateBranchClick: () => void;
-}
+import { BranchNavFooterProps } from '../../types/general';
 
 class BranchNavFooter extends React.Component<BranchNavFooterProps> {
   constructor(props: BranchNavFooterProps) {

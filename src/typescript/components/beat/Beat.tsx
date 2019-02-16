@@ -2,23 +2,7 @@ import * as React from 'react';
 import cx from 'classnames';
 import ui from '../../config/ui';
 import * as utils from '../../utils/misc';
-import { UIBeatType } from '../../types/general';
-
-export interface BeatProps {
-  UIBeat: UIBeatType;
-  isQueued: boolean;
-  isPlaying: boolean;
-  isSelected: boolean;
-  isDisabled: boolean;
-  zIndex: number;
-  onBeatClick: (UIBeat: UIBeatType, scrollCallbackFn: () => void) => void;
-  onBeatMouseEnter: () => void;
-}
-
-interface BeatState {
-  hoverCount?: number;
-  scrollReturnTimer: NodeJS.Timeout | null;
-}
+import { BeatProps, BeatState } from '../../types/general';
 
 class Beat extends React.Component<BeatProps, BeatState> {
   private beatElement: React.RefObject<HTMLDivElement>;

@@ -1,22 +1,21 @@
 import * as React from 'React';
 import { configure, shallow, mount } from 'enzyme';
 import * as Adapter from 'enzyme-adapter-react-16';
-import BeatList, { BeatListProps } from './BeatList';
-import * as sinon from 'sinon';
-import ui from '../../config/ui';
+import BeatList from './BeatList';
 import { getMockUIBar } from '../../utils/tests';
 import { BeatListOrientation } from '../../types/enums';
+import { BeatListProps } from '../../types/general';
 
 configure({ adapter: new Adapter() });
 
-describe('Bar Component', () => {
+describe('BeatList Component', () => {
   let defaultProps: BeatListProps;
 
   beforeEach(() => {
     defaultProps = {
       UIBars: [
+        getMockUIBar(0),
         getMockUIBar(1),
-        getMockUIBar(2),
       ],
       queuedUIBeats: [],
       playingUIBeat: null,
