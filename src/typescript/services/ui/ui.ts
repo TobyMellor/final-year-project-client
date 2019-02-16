@@ -2,6 +2,8 @@ import TrackModel from '../../models/audio-analysis/Track';
 import BarModel from '../../models/audio-analysis/Bar';
 import SegmentModel from '../../models/audio-analysis/Segment';
 import { UIBarType, UIBeatType } from '../../types/general';
+import CanvasService from '../canvas/CanvasService';
+import WebAudioService from '../web-audio/WebAudioService';
 
 export async function getUIBars(track: TrackModel): Promise<UIBarType[]> {
   const { bars, segments } = await track.getAudioAnalysis();
@@ -111,4 +113,38 @@ function capNumberBetween(number: number, min: number, max: number): number {
   const numberCapped = Math.min(lowerCapped, max);
 
   return numberCapped;
+}
+
+/**
+ * Rotates the rotation of the parent and child circles based on
+ * how far the user has scrolled in a list
+ *
+ * Updates after the next requestAnimationFrame call
+ *
+ * @param scrollPercentage Percentage scrolled in a list, 0 to 100
+ */
+export function updateCanvasRotation(scrollPercentage: number) {
+  CanvasService.getInstance()
+               .updateCanvasRotation(scrollPercentage);
+}
+
+/**
+ * Plays a series of beats to the user, and executes a callback when
+ * they've finished playing.
+ *
+ * @param beatOrders Order of the beats
+ * @param callbackFn Callback to be executed when playing has finished
+ */
+export function previewBeatsWithOrders(beatOrders: number[], callbackFn: () => void) {
+  WebAudioService.getInstance()
+                 .previewBeatsWithOrders(beatOrders,
+                                         callbackFn.bind(this));
+}
+
+/**
+ * Forces any audio that's playing to stop. Does not execute a callback if one
+ * exists
+ */
+export function stopPlaying() {
+  WebAudioService.getInstance().stop();
 }

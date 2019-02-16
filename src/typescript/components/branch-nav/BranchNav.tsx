@@ -2,8 +2,7 @@ import * as React from 'react';
 import BeatList from '../beat-list/BeatList';
 import Translator from '../../../translations/Translator';
 import cx from 'classnames';
-import WebAudioService from '../../services/web-audio/WebAudioService';
-import CanvasService from '../../services/canvas/CanvasService';
+import * as uiService from '../../services/ui/ui';
 import * as utils from '../../utils/misc';
 import { BeatListOrientation, BranchNavStatus } from '../../types/enums';
 import {
@@ -276,7 +275,7 @@ class BranchNav extends React.Component<BranchNavProps, BranchNavState> {
       };
     });
 
-    WebAudioService.getInstance().stop();
+    uiService.stopPlaying();
   }
 
   private handleCreateBranchClick() {
@@ -419,10 +418,7 @@ class BranchNav extends React.Component<BranchNavProps, BranchNavState> {
     }
 
     const scrollPercentage = this.getScrollPercentage(scrollLeft, scrollWidth, clientWidth);
-
-    // FIXME: All communication should be done through the UIService
-    CanvasService.getInstance()
-                 .updateCanvasRotation(scrollPercentage);
+    uiService.updateCanvasRotation(scrollPercentage);
   }
 
   /**
@@ -517,9 +513,7 @@ class BranchNav extends React.Component<BranchNavProps, BranchNavState> {
       }
     };
 
-    WebAudioService.getInstance()
-                   .previewBeatsWithOrders(queuedUIBeatOrders,
-                                           callbackFn.bind(this));
+    uiService.previewBeatsWithOrders(queuedUIBeatOrders, callbackFn);
   }
 
   /**
