@@ -1,6 +1,6 @@
 import * as sinon from 'sinon';
-import * as React from 'React';
-import { configure, shallow, mount, ReactWrapper } from 'enzyme';
+import * as React from 'react';
+import { configure, mount, ReactWrapper } from 'enzyme';
 import * as Adapter from 'enzyme-adapter-react-16';
 import { PrimaryButton, SuccessButton } from './Button';
 import ui from '../../config/ui';
