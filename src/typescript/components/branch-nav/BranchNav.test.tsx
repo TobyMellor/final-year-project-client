@@ -6,7 +6,7 @@ import BranchNav from './BranchNav';
 import { getMockUIBar } from '../../utils/tests';
 import { BeatListOrientation, BranchNavStatus } from '../../types/enums';
 import { BranchNavProps, UIBeatType, BranchNavState, QueuedUIBeat } from '../../types/general';
-import WebAudioService from '../../services/web-audio/WebAudioService';
+import * as uiService from '../../services/ui/ui';
 
 configure({ adapter: new Adapter() });
 
@@ -95,10 +95,12 @@ describe('BranchNav Component', () => {
 
   it('clicking preview and the back button should work as expected', () => {
     // Mock that starts the backwards playthrough after the forward one
-    const previewBeatsWithOrdersFn = WebAudioService.prototype.previewBeatsWithOrders = jest.fn(
-      (queuedBeatOrders, callbackFn) => {
-        setTimeout(callbackFn, queuedBeatOrders.length * 10 + 10); // 10ms for each beat
-      },
+    sinon.stub(uiService, 'previewBeatsWithOrders').callsFake(
+      jest.fn(
+        (queuedBeatOrders, callbackFn) => {
+          setTimeout(callbackFn, queuedBeatOrders.length * 10 + 10); // 10ms for each beat
+        },
+      ),
     );
 
     const wrapper = mount(
@@ -114,9 +116,7 @@ describe('BranchNav Component', () => {
     }
 
     // Check the PREVIEW button changes the status as expected
-    expect(previewBeatsWithOrdersFn).toBeCalledTimes(0);
     assertFooterButton('button.btn-success', BranchNavStatus.PREVIEWING);
-    expect(previewBeatsWithOrdersFn).toBeCalledTimes(1);
 
     const topBeatList = previewableState.beatLists[TOP];
     const bottomBeatList = previewableState.beatLists[BOTTOM];
@@ -165,9 +165,7 @@ describe('BranchNav Component', () => {
     );
 
     // Tick the first beat of the backwards playthrough and a separation delay
-    expect(previewBeatsWithOrdersFn).toBeCalledTimes(1);
     clock.tick(UIBars[0].beats[0].durationMs + 10);
-    expect(previewBeatsWithOrdersFn).toBeCalledTimes(2);
 
     // Ensure the queue is correct for the backwards playthrough
     assertBLProps(
@@ -192,10 +190,6 @@ describe('BranchNav Component', () => {
 
     // Check BACK button works, stops the playthrough.
     assertFooterButton('button:not(.btn-success)', BranchNavStatus.PREVIEWABLE);
-
-    // Ensure previewBeatsWithOrdersFn is never called again
-    clock.tick(10000);
-    expect(previewBeatsWithOrdersFn).toBeCalledTimes(2);
   });
 
   function assertBLProps(
