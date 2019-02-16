@@ -2,7 +2,7 @@ import * as React from 'react';
 import Nav from './Nav';
 import CircleCanvas from './CircleCanvas';
 import BranchNav from './branch-nav/BranchNav';
-import { getUIBars } from '../services/ui/entities';
+import { getUIBars } from '../services/ui/ui';
 import { FYPEvent } from '../types/enums';
 import Dispatcher from '../events/Dispatcher';
 import TrackModel from '../models/audio-analysis/Track';

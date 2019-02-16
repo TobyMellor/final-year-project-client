@@ -1,4 +1,4 @@
-import * as React from 'React';
+import * as React from 'react';
 import { configure, shallow, mount } from 'enzyme';
 import * as Adapter from 'enzyme-adapter-react-16';
 import BeatList from './BeatList';
