@@ -1,11 +1,12 @@
 import BeatModel from '../models/audio-analysis/Beat';
 import ForwardBranchModel from '../models/branches/ForwardBranch';
 import BackwardBranchModel from '../models/branches/BackwardBranch';
+import { ForwardAndBackwardBranch } from '../types/general';
 
-export function createBranches(
+export function createForwardAndBackwardBranch(
   earliestBeat: BeatModel,
   latestBeat: BeatModel,
-): [ForwardBranchModel, BackwardBranchModel] {
+): ForwardAndBackwardBranch {
   const options = {
     earliestBeat,
     latestBeat,

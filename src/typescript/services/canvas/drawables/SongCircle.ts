@@ -7,8 +7,8 @@ import Circle from './utils/Circle';
 import * as THREE from 'three';
 
 class SongCircle extends Updatable {
-  private static WHITE_COLOUR: Uint8Array = new Uint8Array([255, 255, 255, 255]);
-  private static BLACK_COLOUR: Uint8Array = new Uint8Array([0, 0, 0, 255]);
+  private static BACKGROUND_COLOUR: number = 0xFFFFFF;
+  public static EDGE_COLOUR: number = 0x000000;
   private static TRANSPARENT_OVERLAY: number[] = [1, 1, 1, 1]; // Colour to overlay textures with
   private static DARKEN_OVERLAY: number[] = [0.4, 0.4, 0.4, 1];
   private static CIRCLE_RESOLUTION = 1;
@@ -42,7 +42,7 @@ class SongCircle extends Updatable {
     if (backgroundColour === null) {
       const texture = new THREE.TextureLoader().load(track.bestImageURL);
 
-      material = new THREE.MeshBasicMaterial({ color: 0xFFFFFF, map: texture });
+      material = new THREE.MeshBasicMaterial({ color: SongCircle.BACKGROUND_COLOUR, map: texture });
     } else {
       material = new THREE.MeshBasicMaterial({ color: backgroundColour });
     }
@@ -84,7 +84,7 @@ class SongCircle extends Updatable {
       );
     }
 
-    const material = new THREE.MeshBasicMaterial({ color: 0x2F3640 });
+    const material = new THREE.MeshBasicMaterial({ color: SongCircle.EDGE_COLOUR });
 
     super.createAndAddMesh({
       geometry,

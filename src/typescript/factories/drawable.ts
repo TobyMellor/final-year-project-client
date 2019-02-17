@@ -1,12 +1,13 @@
 import SongCircle from '../services/canvas/drawables/SongCircle';
 import TrackModel from '../models/audio-analysis/Track';
-import WorldPoint from '../services/canvas/drawables/utils/WorldPoint';
 import Scene from '../services/canvas/drawables/Scene';
 import BezierCurve from '../services/canvas/drawables/BezierCurve';
 import BranchModel from '../models/branches/Branch';
-import BranchService from '../services/branch/BranchService';
 
-export async function renderParentSongCircle(scene: Scene, track: TrackModel): Promise<SongCircle> {
+export function renderParentSongCircle(
+  scene: Scene,
+  track: TrackModel,
+): SongCircle {
   const radius = 1;
   const lineWidth = getLineWidthForSong(radius);
   const parentSongCircle = new SongCircle(scene,
@@ -16,11 +17,6 @@ export async function renderParentSongCircle(scene: Scene, track: TrackModel): P
                                           null,
                                           -1,
                                           0xFFFFFF);
-
-  // FIXME: Should be passed as a parameter, sent initially by the
-  // branch service
-  const { branches } = await BranchService.getInstance();
-  branches.forEach(branch => renderBezierCurves(scene, parentSongCircle, branch));
 
   return parentSongCircle;
 }
@@ -46,22 +42,35 @@ export function renderChildSongCircle(
 export function renderBezierCurves(
   scene: Scene,
   songCircle: SongCircle,
-  branch: BranchModel,
-) {
+  branches: BranchModel[],
+): BezierCurve[] {
   const trackDuration = songCircle.track.duration;
-  const { earliestBeat, latestBeat } = branch;
 
-  const earliestPercentage = earliestBeat.getPercentageInTrack(trackDuration);
-  const latestPercentage = latestBeat.getPercentageInTrack(trackDuration);
-  const lineWidth = getBezierCurveLineWidth();
+  function renderBezierCurve(branch: BranchModel): BezierCurve {
+    const { earliestBeat, latestBeat } = branch;
 
-  // Render the curve
-  new BezierCurve(scene,
-                  songCircle,
-                  branch,
-                  earliestPercentage,
-                  latestPercentage,
-                  lineWidth);
+    const earliestPercentage = earliestBeat.getPercentageInTrack(trackDuration);
+    const latestPercentage = latestBeat.getPercentageInTrack(trackDuration);
+
+    return new BezierCurve(scene,
+                           songCircle,
+                           branch,
+                           earliestPercentage,
+                           latestPercentage);
+  }
+
+  return branches.map(branch => renderBezierCurve(branch));
+}
+
+export function updateNextBezierCurve(
+  bezierCurves: BezierCurve[],
+  nextBezierCurve: BezierCurve | null,
+) {
+  bezierCurves.forEach(bezierCurve => bezierCurve.isNext = false);
+
+  if (nextBezierCurve) {
+    nextBezierCurve.isNext = true;
+  }
 }
 
 function getRadiusForSong(
@@ -75,8 +84,4 @@ function getRadiusForSong(
 
 function getLineWidthForSong(radius: number): number {
   return radius * 0.1;
-}
-
-export function getBezierCurveLineWidth(): number {
-  return 5;
 }

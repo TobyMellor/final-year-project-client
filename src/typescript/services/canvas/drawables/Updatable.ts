@@ -2,7 +2,6 @@ import * as THREE from 'three';
 import WorldPoint from './utils/WorldPoint';
 import Scene from './Scene';
 import Rotation from './utils/Rotation';
-import { number } from 'prop-types';
 
 abstract class Updatable {
   private _group: THREE.Group;
@@ -48,6 +47,24 @@ abstract class Updatable {
 
     this._group.position.set(center.x, center.y, center.z);
     this._group.rotation.set(rotation.x, rotation.y, rotation.z);
+  }
+
+  /**
+   * Re-renders all of a group's children. This is useful, since some properties
+   * of a mesh cannot be updated on the fly and require a re-render.
+   */
+  public refreshChildren() {
+    const group = this._group;
+
+    group.children.forEach((childMesh) => {
+      const clone = childMesh.clone();
+
+      // Place all updates here that require a re-render
+      clone.renderOrder = this.getRenderOrder();
+
+      group.remove(childMesh);
+      group.add(clone);
+    });
   }
 
   protected addAll(scene: Scene) {
