@@ -9,8 +9,7 @@ import * as THREE from 'three';
 class SongCircle extends Updatable {
   private static BACKGROUND_COLOUR: number = 0xFFFFFF;
   public static EDGE_COLOUR: number = 0x000000;
-  private static TRANSPARENT_OVERLAY: number[] = [1, 1, 1, 1]; // Colour to overlay textures with
-  private static DARKEN_OVERLAY: number[] = [0.4, 0.4, 0.4, 1];
+  private static DARK_OVERLAY_OPACITY: number = 0.6;
   private static CIRCLE_RESOLUTION = 1;
   private static DEGREES_IN_CIRCLE = 360;
 
@@ -42,7 +41,11 @@ class SongCircle extends Updatable {
     if (backgroundColour === null) {
       const texture = new THREE.TextureLoader().load(track.bestImageURL);
 
-      material = new THREE.MeshBasicMaterial({ color: SongCircle.BACKGROUND_COLOUR, map: texture });
+      material = new THREE.MeshPhongMaterial({
+        emissive: SongCircle.BACKGROUND_COLOUR,
+        emissiveMap: texture,
+        emissiveIntensity: 1 - SongCircle.DARK_OVERLAY_OPACITY,
+      });
     } else {
       material = new THREE.MeshBasicMaterial({ color: backgroundColour });
     }
