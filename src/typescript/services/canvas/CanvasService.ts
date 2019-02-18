@@ -68,8 +68,7 @@ class CanvasService {
       forwardAndBackwardBranches: [forwardBranches],
     }: FYPEventPayload['PlayingTrackBranchesAnalyzed'],
   ) {
-    const parentSongCircle = drawableFactory.renderParentSongCircle(this.scene,
-                                                                    playingTrack);
+    const parentSongCircle = drawableFactory.renderParentSongCircle(this.scene, playingTrack);
 
     this._bezierCurves = drawableFactory.renderBezierCurves(this.scene,
                                                             parentSongCircle,

@@ -64,7 +64,6 @@ class Scene {
   }
 
   public render(nowSecs: number) {
-
     // Get the time passed since the last time this fn was called
     const deltaSecs = nowSecs - this.lastRenderSecs;
 

@@ -1,0 +1,3 @@
+type AddTrackOptions = {
+  name?: string;
+};
