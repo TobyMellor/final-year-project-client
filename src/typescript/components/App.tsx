@@ -5,8 +5,7 @@ import BranchNav from './branch-nav/BranchNav';
 import { getUIBars } from '../services/ui/ui';
 import { FYPEvent } from '../types/enums';
 import Dispatcher from '../events/Dispatcher';
-import TrackModel from '../models/audio-analysis/Track';
-import { UIBarType } from '../types/general';
+import { UIBarType, FYPEventPayload } from '../types/general';
 
 interface AppProps {}
 
@@ -39,7 +38,7 @@ class App extends React.Component<AppProps, AppState> {
     );
   }
 
-  private async updateBars({ playingTrack }: { playingTrack: TrackModel }) {
+  private async updateBars({ playingTrack }: FYPEventPayload['PlayingTrackBranchesAnalyzed']) {
     const UIBars = await getUIBars(playingTrack);
 
     this.setState({

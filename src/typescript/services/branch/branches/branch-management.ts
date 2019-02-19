@@ -2,9 +2,9 @@ import TrackModel from '../../../models/audio-analysis/Track';
 import config from '../../../config';
 import AudioAnalysisModel from '../../../models/audio-analysis/AudioAnalysis';
 import * as branchFactory from '../../../factories/branch';
-import BranchModel from '../../../models/branches/Branch';
+import { ForwardAndBackwardBranches, ForwardAndBackwardBranch } from '../../../types/general';
 
-export async function generateBranches(track: TrackModel): Promise<BranchModel[]> {
+export async function generateBranches(track: TrackModel): Promise<ForwardAndBackwardBranches> {
   const audioAnalysis = await track.getAudioAnalysis();
 
   if (config.mock.shouldMockBranchCreation) {
@@ -12,33 +12,37 @@ export async function generateBranches(track: TrackModel): Promise<BranchModel[]
   }
 
   // TODO: Implement some automatic logic here
-  return [];
+  return [[], []];
 }
 
-export function getMockForTrack({ trackID, beats }: AudioAnalysisModel): BranchModel[] {
+export function getMockForTrack(
+  { trackID, beats }: AudioAnalysisModel,
+): ForwardAndBackwardBranches {
+  const branches: ForwardAndBackwardBranches = [[], []];
+
   if (trackID === '4RVbK6cV0VqWdpCDcx3hiT') { // Reborn
-    return [
-      ...branchFactory.createBranches(beats[10], beats[50]),
-      ...branchFactory.createBranches(beats[25], beats[150]),
-    ];
+    pushBranch(branches, branchFactory.createForwardAndBackwardBranch(beats[10], beats[50]));
+    pushBranch(branches, branchFactory.createForwardAndBackwardBranch(beats[25], beats[150]));
+    pushBranch(branches, branchFactory.createForwardAndBackwardBranch(beats[130], beats[250]));
+  } else if (trackID === '3aUFrxO1B8EW63QchEl3wX') { // Feel The Love
+    // TODO: Implement Mock
+  } else if (trackID === '2hmHlBM0kPBm17Y7nVIW9f') { // My Propeller
+    // TODO: Implement Mock
+  } else if (trackID === '6wVWJl64yoTzU27EI8ep20') { // Crying Lightning
+    // TODO: Implement Mock
+  } else if (trackID === '3O8NlPh2LByMU9lSRSHedm') { // Controlla
+    // TODO: Implement Mock
+  } else {
+    // TODO: Implement Mock
   }
 
-  if (trackID === '3aUFrxO1B8EW63QchEl3wX') { // Feel The Love
-    return [];
-  }
+  return branches;
+}
 
-  if (trackID === '2hmHlBM0kPBm17Y7nVIW9f') { // My Propeller
-    return [];
-  }
-
-  if (trackID === '6wVWJl64yoTzU27EI8ep20') { // Crying Lightning
-    return [];
-  }
-
-  if (trackID === '3O8NlPh2LByMU9lSRSHedm') { // Controlla
-    return [];
-  }
-
-  // Default: Hotline Bling
-  return [];
+function pushBranch(
+  [forwardBranches, backwardBranches]: ForwardAndBackwardBranches,
+  [forwardBranch, backwardBranch]: ForwardAndBackwardBranch,
+) {
+  forwardBranches.push(forwardBranch);
+  backwardBranches.push(backwardBranch);
 }

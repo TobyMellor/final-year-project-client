@@ -49,6 +49,11 @@ abstract class BranchModel {
   public used() {
     this._usedCount += 1;
   }
+
+  public static isSameBranch(branch1: BranchModel, branch2: BranchModel) {
+    return branch1.earliestBeat.order === branch2.earliestBeat.order
+        && branch1.latestBeat.order === branch2.latestBeat.order;
+  }
 }
 
 export default BranchModel;

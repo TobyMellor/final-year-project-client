@@ -14,6 +14,7 @@ import { FYPEvent } from '../../types/enums';
 import BeatModel from '../../models/audio-analysis/Beat';
 import BeatQueueManager from './BeatQueueManager';
 import config from '../../config';
+import { FYPEventPayload } from '../../types/general';
 
 class WebAudioService {
   private static _instance: WebAudioService;
@@ -106,7 +107,7 @@ class WebAudioService {
   }
 
   private async queueBeatsForPlaying(
-    { beats }: { beats: BeatModel[] },
+    { beats }: FYPEventPayload['BeatsReadyForQueueing'],
     onEndedCallbackFn?: () => void,
   ) {
     if (!beats || beats.length === 0) {
@@ -145,7 +146,10 @@ class WebAudioService {
 
     this.stop();
 
-    return this.queueBeatsForPlaying({ beats: previewingBeats }, beatOnEndedCallbackFn);
+    return this.queueBeatsForPlaying(
+      { beats: previewingBeats, nextBranch: null },
+      beatOnEndedCallbackFn,
+    );
   }
 
   private playSample(
