@@ -1,5 +1,8 @@
 import Updatable from './Updatable';
 import * as THREE from 'three';
+import WorldPoint from './utils/WorldPoint';
+import Rotation from './utils/Rotation';
+import * as utils from '../../../utils/conversions';
 
 export type Drawable = {
   meshes: THREE.Mesh[];
@@ -17,12 +20,13 @@ class Scene {
   public static CAMERA_Z_CLIP_FAR: number = 3000.0;
   public static CAMERA_POSITION: number[] = [0.0, 0.0, -5.0];
 
-  private scene: THREE.Scene = null;
-  private camera: THREE.Camera = null;
-  private renderer: THREE.WebGLRenderer = null;
+  private _scene: THREE.Scene = null;
+  private _camera: THREE.Camera = null;
+  private _renderer: THREE.WebGLRenderer = null;
 
-  private updatables: Set<Updatable> = new Set();
-  private lastRenderSecs: number = null;
+  private _updatables: Set<Updatable> = new Set();
+  private _lastRenderSecs: number = null;
+  private _rotationSpeed: number = 0;
 
   private constructor(whereToDraw: HTMLCanvasElement) {
     const scene = new THREE.Scene();
@@ -39,9 +43,9 @@ class Scene {
     renderer.setClearColor(0xFFFFFF);
     renderer.setSize(window.innerWidth, window.innerHeight);
 
-    this.scene = scene;
-    this.camera = camera;
-    this.renderer = renderer;
+    this._scene = scene;
+    this._camera = camera;
+    this._renderer = renderer;
   }
 
   public static getInstance(whereToDraw: HTMLCanvasElement): Scene {
@@ -55,29 +59,76 @@ class Scene {
   public add(updatable: Updatable) {
     const mesh = updatable.getMesh();
 
-    this.scene.add(mesh);
-    this.updatables.add(updatable);
+    this._scene.add(mesh);
+    this._updatables.add(updatable);
+
+    this.render();
   }
 
   private update() {
-    this.updatables.forEach(updatable => updatable.update());
+    this._updatables.forEach(updatable => updatable.update());
   }
 
-  public render(nowSecs: number) {
-    // Get the time passed since the last time this fn was called
-    const deltaSecs = nowSecs - this.lastRenderSecs;
-
-    // Update the last time this fn was called to now (for future calls)
-    this.lastRenderSecs = nowSecs;
-
-    // TODO: Update various rotation values, pinheads, etc here
-    // WorldPoint.rotationOffsetPercentage += 10 * deltaSecs;
-    // Rotation.rotationOffsetPercentage += 10 * deltaSecs;
-
+  public render() {
     this.update();
 
     // Re-render everything on the scene through THREE.js
-    this.renderer.render(this.scene, this.camera);
+    this._renderer.render(this._scene, this._camera);
+  }
+
+  public animateRotation(
+    startRotationPercentage: number,
+    endRotationPercentage: number,
+    durationMs: number,
+  ) {
+    // Immediately rotate to the start percentage
+    this.setRotationPercentage(startRotationPercentage);
+
+    let animationEndMs: number;
+
+    const renderFn = (nowMs: number) => {
+      const remainingMs = animationEndMs - nowMs;
+
+      // If the animation has ended
+      if (remainingMs < 0) {
+        this.setRotationPercentage(endRotationPercentage);
+        return;
+      }
+
+      // TODO: Here I can apply easing formulas for the animation
+      const animationDecimal = 1 - (remainingMs / durationMs);
+
+      // Difference of startPercent (e.g. 30) and endPercent (e.g. 80), e.g. 80% - 30% = 50%
+      // Multiply by how far we are in the anim, e.g. 50% of the way through the animation gives 25%
+      // Add that number to the startRotationPercentage, e.g. 30% + 25% = 55%
+      const currentRotationPercentage = (endRotationPercentage - startRotationPercentage)
+                                      * animationDecimal
+                                      + startRotationPercentage;
+
+      this.setRotationPercentage(currentRotationPercentage);
+
+      // Repeat until the animation has finished
+      requestAnimationFrame(renderFn);
+    };
+
+    requestAnimationFrame((startMs) => {
+      animationEndMs = startMs + durationMs;
+
+      renderFn(startMs);
+    });
+  }
+
+  /**
+   * Update the rotation of points on the canvas by a percentage
+   *
+   * @param percentage The percent of the way through the song
+   *                   (0 being the start of the song, 100 being the end)
+   */
+  public async setRotationPercentage(percentage: number) {
+    WorldPoint.rotationOffsetPercentage = percentage;
+    Rotation.rotationOffsetPercentage = percentage;
+
+    this.render();
   }
 }
 

@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import WorldPoint from './utils/WorldPoint';
 import Scene from './Scene';
 import Rotation from './utils/Rotation';
+import CanvasService from '../../canvas/CanvasService';
 
 abstract class Updatable {
   private _group: THREE.Group;

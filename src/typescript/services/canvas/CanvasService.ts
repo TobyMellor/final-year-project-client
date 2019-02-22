@@ -25,7 +25,7 @@ class CanvasService {
   private _bezierCurves: BezierCurve[] = [];
 
   private constructor(canvas: HTMLCanvasElement) {
-    const scene = this.scene = Scene.getInstance(canvas);
+    this.scene = Scene.getInstance(canvas);
 
     // Once we've loaded and analyzed the playing track, display the song circles
     Dispatcher.getInstance()
@@ -34,15 +34,6 @@ class CanvasService {
     // When the Branch Service has given us new beats, update the next branch
     Dispatcher.getInstance()
               .on(FYPEvent.BeatsReadyForQueueing, this, this.updateNextBezierCurve);
-
-    const render = (nowMs: number) => {
-      const nowSecs = conversions.millisecondsToSeconds(nowMs);
-      scene.render(nowSecs);
-
-      requestAnimationFrame(render);
-    };
-
-    requestAnimationFrame(render);
   }
 
   public static getInstance(canvas?: HTMLCanvasElement): CanvasService {
@@ -85,6 +76,8 @@ class CanvasService {
 
     Dispatcher.getInstance()
               .dispatch(FYPEvent.PlayingTrackRendered);
+
+    setTimeout(() => this.scene.animateRotation(0, 100, 5000), 1000);
   }
 
   /**
@@ -102,9 +95,12 @@ class CanvasService {
     drawableFactory.updateNextBezierCurve(this._bezierCurves, nextBezierCurve);
   }
 
-  public async updateCanvasRotation(percentage: number) {
-    WorldPoint.rotationOffsetPercentage = percentage;
-    Rotation.rotationOffsetPercentage = percentage;
+  public async render() {
+    requestAnimationFrame(() => this.scene.render());
+  }
+
+  public setSongCircleRotation(percentage: number) {
+    this.scene.setRotationPercentage(percentage);
   }
 }
 
