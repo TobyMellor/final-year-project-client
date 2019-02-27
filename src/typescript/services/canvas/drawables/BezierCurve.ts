@@ -72,10 +72,9 @@ class BezierCurve extends Updatable {
       ...meshLineOptions,
     });
 
-    const bezierCurve = new THREE.Mesh(line.geometry, material);
-
-    super.addMesh({
-      mesh: bezierCurve,
+    super.createAndAddMesh({
+      material,
+      geometry: line.geometry,
       rotation: Rotation.getRotationFromPercentage(0),
       renderOrder: 0,
     });

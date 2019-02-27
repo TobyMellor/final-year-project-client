@@ -58,6 +58,7 @@ class SongCircle extends Updatable {
       geometry,
       material,
       renderOrder: 0,
+      shouldKeepUpright: true,
     });
   }
 
@@ -184,6 +185,7 @@ class SongCircle extends Updatable {
           position,
           mesh: textMesh,
           renderOrder: 2,
+          shouldKeepUpright: true,
         });
 
         return { predictedSize, fontSize: currentFontSize };
@@ -214,9 +216,9 @@ class SongCircle extends Updatable {
   }
 
   private addNeedle(lineWidth: number) {
-    const geometry = new THREE.PlaneGeometry(lineWidth / 2, lineWidth * 4);
+    const geometry = new THREE.PlaneGeometry(lineWidth * 4, lineWidth / 4);
     const material = new THREE.MeshBasicMaterial({ color: SongCircle.HIGHLIGHT_COLOUR });
-    const position = WorldPoint.getPointOnCircleFromPercentage(this, 50);
+    const position = WorldPoint.getPointOnCircleFromPercentage(this, 0);
 
     super.createAndAddMesh({
       geometry,

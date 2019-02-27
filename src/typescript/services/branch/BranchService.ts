@@ -4,7 +4,6 @@ import BranchModel from '../../models/branches/Branch';
 import { generateBranches } from './branches/branch-management';
 import BeatModel from '../../models/audio-analysis/Beat';
 import { FYPEventPayload, ForwardAndBackwardBranches } from '../../types/general';
-import QueuedBeatModel from '../../models/web-audio/QueuedBeat';
 
 /**
  * Branch Service
@@ -123,13 +122,18 @@ class BranchService {
   }
 
   private getBestBranch(branches: BranchModel[]): BranchModel {
-    const randomBranch = branches[Math.floor(Math.random() * branches.length)];
+    const randomIndex = Math.floor(Math.random() * branches.length);
+    const randomBranch = branches[randomIndex];
 
     return randomBranch;
   }
 
   private getBranches(): BranchModel[] {
     const [forward, backward] = this._forwardAndBackwardBranches;
+
+    // The last forward branch cannot be taken
+    forward.pop();
+
     return [...forward, ...backward];
   }
 }

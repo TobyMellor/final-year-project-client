@@ -9,11 +9,7 @@
 import Dispatcher from '../../events/Dispatcher';
 import Scene from '../canvas/drawables/Scene';
 import * as drawableFactory from '../../factories/drawable';
-import * as conversions from '../../utils/conversions';
-import * as utils from '../../utils/misc';
 import { FYPEvent } from '../../types/enums';
-import WorldPoint from './drawables/utils/WorldPoint';
-import Rotation from './drawables/utils/Rotation';
 import { FYPEventPayload } from '../../types/general';
 import BezierCurve from './drawables/BezierCurve';
 import BranchModel from '../../models/branches/Branch';

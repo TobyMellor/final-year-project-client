@@ -21,7 +21,8 @@ export function getMockForTrack(
   const branches: ForwardAndBackwardBranches = [[], []];
 
   if (trackID === '4RVbK6cV0VqWdpCDcx3hiT') { // Reborn
-    pushBranch(branches, branchFactory.createForwardAndBackwardBranch(beats[0], beats[50]));
+    pushBranch(branches, branchFactory.createForwardAndBackwardBranch(beats[10], beats[50]));
+    pushBranch(branches, branchFactory.createForwardAndBackwardBranch(beats[20], beats[150]));
   } else if (trackID === '3aUFrxO1B8EW63QchEl3wX') { // Feel The Love
     // TODO: Implement Mock
   } else if (trackID === '2hmHlBM0kPBm17Y7nVIW9f') { // My Propeller
