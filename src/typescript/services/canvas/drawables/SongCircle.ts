@@ -10,6 +10,7 @@ class SongCircle extends Updatable {
   private static BACKGROUND_COLOUR: number = 0xFFFFFF;
   private static TEXT_COLOUR: number = 0xFFFFFF;
   public static EDGE_COLOUR: number = 0x000000;
+  private static HIGHLIGHT_COLOUR: number = 0xE74C3C;
   private static DARK_OVERLAY_OPACITY: number = 0.6;
   private static CIRCLE_RESOLUTION = 1;
   private static DEGREES_IN_CIRCLE = 360;
@@ -30,6 +31,8 @@ class SongCircle extends Updatable {
 
     if (_parentSongCircle) {
       this.addText(track, radius, _lineWidth);
+    } else {
+      this.addNeedle(_lineWidth);
     }
 
     super.addAll(scene);
@@ -173,10 +176,8 @@ class SongCircle extends Updatable {
           predictedSize = box.getSize(center);
         }
 
-        const position = WorldPoint.getPoint(0,
-                                             isBelowCenter ? -centerPadding - predictedSize.y
-                                                           : centerPadding,
-                                             0);
+        const yPos = isBelowCenter ? -centerPadding - predictedSize.y : centerPadding;
+        const position = WorldPoint.getPoint(0, yPos, 0);
 
         // Render this text
         super.addMesh({
@@ -209,6 +210,19 @@ class SongCircle extends Updatable {
                                 true,
                                 textVerticalPadding);
 
+    });
+  }
+
+  private addNeedle(lineWidth: number) {
+    const geometry = new THREE.PlaneGeometry(lineWidth / 2, lineWidth * 4);
+    const material = new THREE.MeshBasicMaterial({ color: SongCircle.HIGHLIGHT_COLOUR });
+    const position = WorldPoint.getPointOnCircleFromPercentage(this, 50);
+
+    super.createAndAddMesh({
+      geometry,
+      material,
+      position,
+      renderOrder: 2,
     });
   }
 

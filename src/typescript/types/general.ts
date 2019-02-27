@@ -6,6 +6,7 @@ import TrackModel from '../models/audio-analysis/Track';
 import BranchModel from '../models/branches/Branch';
 import ForwardBranchModel from '../models/branches/ForwardBranch';
 import BackwardBranchModel from '../models/branches/BackwardBranch';
+import QueuedBeatModel from '../models/web-audio/QueuedBeat';
 
 export type TimeIdentifier = {
   ms: number;
@@ -134,11 +135,16 @@ export type FYPEventPayload = {
   NextBeatsRequested: {
     playingTrack: TrackModel;
     beatBatchCount: number;
-    lastQueuedBeat: BeatModel | null;
+    lastQueuedBeat: QueuedBeatModel | null;
   };
   BeatsReadyForQueueing: {
     beats: BeatModel[];
     nextBranch: BranchModel | null;
+  };
+  PlayingBeatBatch: {
+    startPercentage: number,
+    endPercentage: number,
+    durationMs: number,
   };
 };
 

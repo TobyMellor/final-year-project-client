@@ -34,6 +34,10 @@ class CanvasService {
     // When the Branch Service has given us new beats, update the next branch
     Dispatcher.getInstance()
               .on(FYPEvent.BeatsReadyForQueueing, this, this.updateNextBezierCurve);
+
+    // When a beat batch has started, start the animation
+    Dispatcher.getInstance()
+              .on(FYPEvent.PlayingBeatBatch, this, this.startSongCircleRotation);
   }
 
   public static getInstance(canvas?: HTMLCanvasElement): CanvasService {
@@ -66,7 +70,8 @@ class CanvasService {
                                                             forwardBranches);
 
     childTracks.forEach((childTrack) => {
-      const percentage = utils.getRandomInteger();
+      // const percentage = utils.getRandomInteger();
+      const percentage = 0;
 
       drawableFactory.renderChildSongCircle(this.scene,
                                             parentSongCircle,
@@ -76,8 +81,6 @@ class CanvasService {
 
     Dispatcher.getInstance()
               .dispatch(FYPEvent.PlayingTrackRendered);
-
-    setTimeout(() => this.scene.animateRotation(0, 100, 5000), 1000);
   }
 
   /**
@@ -101,6 +104,14 @@ class CanvasService {
 
   public setSongCircleRotation(percentage: number) {
     this.scene.setRotationPercentage(percentage);
+  }
+
+  public startSongCircleRotation({
+    startPercentage,
+    endPercentage,
+    durationMs,
+  }: FYPEventPayload['PlayingBeatBatch']) {
+    this.scene.animateRotation(startPercentage, endPercentage, durationMs);
   }
 }
 
