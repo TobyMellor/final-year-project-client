@@ -16,6 +16,10 @@ export enum FYPEvent {
 
   // The next beats have been chosen and can be queued for future play
   BeatsReadyForQueueing = 'beats_ready_for_queueing',
+
+  // A beat batch has started playing. This event may be fired with some precision loss
+  // (setTimeout), so don't use it for audio
+  PlayingBeatBatch = 'playing_beat_batch',
 }
 
 export enum BranchNavStatus {

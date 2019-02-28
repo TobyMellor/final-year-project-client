@@ -33,7 +33,7 @@ class App extends React.Component<AppProps, AppState> {
       <React.Fragment>
         <Nav />
         <CircleCanvas />
-        <BranchNav UIBars={UIBars} />
+        {/* <BranchNav UIBars={UIBars} /> */}
       </React.Fragment>
     );
   }

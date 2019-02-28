@@ -418,7 +418,7 @@ class BranchNav extends React.Component<BranchNavProps, BranchNavState> {
     }
 
     const scrollPercentage = this.getScrollPercentage(scrollLeft, scrollWidth, clientWidth);
-    uiService.updateCanvasRotation(scrollPercentage);
+    uiService.setSongCircleRotation(scrollPercentage);
   }
 
   /**

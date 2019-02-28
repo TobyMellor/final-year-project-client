@@ -1,11 +1,10 @@
 import * as conversions from '../../../../utils/conversions';
 
 abstract class Primitive {
-  public static rotationBaseOffsetPercentage: number = 0;
-
   public x: number;
   public y: number;
   public z: number;
+  public abstract rotate(degrees: number): void;
 
   constructor(x: number, y: number, z: number = 1) {
     this.x = x;
@@ -25,7 +24,7 @@ abstract class Primitive {
     percentage: number,
     offsetPercentage: number = 0,
   ): number {
-    const percentageWithOffset = percentage + this.rotationBaseOffsetPercentage + offsetPercentage;
+    const percentageWithOffset = percentage + offsetPercentage;
     const angle: number = conversions.percentageToRadians(percentageWithOffset);
 
     return angle;

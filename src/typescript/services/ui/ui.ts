@@ -123,9 +123,9 @@ function capNumberBetween(number: number, min: number, max: number): number {
  *
  * @param scrollPercentage Percentage scrolled in a list, 0 to 100
  */
-export function updateCanvasRotation(scrollPercentage: number) {
+export function setSongCircleRotation(scrollPercentage: number) {
   CanvasService.getInstance()
-               .updateCanvasRotation(scrollPercentage);
+               .setSongCircleRotation(scrollPercentage);
 }
 
 /**

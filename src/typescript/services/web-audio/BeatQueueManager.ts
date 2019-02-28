@@ -27,13 +27,42 @@ class BeatQueueManager {
     return queuedBeats;
   }
 
+  /**
+   * Removes all of the beats in the queue until a certain beat
+   *
+   * @param queuedBeat The beat marking the end of the removals
+   */
+  public static removeUntil(queuedBeat: QueuedBeatModel) {
+    while (this.queuedBeats.length > 0 && queuedBeat.equals(this.queuedBeats[0])) {
+      this.queuedBeats.shift();
+    }
+  }
+
+  /**
+   * Returns the first queued beat in the queue
+   */
+  public static first(): QueuedBeatModel {
+    return this.queuedBeats[0];
+  }
+
+  /**
+   * Returns the last queued beat in the queue
+   */
   public static last(): QueuedBeatModel {
     return this.queuedBeats[this.queuedBeats.length - 1];
   }
 
+  /**
+   * The last beat that's queued will always be a single destination beat of a branch.
+   * Before that beat will be the origin beat of a branch.
+   */
+  public static lastInBeatBatch(): QueuedBeatModel {
+    return this.queuedBeats[this.queuedBeats.length - 2];
+  }
+
   private static getLastSubmittedCurrentTime(audioContext: AudioContext): number {
     if (this.queuedBeats.length) {
-      return this.last().getSubmittedCurrentTime();
+      return this.last().submittedCurrentTime;
     }
 
     // Add some delay to the first beat we schedule,
@@ -47,7 +76,7 @@ class BeatQueueManager {
   private static getLastBeatStartSecs(): number {
     if (this.queuedBeats.length) {
       return this.last()
-                 .getBeat()
+                 .beat
                  .startSecs;
     }
 

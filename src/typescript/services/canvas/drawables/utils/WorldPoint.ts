@@ -1,6 +1,7 @@
 import Primitive from './Primitive';
 import SongCircle from '../SongCircle';
 import Circle from './Circle';
+import * as conversions from '../../../../utils/conversions';
 
 /**
  * World Point
@@ -9,11 +10,7 @@ import Circle from './Circle';
  * independent from the camera
  */
 class WorldPoint extends Primitive {
-  // What percentage we need to rotate by so "0%" appears at the top
-  public static rotationBaseOffsetPercentage = 90;
-
-  // In addition to rotationBaseOffsetPercentage, what percentage about the
-  // origin should all WorldPoints be rotated by?
+  // What percentage about the origin should all WorldPoints be rotated by?
   public static rotationOffsetPercentage: number = 0;
 
   private constructor(x: number, y: number, z: number = 1) {
@@ -28,13 +25,23 @@ class WorldPoint extends Primitive {
     return new WorldPoint(0, 0, 0);
   }
 
+  public rotate(degrees: number) {
+    const radians = conversions.degreesToRadians(degrees);
+    const cosTheta = Math.cos(radians);
+    const sinTheta = Math.sin(radians);
+
+    const newX = this.x * cosTheta - this.y * sinTheta;
+    const newY = this.y * cosTheta + this.x * sinTheta;
+
+    return WorldPoint.getPoint(newX, newY, this.z);
+  }
+
   public static getCenterPointOfCircleFromPercentage(
     { center: parentCircleCenter, radius: parentCircleRadius }: SongCircle,
     percentage: number,
     ourCircleRadius: number = 0,
     ourCircleLineWidth: number = 1,
   ): WorldPoint {
-
     // Angle where our circle will sit from the parent's center point
     const angleRadians = super.getAngleFromPercentage(percentage, this.rotationOffsetPercentage);
 

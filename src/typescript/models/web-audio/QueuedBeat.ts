@@ -6,20 +6,16 @@ type Input = {
 };
 
 class QueuedBeatModel {
-  private beat: BeatModel;
-  private submittedCurrentTime: number;
+  public beat: BeatModel;
+  public submittedCurrentTime: number;
 
   constructor({ beat, submittedCurrentTime }: Input) {
     this.beat = beat;
     this.submittedCurrentTime = submittedCurrentTime;
   }
 
-  public getBeat(): BeatModel {
-    return this.beat;
-  }
-
-  public getSubmittedCurrentTime(): number {
-    return this.submittedCurrentTime;
+  public equals(queuedBeat: QueuedBeatModel) {
+    return this.submittedCurrentTime === queuedBeat.submittedCurrentTime;
   }
 }
 

@@ -9,11 +9,7 @@
 import Dispatcher from '../../events/Dispatcher';
 import Scene from '../canvas/drawables/Scene';
 import * as drawableFactory from '../../factories/drawable';
-import * as conversions from '../../utils/conversions';
-import * as utils from '../../utils/misc';
 import { FYPEvent } from '../../types/enums';
-import WorldPoint from './drawables/utils/WorldPoint';
-import Rotation from './drawables/utils/Rotation';
 import { FYPEventPayload } from '../../types/general';
 import BezierCurve from './drawables/BezierCurve';
 import BranchModel from '../../models/branches/Branch';
@@ -25,7 +21,7 @@ class CanvasService {
   private _bezierCurves: BezierCurve[] = [];
 
   private constructor(canvas: HTMLCanvasElement) {
-    const scene = this.scene = Scene.getInstance(canvas);
+    this.scene = Scene.getInstance(canvas);
 
     // Once we've loaded and analyzed the playing track, display the song circles
     Dispatcher.getInstance()
@@ -35,14 +31,9 @@ class CanvasService {
     Dispatcher.getInstance()
               .on(FYPEvent.BeatsReadyForQueueing, this, this.updateNextBezierCurve);
 
-    const render = (nowMs: number) => {
-      const nowSecs = conversions.millisecondsToSeconds(nowMs);
-      scene.render(nowSecs);
-
-      requestAnimationFrame(render);
-    };
-
-    requestAnimationFrame(render);
+    // When a beat batch has started, start the animation
+    Dispatcher.getInstance()
+              .on(FYPEvent.PlayingBeatBatch, this, this.startSongCircleRotation);
   }
 
   public static getInstance(canvas?: HTMLCanvasElement): CanvasService {
@@ -75,7 +66,8 @@ class CanvasService {
                                                             forwardBranches);
 
     childTracks.forEach((childTrack) => {
-      const percentage = utils.getRandomInteger();
+      // const percentage = utils.getRandomInteger();
+      const percentage = 0;
 
       drawableFactory.renderChildSongCircle(this.scene,
                                             parentSongCircle,
@@ -102,9 +94,20 @@ class CanvasService {
     drawableFactory.updateNextBezierCurve(this._bezierCurves, nextBezierCurve);
   }
 
-  public async updateCanvasRotation(percentage: number) {
-    WorldPoint.rotationOffsetPercentage = percentage;
-    Rotation.rotationOffsetPercentage = percentage;
+  public async render() {
+    requestAnimationFrame(() => this.scene.render());
+  }
+
+  public setSongCircleRotation(percentage: number) {
+    this.scene.setRotationPercentage(percentage);
+  }
+
+  public startSongCircleRotation({
+    startPercentage,
+    endPercentage,
+    durationMs,
+  }: FYPEventPayload['PlayingBeatBatch']) {
+    this.scene.animateRotation(startPercentage, endPercentage, durationMs);
   }
 }
 

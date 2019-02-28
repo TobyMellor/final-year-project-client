@@ -13,23 +13,15 @@ export function radiansToDegrees(radians: number) {
   return degrees % 360;
 }
 
-export function percentageToDegrees(
-  percentage: number,
-  offsetAmountDegrees: number,
-) {
+export function percentageToDegrees(percentage: number) {
   const decimal = percentage / 100;
+  const degrees = decimal * 360;
 
-  // Inverse so percentage is clockwise, to make
-  // 25% appear on the right of the circle instead of the left
-  const inversedDecimal = 1 - decimal;
-  const degrees = inversedDecimal * 360;
-  const degreesOffset = degrees + offsetAmountDegrees;
-
-  return degreesOffset % 360;
+  return degrees % 360;
 }
 
 export function percentageToRadians(percentage: number) {
-  const degrees = percentageToDegrees(percentage, 90);
+  const degrees = percentageToDegrees(percentage);
   const radians = degreesToRadians(degrees);
 
   return radians;

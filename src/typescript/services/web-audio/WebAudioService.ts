@@ -11,10 +11,11 @@ import TrackModel from '../../models/audio-analysis/Track';
 import Dispatcher from '../../events/Dispatcher';
 import * as trackFactory from '../../factories/track';
 import { FYPEvent } from '../../types/enums';
-import BeatModel from '../../models/audio-analysis/Beat';
 import BeatQueueManager from './BeatQueueManager';
 import config from '../../config';
 import { FYPEventPayload } from '../../types/general';
+import QueuedBeatModel from '../../models/web-audio/QueuedBeat';
+import * as utils from '../../utils/conversions';
 
 class WebAudioService {
   private static _instance: WebAudioService;
@@ -35,10 +36,10 @@ class WebAudioService {
     const trackIDs: string[] = [
       '4RVbK6cV0VqWdpCDcx3hiT',
       '3aUFrxO1B8EW63QchEl3wX',
-      '2hmHlBM0kPBm17Y7nVIW9f',
-      '6wVWJl64yoTzU27EI8ep20',
-      '3O8NlPh2LByMU9lSRSHedm',
-      '0wwPcA6wtMf6HUMpIRdeP7',
+      // '2hmHlBM0kPBm17Y7nVIW9f',
+      // '6wVWJl64yoTzU27EI8ep20',
+      // '3O8NlPh2LByMU9lSRSHedm',
+      // '0wwPcA6wtMf6HUMpIRdeP7',
     ];
     const trackRequests: Promise<TrackModel>[] = trackIDs.map(ID => trackFactory.createTrack(ID));
 
@@ -106,6 +107,18 @@ class WebAudioService {
     this.dispatchNextBeatsRequest(null, SCHEDULE_BUFFER_COUNT);
   }
 
+  /**
+   * When we receive some beats, add the beats to the BeatQueueManager's queue.
+   * Then, start a sample for every beat. When all of these samples end, we'll
+   * request more beats and repeat this process.
+   *
+   * The beat's to be queued include everything proceeding the origin beat of a branch,
+   * and a single destination beat of the branch
+   *
+   * @param payload containing the beats to be queued
+   * @param onEndedCallbackFn Optional, whether we want to run a custom fn wen the last sample
+   *                          has finished playing (e.g. used for UI branch previewing)
+   */
   private async queueBeatsForPlaying(
     { beats }: FYPEventPayload['BeatsReadyForQueueing'],
     onEndedCallbackFn?: () => void,
@@ -117,24 +130,28 @@ class WebAudioService {
     const queuedBeats = BeatQueueManager.add(this._audioContext, beats);
     let lastBufferSource: AudioBufferSourceNode;
 
-    queuedBeats.forEach((queuedBeat) => {
-      const { startSecs, durationSecs } = queuedBeat.getBeat();
+    // When the first beat has started, we want to dispatch the "PlayingBeatBatch" event
+    const onStartedFn = () => this.dispatchPlayingBeatBatch(queuedBeats[0],
+                                                            BeatQueueManager.lastInBeatBatch());
+
+    queuedBeats.forEach((queuedBeat, i) => {
+      const { startSecs, durationSecs } = queuedBeat.beat;
 
       lastBufferSource = this.playSample(this._audioBuffer,
-                                         queuedBeat.getSubmittedCurrentTime(),
+                                         queuedBeat.submittedCurrentTime,
                                          startSecs,
-                                         durationSecs);
+                                         durationSecs,
+                                         i === 0 && onStartedFn);
     });
 
     if (onEndedCallbackFn) {
-
       // Custom onended: e.g. UI branch previewing
       lastBufferSource.onended = onEndedCallbackFn;
     } else {
-
       // Default onended: Request next batch of beats
       lastBufferSource.onended = () => {
-        const lastQueuedBeat = BeatQueueManager.last().getBeat();
+        // The last beat we have scheduled to play (a future beat)
+        const lastQueuedBeat = BeatQueueManager.last();
 
         this.dispatchNextBeatsRequest(lastQueuedBeat);
       };
@@ -157,12 +174,18 @@ class WebAudioService {
     when?: number,
     offset?: number,
     duration?: number,
+    onStartedFn?: (() => void) | null,
   ): AudioBufferSourceNode {
     const source = this._audioContext.createBufferSource();
 
     source.buffer = audioBuffer;
     source.connect(this._audioContext.destination);
     source.start(when, offset, duration);
+
+    if (onStartedFn) {
+      setTimeout(onStartedFn,
+                 utils.secondsToMilliseconds(when - this._audioContext.currentTime));
+    }
 
     this._audioBufferSourceNodes.push(source);
 
@@ -178,12 +201,41 @@ class WebAudioService {
   }
 
   // Signal that we're ready to receive beats to play
-  private dispatchNextBeatsRequest(lastQueuedBeat: BeatModel | null, beatBatchCount: number = 1) {
+  private dispatchNextBeatsRequest(
+    lastQueuedBeat: QueuedBeatModel | null,
+    beatBatchCount: number = 1,
+  ) {
     Dispatcher.getInstance()
               .dispatch(FYPEvent.NextBeatsRequested, {
                 beatBatchCount,
                 lastQueuedBeat,
                 playingTrack: this._playingTrack,
+              });
+  }
+
+  /**
+   * Dispatch FYPEvent.PlayingBeatBatch, to let other services know that
+   * we're playing beats up to a branch origin.
+   *
+   * This is used in the CanvasService, to start the canvas rotation.
+   *
+   * @param startQueuedBeat The start beat of the batch
+   * @param endQueuedBeat The origin beat of a branch
+   */
+  private dispatchPlayingBeatBatch(
+    { beat: startBeat }: QueuedBeatModel,
+    { beat: endBeat }: QueuedBeatModel,
+  ) {
+    const songDuration = this._playingTrack.duration;
+    const startPercentage = startBeat.getPercentageInTrack(songDuration);
+    const endPercentage = endBeat.getPercentageInTrack(songDuration);
+    const durationMs = endBeat.startMs - startBeat.startMs; // TODO: Check endMs and startMs usage
+
+    Dispatcher.getInstance()
+              .dispatch(FYPEvent.PlayingBeatBatch, {
+                startPercentage,
+                endPercentage,
+                durationMs,
               });
   }
 }

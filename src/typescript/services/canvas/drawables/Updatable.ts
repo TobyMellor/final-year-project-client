@@ -2,6 +2,8 @@ import * as THREE from 'three';
 import WorldPoint from './utils/WorldPoint';
 import Scene from './Scene';
 import Rotation from './utils/Rotation';
+import CanvasService from '../../canvas/CanvasService';
+import Primitive from './utils/Primitive';
 
 abstract class Updatable {
   private _group: THREE.Group;
@@ -25,9 +27,9 @@ abstract class Updatable {
     drawMode = THREE.TrianglesDrawMode,
     rotation = Rotation.getZero(),
     renderOrder,
+    shouldKeepUpright = false,
   }: AddMeshOptions) {
-    mesh.position.set(position.x, position.y, position.z);
-    mesh.rotation.set(rotation.x, rotation.y, rotation.z);
+    this.setMeshAttributes(mesh, position, rotation, shouldKeepUpright ? -270 : 0);
     mesh.renderOrder = this.getRenderOrder() + renderOrder;
 
     if (mesh instanceof THREE.Mesh) {
@@ -42,11 +44,10 @@ abstract class Updatable {
   }
 
   public update() {
-    const center = this.center;
-    const rotation = this.rotation;
+    const center = this.center.rotate(270);
+    const rotation = this.rotation.rotate(270);
 
-    this._group.position.set(center.x, center.y, center.z);
-    this._group.rotation.set(rotation.x, rotation.y, rotation.z);
+    this.setMeshAttributes(this._group, this.center, this.rotation, 270);
   }
 
   /**
@@ -79,6 +80,19 @@ abstract class Updatable {
   protected get rotation() {
     return this._rotation;
   }
+
+  protected setMeshAttributes(
+    mesh: THREE.Mesh | THREE.Group | THREE.Line,
+    worldPoint: WorldPoint,
+    rotation: Rotation,
+    offsetDegrees: number,
+  ) {
+    const { x: worldX, y: worldY, z: worldZ } = worldPoint.rotate(offsetDegrees);
+    const { x: rotationX, y: rotationY, z: rotationZ } = rotation.rotate(offsetDegrees);
+
+    mesh.position.set(worldX, worldY, worldZ);
+    mesh.rotation.set(rotationX, rotationY, rotationZ);
+  }
 }
 
 interface CreateMeshOptions extends AddMeshOptions {
@@ -92,6 +106,10 @@ interface AddMeshOptions {
   drawMode?: THREE.TrianglesDrawModes;
   rotation?: Rotation;
   renderOrder: number;
+
+  // Text and Images should be kept upright. Everything else should be offset so that
+  // 0% appears at the bottom of the user's screen.
+  shouldKeepUpright?: boolean;
 }
 
 export default Updatable;

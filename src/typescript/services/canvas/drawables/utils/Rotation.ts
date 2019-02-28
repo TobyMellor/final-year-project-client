@@ -1,4 +1,5 @@
 import Primitive from './Primitive';
+import * as conversions from '../../../../utils/conversions';
 
 class Rotation extends Primitive {
   public static rotationOffsetPercentage: number = 0;
@@ -9,6 +10,13 @@ class Rotation extends Primitive {
 
   public static getZero(): Rotation {
     return new Rotation();
+  }
+
+  public rotate(degrees: number) {
+    const radians = conversions.degreesToRadians(degrees);
+    const newZ = this.z + radians;
+
+    return new Rotation(this.x, this.y, newZ);
   }
 
   public static getRotationFromPercentage(percentage: number): Rotation {

@@ -54,12 +54,12 @@ class BranchService {
   ) {
     const { beats } = await playingTrack.getAudioAnalysis();
     const branches = this.getBranches();
-    let lastQueuedBeatInPreviousBatch = lastQueuedBeat;
+    let lastBeatInPreviousBatch = lastQueuedBeat ? lastQueuedBeat.beat : null;
 
     for (let i = 0; i < beatBatchCount; i += 1) {
-      lastQueuedBeatInPreviousBatch = this.dispatchBeatBatch(beats,
-                                                             branches,
-                                                             lastQueuedBeatInPreviousBatch);
+      lastBeatInPreviousBatch = this.dispatchBeatBatch(beats,
+                                                       branches,
+                                                       lastBeatInPreviousBatch);
     }
   }
 
@@ -72,17 +72,17 @@ class BranchService {
   private dispatchBeatBatch(
     beats: BeatModel[],
     branches: BranchModel[],
-    lastQueuedBeatInPreviousBatch: BeatModel | null,
+    lastBeatInPreviousBatch: BeatModel | null,
   ): BeatModel {
-    const lastQueuedBeatInPreviousBatchStartMs = lastQueuedBeatInPreviousBatch
-                                               ? lastQueuedBeatInPreviousBatch.startMs
-                                               : 0;
+    const lastBeatInPreviousBatchStartMs = lastBeatInPreviousBatch
+                                         ? lastBeatInPreviousBatch.startMs
+                                         : 0;
 
-    const futureBranches = this.getFutureBranches(branches, lastQueuedBeatInPreviousBatchStartMs);
+    const futureBranches = this.getFutureBranches(branches, lastBeatInPreviousBatchStartMs);
     const nextBranch = this.getBestBranch(futureBranches);
     const branchOriginBeatStartMs = nextBranch.originBeat.startMs;
     const beatsToBranchOrigin = this.getBeatsBetween(beats,
-                                                     lastQueuedBeatInPreviousBatchStartMs,
+                                                     lastBeatInPreviousBatchStartMs,
                                                      branchOriginBeatStartMs);
     const beatBatch = [...beatsToBranchOrigin, nextBranch.destinationBeat];
 
@@ -92,8 +92,8 @@ class BranchService {
                 beats: beatBatch,
               });
 
-    const lastQueuedBeatInThisBatch = nextBranch.destinationBeat;
-    return lastQueuedBeatInThisBatch;
+    const lastBeatInThisBatch = nextBranch.destinationBeat;
+    return lastBeatInThisBatch;
   }
 
   private getBeatsBetween(beats: BeatModel[], fromMs: number, toMs: number): BeatModel[] {
@@ -122,13 +122,18 @@ class BranchService {
   }
 
   private getBestBranch(branches: BranchModel[]): BranchModel {
-    const randomBranch = branches[Math.floor(Math.random() * branches.length)];
+    const randomIndex = Math.floor(Math.random() * branches.length);
+    const randomBranch = branches[randomIndex];
 
     return randomBranch;
   }
 
   private getBranches(): BranchModel[] {
     const [forward, backward] = this._forwardAndBackwardBranches;
+
+    // The last forward branch cannot be taken
+    forward.pop();
+
     return [...forward, ...backward];
   }
 }
