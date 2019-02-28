@@ -36,6 +36,12 @@ class WorldPoint extends Primitive {
     return WorldPoint.getPoint(newX, newY, this.z);
   }
 
+  public flip() {
+    const newY = this.y * -1;
+
+    return WorldPoint.getPoint(this.x, newY, this.z);
+  }
+
   public static getCenterPointOfCircleFromPercentage(
     { center: parentCircleCenter, radius: parentCircleRadius }: SongCircle,
     percentage: number,

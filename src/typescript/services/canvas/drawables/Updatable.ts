@@ -2,14 +2,13 @@ import * as THREE from 'three';
 import WorldPoint from './utils/WorldPoint';
 import Scene from './Scene';
 import Rotation from './utils/Rotation';
-import CanvasService from '../../canvas/CanvasService';
-import Primitive from './utils/Primitive';
 
 abstract class Updatable {
   private _group: THREE.Group;
   public abstract center: WorldPoint;
   protected _rotation: Rotation = Rotation.getZero();
   protected abstract getRenderOrder(): number;
+  private static OFFSET_AMOUNT_DEGREES: number = 90;
 
   protected constructor() {
     this._group = new THREE.Group;
@@ -29,8 +28,14 @@ abstract class Updatable {
     renderOrder,
     shouldKeepUpright = false,
   }: AddMeshOptions) {
-    this.setMeshAttributes(mesh, position, rotation, shouldKeepUpright ? -270 : 0);
     mesh.renderOrder = this.getRenderOrder() + renderOrder;
+
+    // Text and images should be rotated so that they're pointing upright
+    this.setMeshAttributes(
+      mesh,
+      shouldKeepUpright ? position.rotateAndFlip(Updatable.OFFSET_AMOUNT_DEGREES) : position,
+      shouldKeepUpright ? rotation.rotateAndFlip(Updatable.OFFSET_AMOUNT_DEGREES) : rotation,
+    );
 
     if (mesh instanceof THREE.Mesh) {
       mesh.drawMode = drawMode;
@@ -43,11 +48,16 @@ abstract class Updatable {
     return this._group;
   }
 
+  /**
+   * Updates the position and rotation of the group of meshes.
+   *
+   * OFFSET_AMOUNT_DEGREES is the amount needed to ensure that "0%" appears
+   * upright at the bottom of the user's screen (instead of to the right)
+   */
   public update() {
-    const center = this.center.rotate(270);
-    const rotation = this.rotation.rotate(270);
-
-    this.setMeshAttributes(this._group, this.center, this.rotation, 270);
+    const worldPoint = this.center.rotateAndFlip(Updatable.OFFSET_AMOUNT_DEGREES);
+    const rotation = this.rotation.rotateAndFlip(-Updatable.OFFSET_AMOUNT_DEGREES);
+    this.setMeshAttributes(this._group, worldPoint, rotation);
   }
 
   /**
@@ -85,13 +95,9 @@ abstract class Updatable {
     mesh: THREE.Mesh | THREE.Group | THREE.Line,
     worldPoint: WorldPoint,
     rotation: Rotation,
-    offsetDegrees: number,
   ) {
-    const { x: worldX, y: worldY, z: worldZ } = worldPoint.rotate(offsetDegrees);
-    const { x: rotationX, y: rotationY, z: rotationZ } = rotation.rotate(offsetDegrees);
-
-    mesh.position.set(worldX, worldY, worldZ);
-    mesh.rotation.set(rotationX, rotationY, rotationZ);
+    mesh.position.set(worldPoint.x, worldPoint.y, worldPoint.z);
+    mesh.rotation.set(rotation.x, rotation.y, rotation.z);
   }
 }
 
