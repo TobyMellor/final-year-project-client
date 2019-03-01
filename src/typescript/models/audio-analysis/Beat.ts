@@ -1,6 +1,7 @@
 import { GetAnAudioAnalysisResponseTimeInterval } from '../../types/spotify-responses';
 import TimeIntervalModel from './TimeInterval';
 import SegmentModel from './Segment';
+import BarModel from './Bar';
 
 interface Input extends GetAnAudioAnalysisResponseTimeInterval {
   order: number;
@@ -9,6 +10,7 @@ interface Input extends GetAnAudioAnalysisResponseTimeInterval {
 
 class BeatModel extends TimeIntervalModel {
   private _segments: SegmentModel[];
+  private _barOrder: number;
 
   constructor(input: Input) {
     super(input);
@@ -34,6 +36,14 @@ class BeatModel extends TimeIntervalModel {
     const averageMaxLoudness = totalMaxLoudness / segments.length;
 
     return averageMaxLoudness;
+  }
+
+  public set barOrder(barOrder: number) {
+    this._barOrder = barOrder;
+  }
+
+  public get barOrder() {
+    return this._barOrder;
   }
 }
 

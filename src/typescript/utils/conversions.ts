@@ -55,14 +55,22 @@ export function millisecondsToSeconds(ms: number): number {
   return ms / 1000;
 }
 
-export function getTimeIdentifierFromSeconds(secs: number): TimeIdentifier {
+export function getTimeIdentifierFromSeconds(secs?: number): TimeIdentifier | null {
+  if (!secs && secs !== 0) {
+    return null;
+  }
+
   return {
     secs,
     ms: secondsToMilliseconds(secs),
   };
 }
 
-export function getTimeIdentifierFromMilliseconds(ms: number): TimeIdentifier {
+export function getTimeIdentifierFromMilliseconds(ms?: number): TimeIdentifier {
+  if (!ms && ms !== 0) {
+    return null;
+  }
+
   return {
     ms,
     secs: millisecondsToSeconds(ms),

@@ -94,6 +94,7 @@ function createBars(
         break;
       }
 
+      beat.barOrder = beatsWithinBar.length;
       beatsWithinBar.push(availableBeats.shift());
     }
 

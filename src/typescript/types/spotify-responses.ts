@@ -78,10 +78,10 @@ export type GetAnAudioAnalysisResponseSection = {
 };
 
 export interface GetAnAudioAnalysisResponseSegment extends GetAnAudioAnalysisResponseTimeInterval {
-  loudness_start: number;
+  loudness_start?: number;
   loudness_max_time: number;
   loudness_max: number;
-  loudness_end: number;
+  loudness_end?: number;
   pitches: number[];
   timbre: number[];
 }

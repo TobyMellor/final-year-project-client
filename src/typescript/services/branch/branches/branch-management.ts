@@ -2,6 +2,7 @@ import TrackModel from '../../../models/audio-analysis/Track';
 import config from '../../../config';
 import AudioAnalysisModel from '../../../models/audio-analysis/AudioAnalysis';
 import * as branchFactory from '../../../factories/branch';
+import * as branchAnalysis from './branch-analysis';
 import { ForwardAndBackwardBranches, ForwardAndBackwardBranch } from '../../../types/general';
 
 export async function generateBranches(track: TrackModel): Promise<ForwardAndBackwardBranches> {
@@ -11,8 +12,12 @@ export async function generateBranches(track: TrackModel): Promise<ForwardAndBac
     return getMockForTrack(audioAnalysis);
   }
 
-  // TODO: Implement some automatic logic here
-  return [[], []];
+  const similarBeats = branchAnalysis.getSimilarBeats(audioAnalysis.beats);
+
+  return similarBeats.reduce((acc, [firstBeat, secondBeat]) => {
+    pushBranch(acc, branchFactory.createForwardAndBackwardBranch(firstBeat, secondBeat));
+    return acc;
+  }, [[], []] as ForwardAndBackwardBranches);
 }
 
 export function getMockForTrack(

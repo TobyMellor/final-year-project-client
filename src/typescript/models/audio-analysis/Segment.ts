@@ -11,7 +11,7 @@ class SegmentModel extends TimeIntervalModel {
   private _loudness: {
     // The onset loudness of the segment in decibels (dB). Combined with loudness_max and
     // loudness_max_time, these components can be used to desctibe the “attack” of the segment.
-    start: TimeIdentifier;
+    start: TimeIdentifier | null;
 
     // The peak loudness of the segment in decibels (dB). Combined with loudness_start and
     // loudness_max_time, these components can be used to desctibe the “attack” of the segment.
@@ -24,7 +24,7 @@ class SegmentModel extends TimeIntervalModel {
 
     // The offset loudness of the segment in decibels (dB). This value should be equivalent
     // to the loudness_start of the following segment.
-    end: TimeIdentifier;
+    end: TimeIdentifier | null;
   };
 
   // A “chroma” vector representing the pitch content of the segment, corresponding to the
@@ -49,7 +49,6 @@ class SegmentModel extends TimeIntervalModel {
     timbre: timbres,
   }: Input) {
     super({ start, duration, confidence, order });
-
     this._loudness = {
       start: conversions.getTimeIdentifierFromSeconds(loudness_start),
       maxTime: conversions.getTimeIdentifierFromSeconds(loudness_max_time),
@@ -60,8 +59,28 @@ class SegmentModel extends TimeIntervalModel {
     this._timbre = timbres.reduce((a, b) => a + b);
   }
 
+  public get startLoudnessMs(): number | null {
+    if (!this._loudness.start) {
+      return null;
+    }
+
+    return this._loudness.start.ms;
+  }
+
+  public get maxTimeLoudnessMs(): number {
+    return this._loudness.maxTime.ms;
+  }
+
   public get maxLoudness(): number {
     return this._loudness.max;
+  }
+
+  public get endLoudnessMs(): number {
+    if (!this._loudness.end) {
+      return null;
+    }
+
+    return this._loudness.end.ms;
   }
 
   public get timbre(): number {
