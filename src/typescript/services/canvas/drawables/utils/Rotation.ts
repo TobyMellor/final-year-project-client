@@ -19,6 +19,13 @@ class Rotation extends Primitive {
     return new Rotation(this.x, this.y, newZ);
   }
 
+  public flip() {
+    const degrees = conversions.radiansToDegrees(this.z);
+    const newZ = conversions.degreesToRadians(180 - degrees);
+
+    return new Rotation(this.x, this.y, newZ);
+  }
+
   public static getRotationFromPercentage(percentage: number): Rotation {
     const angleRadians = super.getAngleFromPercentage(percentage, this.rotationOffsetPercentage);
     const zeroRotation = this.getZero();
