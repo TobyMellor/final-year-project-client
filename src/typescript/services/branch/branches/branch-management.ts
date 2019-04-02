@@ -26,16 +26,22 @@ export function getMockForTrack(
   const branches: ForwardAndBackwardBranches = [[], []];
 
   if (trackID === '4RVbK6cV0VqWdpCDcx3hiT') { // Reborn
-    pushBranch(branches, branchFactory.createForwardAndBackwardBranch(beats[10], beats[50]));
-    pushBranch(branches, branchFactory.createForwardAndBackwardBranch(beats[20], beats[150]));
+    pushBranch(branches, branchFactory.createForwardAndBackwardBranch(beats[53], beats[102]));
+    pushBranch(branches, branchFactory.createForwardAndBackwardBranch(beats[53], beats[325]));
   } else if (trackID === '3aUFrxO1B8EW63QchEl3wX') { // Feel The Love
     // TODO: Implement Mock
   } else if (trackID === '2hmHlBM0kPBm17Y7nVIW9f') { // My Propeller
-    // TODO: Implement Mock
+    // TODO: Implement
   } else if (trackID === '6wVWJl64yoTzU27EI8ep20') { // Crying Lightning
-    // TODO: Implement Mock
+    pushBranch(branches, branchFactory.createForwardAndBackwardBranch(beats[43], beats[230]));
+    pushBranch(branches, branchFactory.createForwardAndBackwardBranch(beats[253], beats[354]));
+    pushBranch(branches, branchFactory.createForwardAndBackwardBranch(beats[100], beats[120]));
+    pushBranch(branches, branchFactory.createForwardAndBackwardBranch(beats[120], beats[164]));
+    pushBranch(branches, branchFactory.createForwardAndBackwardBranch(beats[10], beats[205]));
   } else if (trackID === '3O8NlPh2LByMU9lSRSHedm') { // Controlla
-    // TODO: Implement Mock
+    pushBranch(branches, branchFactory.createForwardAndBackwardBranch(beats[65], beats[100]));
+    pushBranch(branches, branchFactory.createForwardAndBackwardBranch(beats[4], beats[200]));
+    pushBranch(branches, branchFactory.createForwardAndBackwardBranch(beats[150], beats[183]));
   } else {
     // TODO: Implement Mock
   }

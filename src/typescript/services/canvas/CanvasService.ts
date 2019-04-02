@@ -13,6 +13,7 @@ import { FYPEvent } from '../../types/enums';
 import { FYPEventPayload } from '../../types/general';
 import BezierCurve from './drawables/BezierCurve';
 import BranchModel from '../../models/branches/Branch';
+import * as math from '../../utils/math';
 
 class CanvasService {
   private static _instance: CanvasService = null;
@@ -66,8 +67,8 @@ class CanvasService {
                                                             forwardBranches);
 
     childTracks.forEach((childTrack) => {
-      // const percentage = utils.getRandomInteger();
-      const percentage = 0;
+      const percentage = math.getRandomInteger();
+      // const percentage = 0;
 
       drawableFactory.renderChildSongCircle(this.scene,
                                             parentSongCircle,

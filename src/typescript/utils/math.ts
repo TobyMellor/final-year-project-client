@@ -40,3 +40,7 @@ export function getMax(numbers: number[]) {
 export function distance(firstNumber: number, secondNumber: number, weight: number = 1) {
   return Math.abs(firstNumber - secondNumber) * weight;
 }
+
+export function getRandomInteger(): number {
+  return Math.round(Math.random() * 100);
+}
