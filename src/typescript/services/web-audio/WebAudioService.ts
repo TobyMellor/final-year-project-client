@@ -36,10 +36,10 @@ class WebAudioService {
 
     const trackIDs: string[] = [
       // '3O8NlPh2LByMU9lSRSHedm', // Controlla
-      // '4RVbK6cV0VqWdpCDcx3hiT', // Reborn
+      '4RVbK6cV0VqWdpCDcx3hiT', // Reborn
       '6wVWJl64yoTzU27EI8ep20', // Crying Lightning
-      // '3aUFrxO1B8EW63QchEl3wX',
-      // '2hmHlBM0kPBm17Y7nVIW9f',
+      '3aUFrxO1B8EW63QchEl3wX',
+      '2hmHlBM0kPBm17Y7nVIW9f',
       // '0wwPcA6wtMf6HUMpIRdeP7',
     ];
     const trackRequests: Promise<TrackModel>[] = trackIDs.map(ID => trackFactory.createTrack(ID));
@@ -231,7 +231,7 @@ class WebAudioService {
     const songDuration = this._playingTrack.duration;
     const startPercentage = startBeat.getPercentageInTrack(songDuration);
     const endPercentage = endBeat.getPercentageInTrack(songDuration);
-    const durationMs = endBeat.startMs - startBeat.startMs; // TODO: Check endMs and startMs usage
+    const durationMs = endBeat.startMs - startBeat.endMs; // TODO: Check endMs and startMs usage
 
     Dispatcher.getInstance()
               .dispatch(FYPEvent.PlayingBeatBatch, {

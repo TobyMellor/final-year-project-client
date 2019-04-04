@@ -34,14 +34,17 @@ class BranchService {
   }
 
   private async setBranches({ playingTrack, childTracks }: FYPEventPayload['PlayingTrackChanged']) {
-    const forwardAndBackwardBranches = this._forwardAndBackwardBranches
-                                     = await generateBranches(playingTrack);
+    const [forward, backward] = this._forwardAndBackwardBranches
+                              = await generateBranches(playingTrack);
+
+    // The last forward branch cannot be taken
+    forward.pop();
 
     Dispatcher.getInstance()
               .dispatch(FYPEvent.PlayingTrackBranchesAnalyzed, {
                 playingTrack,
                 childTracks,
-                forwardAndBackwardBranches,
+                forwardAndBackwardBranches: [forward, backward],
               });
   }
 
@@ -129,10 +132,6 @@ class BranchService {
 
   private getBranches(): BranchModel[] {
     const [forward, backward] = this._forwardAndBackwardBranches;
-
-    // The last forward branch cannot be taken
-    forward.pop();
-
     return [...forward, ...backward];
   }
 }

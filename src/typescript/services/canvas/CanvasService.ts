@@ -57,14 +57,14 @@ class CanvasService {
     {
       playingTrack,
       childTracks,
-      forwardAndBackwardBranches: [forwardBranches],
+      forwardAndBackwardBranches: [_, backwardBranches],
     }: FYPEventPayload['PlayingTrackBranchesAnalyzed'],
   ) {
     const parentSongCircle = drawableFactory.renderParentSongCircle(this.scene, playingTrack);
 
     this._bezierCurves = drawableFactory.renderBezierCurves(this.scene,
                                                             parentSongCircle,
-                                                            forwardBranches);
+                                                            backwardBranches);
 
     childTracks.forEach((childTrack) => {
       const percentage = math.getRandomInteger();
