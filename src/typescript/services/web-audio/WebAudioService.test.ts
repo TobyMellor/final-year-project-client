@@ -46,9 +46,9 @@ describe('Web Audio Service', () => {
 
     // Adding the child tracks give the ability to search for them
     webAudioService.addChildTracks(track1, track2);
-    expect(webAudioService.getTrack(track1.ID)).not.toBe(null);
-    expect(webAudioService.getTrack(track2.ID)).not.toBe(null);
-    expect(webAudioService.getTrack('a-track-not-present')).toBe(null);
+    expect(webAudioService.getTrack(track1.ID)).not.toBeNull();
+    expect(webAudioService.getTrack(track2.ID)).not.toBeNull();
+    expect(webAudioService.getTrack('a-track-not-present')).toBeNull();
 
     expect(playingTrackChangedListener).toBeCalledTimes(0);
 
