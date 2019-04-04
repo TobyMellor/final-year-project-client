@@ -135,17 +135,28 @@ export type FYPEventPayload = {
   NextBeatsRequested: {
     playingTrack: TrackModel;
     beatBatchCount: number;
-    lastQueuedBeat: QueuedBeatModel | null;
+    nextBranch: BranchModel | null;
   };
   BeatsReadyForQueueing: {
     beats: BeatModel[];
-    nextBranch: BranchModel | null;
+    beatBatch: BeatBatch;
   };
   PlayingBeatBatch: {
+    nextBranch: BranchModel;
     startPercentage: number,
     endPercentage: number,
     durationMs: number,
   };
+};
+
+export type BeatBatch = {
+  beatsToBranchOrigin: BeatModel[],
+  branch: BranchModel,
+};
+
+export type QueuedBeatBatch = {
+  beatsToBranchOrigin: QueuedBeatModel[], // Beats up to, but not including, the originBeat of the branch
+  branch: BranchModel,
 };
 
 export type ForwardAndBackwardBranch = [ForwardBranchModel, BackwardBranchModel];

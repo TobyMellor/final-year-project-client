@@ -28,9 +28,9 @@ class CanvasService {
     Dispatcher.getInstance()
               .on(FYPEvent.PlayingTrackBranchesAnalyzed, this, this.setSongCircles);
 
-    // When the Branch Service has given us new beats, update the next branch
+    // When a beat batch has started, highlight the next branch to be taken
     Dispatcher.getInstance()
-              .on(FYPEvent.BeatsReadyForQueueing, this, this.updateNextBezierCurve);
+              .on(FYPEvent.PlayingBeatBatch, this, this.updateNextBezierCurve);
 
     // When a beat batch has started, start the animation
     Dispatcher.getInstance()
@@ -86,7 +86,7 @@ class CanvasService {
    *
    * @param eventPayload The next branch to be taken
    */
-  public async updateNextBezierCurve({ nextBranch }: FYPEventPayload['BeatsReadyForQueueing']) {
+  public async updateNextBezierCurve({ nextBranch }: FYPEventPayload['PlayingBeatBatch']) {
     const bezierCurves = this._bezierCurves;
     const nextBezierCurve = bezierCurves.find(({ branch }) => {
       return BranchModel.isSameBranch(branch, nextBranch);

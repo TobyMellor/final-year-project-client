@@ -18,7 +18,7 @@ type MeshLineOptions = {
  * the circle
  */
 class BezierCurve extends Updatable {
-  private static LINE_WIDTH: number = 15;
+  private static LINE_WIDTH: number = 30;
   private static COLOUR: number = 0xD9D9D9;
   private static RENDER_ORDER: number = 0;
 

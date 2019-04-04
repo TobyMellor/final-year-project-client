@@ -4,6 +4,7 @@ import AudioAnalysisModel from '../../../models/audio-analysis/AudioAnalysis';
 import * as branchFactory from '../../../factories/branch';
 import * as branchAnalysis from './branch-analysis';
 import { ForwardAndBackwardBranches, ForwardAndBackwardBranch } from '../../../types/general';
+import { getTimeIdentifierFromMilliseconds } from '../../../utils/conversions';
 
 export async function generateBranches(track: TrackModel): Promise<ForwardAndBackwardBranches> {
   const audioAnalysis = await track.getAudioAnalysis();
@@ -38,6 +39,8 @@ export function getMockForTrack(
     pushBranch(branches, branchFactory.createForwardAndBackwardBranch(beats[100], beats[120]));
     pushBranch(branches, branchFactory.createForwardAndBackwardBranch(beats[120], beats[164]));
     pushBranch(branches, branchFactory.createForwardAndBackwardBranch(beats[10], beats[205]));
+    pushBranch(branches, branchFactory.createForwardAndBackwardBranch(beats[10], beats[205]));
+    pushBranch(branches, branchFactory.createForwardAndBackwardBranch(beats[25], beats[75]));
   } else if (trackID === '3O8NlPh2LByMU9lSRSHedm') { // Controlla
     pushBranch(branches, branchFactory.createForwardAndBackwardBranch(beats[65], beats[100]));
     pushBranch(branches, branchFactory.createForwardAndBackwardBranch(beats[4], beats[200]));
