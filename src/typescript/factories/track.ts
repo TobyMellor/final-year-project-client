@@ -83,7 +83,8 @@ function createBars(
   const availableBeats = [...beats];
 
   return barsInput.map((barInput, order) => {
-    const nextBarStartSecs = barsInput[order + 1].start || Infinity;
+    const nextBar: GetAnAudioAnalysisResponseTimeInterval | undefined = barsInput[order + 1];
+    const nextBarStartSecs = nextBar && nextBar.start || Infinity;
     const beatsWithinBar = [];
 
     // Get all of the beats in this bar
