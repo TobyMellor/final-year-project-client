@@ -27,6 +27,10 @@ class BranchNav extends React.Component<BranchNavProps, BranchNavState> {
     this.scrollTrackerContainerElement = React.createRef();
     this.branchNavBodyElement = React.createRef();
 
+    this.state = this.getInitialState();
+  }
+
+  private getInitialState(): BranchNavState {
     function defaultBeatListInfo(): BeatListInfo {
       return {
         queued: [],
@@ -36,7 +40,7 @@ class BranchNav extends React.Component<BranchNavProps, BranchNavState> {
       };
     }
 
-    this.state = {
+    return {
       status: BranchNavStatus.CHOOSE_FIRST_BEAT,
       beatLists: {
         [BeatListOrientation.TOP]: defaultBeatListInfo(),
@@ -52,6 +56,10 @@ class BranchNav extends React.Component<BranchNavProps, BranchNavState> {
 
   shouldComponentUpdate(nextProps: BranchNavProps, nextState: BranchNavState) {
     if (this.props.UIBars.length !== nextProps.UIBars.length) {
+      return true;
+    }
+
+    if (this.props.isHidden !== nextProps.isHidden) {
       return true;
     }
 
@@ -76,10 +84,16 @@ class BranchNav extends React.Component<BranchNavProps, BranchNavState> {
   }
 
   render() {
-    const UIBars = this.props.UIBars;
+    const { UIBars, isHidden } = this.props;
     const { status, beatLists } = this.state;
     const helperTextForStatus = this.getHelperTextForStatus(status);
-    const BranchNavBodyClassNames = cx(
+    const branchNavClassNames = cx(
+      'modal',
+      {
+        show: !isHidden,
+      },
+    );
+    const branchNavBodyClassNames = cx(
       'bottom-branch-nav-body',
       {
         previewable: status === BranchNavStatus.PREVIEWABLE,
@@ -115,22 +129,21 @@ class BranchNav extends React.Component<BranchNavProps, BranchNavState> {
     };
 
     return (
-      <div className="modal fade show"
+      <div className={branchNavClassNames}
            tabIndex={-1}
-           role="dialog"
-           style={ { display: 'block' } }>
+           role="dialog">
         <div className="modal-dialog bottom-branch-nav" role="document">
           <div className="modal-content">
             <div className="modal-header">
               <h5 className="modal-title">Create a Branch</h5>
               <h3 className="modal-title-feedback">{helperTextForStatus}</h3>
-              <button type="button" className="close" data-dismiss="modal">
+              <button type="button" className="close" data-dismiss="modal" onClick={() => this.handleClose()}>
                 <span>&times;</span>
               </button>
             </div>
             <div className="modal-body p-0">
               <div ref={this.branchNavBodyElement}
-                   className={BranchNavBodyClassNames}
+                   className={branchNavBodyClassNames}
                    onMouseOver={this.handleMouseOver.bind(this)}>
                 {getBeatListElement(BeatListOrientation.TOP)}
                 {getBeatListElement(BeatListOrientation.BOTTOM)}
@@ -159,6 +172,11 @@ class BranchNav extends React.Component<BranchNavProps, BranchNavState> {
    */
   private getHelperTextForStatus(status: BranchNavStatus): string {
     return Translator.react.bottom_branch_nav[status];
+  }
+
+  private handleClose() {
+    this.setState(this.getInitialState());
+    this.props.onClose();
   }
 
   /**

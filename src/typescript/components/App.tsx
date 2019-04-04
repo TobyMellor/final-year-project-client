@@ -6,11 +6,13 @@ import { getUIBars } from '../services/ui/ui';
 import { FYPEvent } from '../types/enums';
 import Dispatcher from '../events/Dispatcher';
 import { UIBarType, FYPEventPayload } from '../types/general';
+import SettingsPanel from './settings-panel/SettingsPanel';
 
 interface AppProps {}
 
 interface AppState {
   UIBars: UIBarType[];
+  isBranchNavHidden: boolean;
 }
 
 class App extends React.Component<AppProps, AppState> {
@@ -19,6 +21,7 @@ class App extends React.Component<AppProps, AppState> {
 
     this.state = {
       UIBars: [],
+      isBranchNavHidden: true,
     };
 
     // When a new song has been loaded and analyzed
@@ -27,15 +30,25 @@ class App extends React.Component<AppProps, AppState> {
   }
 
   render() {
-    const { UIBars } = this.state;
+    const { UIBars, isBranchNavHidden } = this.state;
 
     return (
       <React.Fragment>
         <Nav />
         <CircleCanvas />
-        {/* <BranchNav UIBars={UIBars} /> */}
+        <BranchNav UIBars={UIBars}
+                   isHidden={isBranchNavHidden}
+                   onClose={() => this.handleToggleBranchNav()} />
+        <SettingsPanel onToggleBranchNavClick={() => this.handleToggleBranchNav()}
+                       isBranchNavHidden={isBranchNavHidden} />
       </React.Fragment>
     );
+  }
+
+  private handleToggleBranchNav() {
+    this.setState(({ isBranchNavHidden }) => ({
+      isBranchNavHidden: !isBranchNavHidden,
+    }));
   }
 
   private async updateBars({ playingTrack }: FYPEventPayload['PlayingTrackBranchesAnalyzed']) {

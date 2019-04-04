@@ -14,12 +14,13 @@ class BeatQueueManager {
     audioContext: AudioContext,
     { beatsToBranchOrigin, branch }: BeatBatch,
   ): QueuedBeatBatch {
-    let nextSubmittedCurrentTime = this.getNextSubmittedCurrentTime(audioContext);
+    const firstSubmittedCurrentTimeInBatch = this.getNextSubmittedCurrentTime(audioContext);
+    let secondsSinceFirstBeatInBatch = 0;
 
     const queuedBeats = beatsToBranchOrigin.map((beat) => {
-      const submittedCurrentTime = nextSubmittedCurrentTime;
+      const submittedCurrentTime = firstSubmittedCurrentTimeInBatch + secondsSinceFirstBeatInBatch;
 
-      nextSubmittedCurrentTime += beat.durationSecs;
+      secondsSinceFirstBeatInBatch += beat.durationSecs;
 
       return new QueuedBeatModel({
         beat,

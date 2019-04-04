@@ -1,3 +1,3 @@
 export default {
-  schedulingDelaySecs: 1,
+  schedulingDelaySecs: 2,
 };

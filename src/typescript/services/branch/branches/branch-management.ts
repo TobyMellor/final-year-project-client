@@ -27,7 +27,7 @@ export function getMockForTrack(
   const branches: ForwardAndBackwardBranches = [[], []];
 
   if (trackID === '4RVbK6cV0VqWdpCDcx3hiT') { // Reborn
-    pushBranch(branches, branchFactory.createForwardAndBackwardBranch(beats[53], beats[102]));
+    pushBranch(branches, branchFactory.createForwardAndBackwardBranch(beats[52], beats[100]));
     pushBranch(branches, branchFactory.createForwardAndBackwardBranch(beats[53], beats[325]));
   } else if (trackID === '3aUFrxO1B8EW63QchEl3wX') { // Feel The Love
     // TODO: Implement Mock

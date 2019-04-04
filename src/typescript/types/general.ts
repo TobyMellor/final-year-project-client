@@ -46,6 +46,8 @@ export interface QueuedUIBeat extends UIBeatType {
 
 export interface BranchNavProps {
   UIBars: UIBarType[];
+  isHidden?: boolean;
+  onClose: () => void;
 }
 
 export interface BranchNavState {
@@ -119,6 +121,11 @@ export interface BarProps {
 
 export interface BarState {
   zIndexes: number[];
+}
+
+export interface SettingsPanelProps {
+  onToggleBranchNavClick: () => void;
+  isBranchNavHidden: boolean;
 }
 
 export type FYPEventPayload = {
