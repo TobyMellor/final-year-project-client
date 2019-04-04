@@ -49,8 +49,6 @@ export function getMockForTrack(
     // TODO: Implement Mock
   }
 
-  console.log("MOCH FOR TRACK:", branches);
-
   return branches;
 }
 

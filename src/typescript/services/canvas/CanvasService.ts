@@ -67,8 +67,7 @@ class CanvasService {
                                                             backwardBranches);
 
     childTracks.forEach((childTrack) => {
-      const percentage = math.getRandomInteger();
-      // const percentage = 0;
+      const percentage = math.getRandomInteger(); // TODO: Replace random position with an analysis of best entry
 
       drawableFactory.renderChildSongCircle(this.scene,
                                             parentSongCircle,

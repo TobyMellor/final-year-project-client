@@ -35,7 +35,7 @@ class WebAudioService {
     this._audioContext = new AudioContext();
 
     const trackIDs: string[] = [
-      // '3O8NlPh2LByMU9lSRSHedm', // Controlla
+      '3O8NlPh2LByMU9lSRSHedm', // Controlla
       '4RVbK6cV0VqWdpCDcx3hiT', // Reborn
       '6wVWJl64yoTzU27EI8ep20', // Crying Lightning
       '3aUFrxO1B8EW63QchEl3wX',
@@ -75,6 +75,10 @@ class WebAudioService {
     const tracks = this._tracks;
 
     return tracks.find(track => track.ID === ID) || null;
+  }
+
+  public getPlayingTrack(): TrackModel | null {
+    return this._playingTrack;
   }
 
   public async setPlayingTrack(track: TrackModel) {
