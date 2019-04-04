@@ -35,8 +35,8 @@ class WebAudioService {
     this._audioContext = new AudioContext();
 
     const trackIDs: string[] = [
-      '3O8NlPh2LByMU9lSRSHedm', // Controlla
       '4RVbK6cV0VqWdpCDcx3hiT', // Reborn
+      '3O8NlPh2LByMU9lSRSHedm', // Controlla
       '6wVWJl64yoTzU27EI8ep20', // Crying Lightning
       '3aUFrxO1B8EW63QchEl3wX',
       '2hmHlBM0kPBm17Y7nVIW9f',
@@ -136,10 +136,10 @@ class WebAudioService {
     let lastBufferSource: AudioBufferSourceNode;
 
     // When the first beat has started, we want to dispatch the "PlayingBeatBatch" event
-    const onStartedFn = () => this.dispatchPlayingBeatBatch(queuedBeatBatch.beatsToBranchOrigin[0],
+    const onStartedFn = () => this.dispatchPlayingBeatBatch(queuedBeatBatch.queuedBeatsToBranchOrigin[0],
                                                             queuedBeatBatch.branch);
 
-    queuedBeatBatch.beatsToBranchOrigin.forEach((queuedBeat, i) => {
+    queuedBeatBatch.queuedBeatsToBranchOrigin.forEach((queuedBeat, i) => {
       const { startSecs, durationSecs } = queuedBeat.beat;
 
       lastBufferSource = this.playSample(this._audioBuffer,

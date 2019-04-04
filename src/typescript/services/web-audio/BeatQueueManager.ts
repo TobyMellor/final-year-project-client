@@ -1,6 +1,7 @@
 import QueuedBeatModel from '../../models/web-audio/QueuedBeat';
 import { BeatBatch, QueuedBeatBatch } from '../../types/general';
 import BranchModel from '../../models/branches/Branch';
+import config from '../../config';
 
 class BeatQueueManager {
   private static queuedBeatBatches: QueuedBeatBatch[] = [];
@@ -13,12 +14,12 @@ class BeatQueueManager {
     audioContext: AudioContext,
     { beatsToBranchOrigin, branch }: BeatBatch,
   ): QueuedBeatBatch {
-    const lastSubmittedCurrentTime = this.getLastSubmittedCurrentTime(audioContext);
-    let secondsSinceFirstBeat = 0;
+    let nextSubmittedCurrentTime = this.getNextSubmittedCurrentTime(audioContext);
 
     const queuedBeats = beatsToBranchOrigin.map((beat) => {
-      const submittedCurrentTime = lastSubmittedCurrentTime + secondsSinceFirstBeat;
-      secondsSinceFirstBeat += beat.durationSecs;
+      const submittedCurrentTime = nextSubmittedCurrentTime;
+
+      nextSubmittedCurrentTime += beat.durationSecs;
 
       return new QueuedBeatModel({
         beat,
@@ -28,7 +29,7 @@ class BeatQueueManager {
 
     this.queuedBeatBatches.push({
       branch,
-      beatsToBranchOrigin: queuedBeats,
+      queuedBeatsToBranchOrigin: queuedBeats,
     });
 
     return this.last();
@@ -55,8 +56,8 @@ class BeatQueueManager {
       return null;
     }
 
-    const { beatsToBranchOrigin } = lastBeatBatch;
-    return beatsToBranchOrigin[beatsToBranchOrigin.length - 1];
+    const { queuedBeatsToBranchOrigin } = lastBeatBatch;
+    return queuedBeatsToBranchOrigin[queuedBeatsToBranchOrigin.length - 1];
   }
 
   /**
@@ -66,19 +67,17 @@ class BeatQueueManager {
     return this.last() && this.last().branch;
   }
 
-  private static getLastSubmittedCurrentTime(audioContext: AudioContext): number {
+  private static getNextSubmittedCurrentTime(audioContext: AudioContext): number {
     const lastQueuedBeat = this.lastQueuedBeat();
 
     if (lastQueuedBeat) {
-      return lastQueuedBeat.submittedCurrentTime;
+      return lastQueuedBeat.submittedCurrentTime + lastQueuedBeat.beat.durationSecs;
     }
 
     // Add some delay to the first beat we schedule,
     // since currentTime will be in the past when the code
     // reaches source.start()
-    const SCHEDULING_DELAY = 1;
-
-    return audioContext.currentTime + SCHEDULING_DELAY;
+    return audioContext.currentTime + config.audio.schedulingDelaySecs;
   }
 }
 

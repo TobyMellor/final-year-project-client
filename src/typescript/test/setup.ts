@@ -1,7 +1,11 @@
 import * as sinon from 'sinon';
 import * as THREE from 'three';
 
-(<any> window).AudioContext = function () {};
+(<any> window).AudioContext = function () {
+  return {
+    currentTime: 0,
+  };
+};
 (<any> window).HTMLCanvasElement.prototype.getContext = function () {
   return {
     fillRect: () => {},

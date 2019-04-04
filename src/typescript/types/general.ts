@@ -150,12 +150,12 @@ export type FYPEventPayload = {
 };
 
 export type BeatBatch = {
-  beatsToBranchOrigin: BeatModel[],
+  beatsToBranchOrigin: BeatModel[], // Beats up to, but not including, the originBeat of the branch
   branch: BranchModel,
 };
 
 export type QueuedBeatBatch = {
-  beatsToBranchOrigin: QueuedBeatModel[], // Beats up to, but not including, the originBeat of the branch
+  queuedBeatsToBranchOrigin: QueuedBeatModel[],
   branch: BranchModel,
 };
 
