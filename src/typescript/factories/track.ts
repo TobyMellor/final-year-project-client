@@ -83,6 +83,7 @@ function createBars(
   const availableBeats = [...beats];
 
   return barsInput.map((barInput, order) => {
+    const nextBarStartSecs = barsInput[order + 1].start || Infinity;
     const beatsWithinBar = [];
 
     // Get all of the beats in this bar
@@ -90,13 +91,16 @@ function createBars(
 
       // A beat falls outside this bar if it starts at the end
       // of this bar
-      if (beat.startSecs >= barInput.start + barInput.duration) {
+      if (beat.startSecs >= nextBarStartSecs) {
         break;
       }
 
       beat.barOrder = beatsWithinBar.length;
-      beatsWithinBar.push(availableBeats.shift());
+      beatsWithinBar.push(beat);
     }
+
+    // Make the beats we've just added unavailable (don't allow them to be placed in any other bar)
+    availableBeats.splice(0, beatsWithinBar.length);
 
     return new BarModel({ ...barInput, order, beats: beatsWithinBar });
   });
