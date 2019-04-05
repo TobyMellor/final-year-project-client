@@ -32,6 +32,11 @@ class BezierCurve extends Updatable {
   private static NEXT_COLOUR: number = SongCircle.EDGE_COLOUR;
   private static NEXT_RENDER_ORDER: number = BezierCurve.RENDER_ORDER + 1;
 
+  private _isPreviewing: boolean = false;
+  private static PREVIEWING_COLOUR: number = 0xF1C40F;
+  private static PREVIEWING_DASH_SIZE: number = 0.05;
+  private static PREVIEWING_DASH_SPACING: number = 0.3;
+
   constructor(
     scene: Scene,
     private _songCircle: SongCircle,
@@ -40,6 +45,10 @@ class BezierCurve extends Updatable {
     public branch: BranchModel | null, // Not present if it's a previewing Branch
   ) {
     super();
+
+    if (!branch) {
+      this._isPreviewing = this._isNext = true;
+    }
 
     const meshLineOptions = this.getMeshLineOptions();
     this.addBezierCurve(_songCircle, _fromPercentage, _toPercentage, meshLineOptions);
@@ -69,8 +78,7 @@ class BezierCurve extends Updatable {
 
     super.createAndAddMesh({
       material,
-      rotation: Rotation.getRotationFromPercentage(0)
-                        .rotateAndFlip(180),
+      rotation: Rotation.getRotationFromPercentage(0).rotateAndFlip(180),
       geometry: line.geometry,
       renderOrder: 0,
     });
@@ -125,10 +133,36 @@ class BezierCurve extends Updatable {
   }
 
   private getMeshLineOptions(): MeshLineOptions {
-    const color = this._isNext ? BezierCurve.NEXT_COLOUR : BezierCurve.COLOUR;
+    const getColour = () => {
+      if (this._isPreviewing) {
+        return BezierCurve.PREVIEWING_COLOUR;
+      }
+
+      if (this._isNext) {
+        return BezierCurve.NEXT_COLOUR;
+      }
+
+      return BezierCurve.COLOUR;
+    };
+
+    const getDashOptions = () => {
+      if (this._isPreviewing) {
+        const dashOffset = (this._fromPercentage + this._toPercentage) / 100;
+
+        return {
+          dashOffset,
+          transparent: true,
+          dashArray: BezierCurve.PREVIEWING_DASH_SIZE,
+          dashRatio: BezierCurve.PREVIEWING_DASH_SPACING,
+        };
+      }
+
+      return {};
+    };
 
     return {
-      color,
+      ...getDashOptions(),
+      color: getColour(),
       lineWidth: BezierCurve.LINE_WIDTH,
     };
   }
