@@ -184,7 +184,7 @@ class Beat extends React.Component<BeatProps, BeatState> {
 
     // Scroll the beat list so the first beat is aligned left
     // This list gets given padding, so the first beat can scroll to the center
-    beatListElement.scrollLeft = (beatListWidth / 2) - ui.beat.beatMarginPx + ui.beat.beatMarginPx;
+    beatListElement.scrollLeft = (beatListWidth / 2) - ui.beat.beatWidthPx + ui.beat.beatMarginPx;
   }
 }
 
