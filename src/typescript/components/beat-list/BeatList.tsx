@@ -1,13 +1,17 @@
 import * as React from 'react';
+import config from '../../config';
 import Bar from '../bar/Bar';
 import cx from 'classnames';
 import { UIBarType, UIBeatType, BeatListProps, BeatListState } from '../../types/general';
 import { BeatListOrientation } from '../../types/enums';
 
 class BeatList extends React.Component<BeatListProps, BeatListState> {
+  private beatsElement: React.RefObject<HTMLDivElement>;
+
   constructor(props: BeatListProps) {
     super(props);
 
+    this.beatsElement = React.createRef();
     this.state = {
       selectedUIBeat: null,
       scrollCallbackFn: () => {},
@@ -27,6 +31,7 @@ class BeatList extends React.Component<BeatListProps, BeatListState> {
 
     const barElements = UIBars.map((UIBar) => {
       const {
+        centeredBeatOrder,
         queuedBeatOrders,
         playingBeatOrder,
         selectedBeatOrder,
@@ -35,6 +40,7 @@ class BeatList extends React.Component<BeatListProps, BeatListState> {
 
       return <Bar key={UIBar.order}
                   UIBar={UIBar}
+                  centeredBeatOrder={centeredBeatOrder}
                   queuedBeatOrders={queuedBeatOrders}
                   playingBeatOrder={playingBeatOrder}
                   selectedBeatOrder={selectedBeatOrder}
@@ -48,7 +54,8 @@ class BeatList extends React.Component<BeatListProps, BeatListState> {
 
     return (
       <div className={scrollbarClassNames}>
-        <div className={barsClassNames}
+        <div ref={this.beatsElement}
+             className={barsClassNames}
              onScroll={this.handleBeatListScroll.bind(this)}>
           {barElements}
         </div>
@@ -58,6 +65,7 @@ class BeatList extends React.Component<BeatListProps, BeatListState> {
 
   /**
    * An Important Beat Order for a bar is the order of a beat that is a:
+   *  - Centered Beat, or
    *  - Queued Beat, or
    *  - Playing Beat, or
    *  - Selected Beat, or
@@ -69,12 +77,13 @@ class BeatList extends React.Component<BeatListProps, BeatListState> {
    * @param UIBar The bar that we're getting the important beats for
    */
   private getImportantBeatOrders(UIBar: UIBarType): {
+    centeredBeatOrder: number,
     queuedBeatOrders: number[],
     playingBeatOrder: number,
     selectedBeatOrder: number,
     disabledBeatOrders: number[],
   } {
-    const { queuedUIBeats, playingUIBeat, disabledUIBeats } = this.props;
+    const { centeredUIBeat, queuedUIBeats, playingUIBeat, disabledUIBeats } = this.props;
     const selectedUIBeat = this.state.selectedUIBeat;
 
     // Get the order of a beat, if it exists and it belongs to the bar
@@ -93,6 +102,7 @@ class BeatList extends React.Component<BeatListProps, BeatListState> {
     }
 
     return {
+      centeredBeatOrder: getOrder(centeredUIBeat),
       queuedBeatOrders: getOrders(queuedUIBeats),
       playingBeatOrder: getOrder(playingUIBeat),
       selectedBeatOrder: getOrder(selectedUIBeat),
