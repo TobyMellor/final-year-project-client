@@ -84,7 +84,7 @@ class BranchNav extends React.Component<BranchNavProps, BranchNavState> {
   }
 
   render() {
-    const { UIBars, isHidden } = this.props;
+    const { UIBars, isHidden, onClose } = this.props;
     const { status, beatLists } = this.state;
     const helperTextForStatus = this.getHelperTextForStatus(status);
     const branchNavClassNames = cx(
@@ -137,7 +137,7 @@ class BranchNav extends React.Component<BranchNavProps, BranchNavState> {
             <div className="modal-header">
               <h5 className="modal-title">Create a Branch</h5>
               <h3 className="modal-title-feedback">{helperTextForStatus}</h3>
-              <button type="button" className="close" data-dismiss="modal" onClick={() => this.handleClose()}>
+              <button type="button" className="close" data-dismiss="modal" onClick={() => onClose()}>
                 <span>&times;</span>
               </button>
             </div>
@@ -172,11 +172,6 @@ class BranchNav extends React.Component<BranchNavProps, BranchNavState> {
    */
   private getHelperTextForStatus(status: BranchNavStatus): string {
     return Translator.react.bottom_branch_nav[status];
-  }
-
-  private handleClose() {
-    this.setState(this.getInitialState());
-    this.props.onClose();
   }
 
   /**

@@ -162,6 +162,10 @@ class Beat extends React.Component<BeatProps, BeatState> {
   private scrollBeatIntoView() {
     const beatElement = this.beatElement.current;
 
+    if (!beatElement) {
+      return;
+    }
+
     beatElement.scrollIntoView({
       behavior: 'smooth',
       inline: 'center',

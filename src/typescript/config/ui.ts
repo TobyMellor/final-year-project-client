@@ -48,4 +48,8 @@ export default {
     beatWidthPx: 64,
     beatMarginPx: 16,
   },
+
+  // If the BranchNav has been hidden for some amount of time, reset it
+  // NOTE: This value must be at least greater than the fade-out animation
+  resetBranchNavAfterHiddenMs: 5000,
 };
