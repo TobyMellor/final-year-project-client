@@ -430,8 +430,20 @@ class BranchNav extends React.Component<BranchNavProps, BranchNavState> {
       });
     }
 
-    const scrollPercentage = this.getScrollPercentage(scrollLeft, scrollWidth, clientWidth);
-    uiService.setSongCircleRotation(scrollPercentage);
+    const getScrollPercentageForBeatList = (orientation: BeatListOrientation): number => {
+      const beatListScrollLeft = lastFocusedBeatList === orientation
+                               ? scrollLeft
+                               : beatLists[orientation].lastKnownScrollPosition || 0;
+
+      return this.getScrollPercentage(beatListScrollLeft, scrollWidth, clientWidth);
+    };
+
+    const topScrollPercent = getScrollPercentageForBeatList(BeatListOrientation.TOP);
+    const bottomScrollPercent = getScrollPercentageForBeatList(BeatListOrientation.BOTTOM);
+    const thisScrollPercent = lastFocusedBeatList === BeatListOrientation.TOP ? topScrollPercent : bottomScrollPercent;
+
+    uiService.previewBezierCurve(topScrollPercent, bottomScrollPercent); // Preview before setSongCircleRotation
+    uiService.setSongCircleRotation(thisScrollPercent);
   }
 
   /**

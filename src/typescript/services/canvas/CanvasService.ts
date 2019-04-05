@@ -14,12 +14,15 @@ import { FYPEventPayload } from '../../types/general';
 import BezierCurve from './drawables/BezierCurve';
 import BranchModel from '../../models/branches/Branch';
 import * as math from '../../utils/math';
+import SongCircle from './drawables/SongCircle';
 
 class CanvasService {
   private static _instance: CanvasService = null;
 
   public scene: Scene = null;
+  private _parentSongCircle: SongCircle | null = null;
   private _bezierCurves: BezierCurve[] = [];
+  private _previewingBezierCurve: BezierCurve | null = null;
 
   private constructor(canvas: HTMLCanvasElement) {
     this.scene = Scene.getInstance(canvas);
@@ -60,17 +63,17 @@ class CanvasService {
       forwardAndBackwardBranches: [_, backwardBranches],
     }: FYPEventPayload['PlayingTrackBranchesAnalyzed'],
   ) {
-    const parentSongCircle = drawableFactory.renderParentSongCircle(this.scene, playingTrack);
+    this._parentSongCircle = drawableFactory.renderParentSongCircle(this.scene, playingTrack);
 
     this._bezierCurves = drawableFactory.renderBezierCurves(this.scene,
-                                                            parentSongCircle,
+                                                            this._parentSongCircle,
                                                             backwardBranches);
 
     childTracks.forEach((childTrack) => {
       const percentage = math.getRandomInteger(); // TODO: Replace random position with an analysis of best entry
 
       drawableFactory.renderChildSongCircle(this.scene,
-                                            parentSongCircle,
+                                            this._parentSongCircle,
                                             childTrack,
                                             percentage);
     });
@@ -108,6 +111,17 @@ class CanvasService {
     durationMs,
   }: FYPEventPayload['PlayingBeatBatch']) {
     this.scene.animateRotation(startPercentage, endPercentage, durationMs);
+  }
+
+  public previewBezierCurve(earliestPercentage: number | null, latestPercentage: number | null = earliestPercentage) {
+    if (!this._previewingBezierCurve) {
+      this._previewingBezierCurve = drawableFactory.renderBezierCurveFromPercentages(this.scene,
+                                                                                     this._parentSongCircle,
+                                                                                     earliestPercentage,
+                                                                                     latestPercentage);
+    } else {
+      drawableFactory.updateBezierCurve(this._previewingBezierCurve, earliestPercentage, latestPercentage);
+    }
   }
 }
 

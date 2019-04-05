@@ -125,3 +125,14 @@ export function previewBeatsWithOrders(beatOrders: number[], callbackFn: () => v
 export function stopPlaying() {
   WebAudioService.getInstance().stop();
 }
+
+/**
+ * Displays the branch that will be created as the user
+ * is choosing the beats
+ *
+ * If a percentage is 0, it will be anchored to the bottom of the SongCircle
+ */
+export function previewBezierCurve(originPercentage: number, destinationPercentage: number | null) {
+  CanvasService.getInstance()
+               .previewBezierCurve(originPercentage, destinationPercentage);
+}
