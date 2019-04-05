@@ -207,22 +207,15 @@ describe('BranchNav Component', () => {
     expect(wrapper.find('.modal').hasClass('show')).toBe(true);
   });
 
-  it('resets the state when clicking the close button, executes prop onClose', () => {
+  it('closing the modal calls onCloseFn', () => {
     const onCloseFn = jest.fn();
     const wrapper = mount(
       <BranchNav {...defaultProps} onClose={onCloseFn} />,
     );
 
-    // Change some state so we can see it gets changed back
-    wrapper.setState({ status: BranchNavStatus.CHOOSE_SECOND_BEAT, mouseOverBeatList: BeatListOrientation.BOTTOM });
-    expect(wrapper.state('status')).toBe(BranchNavStatus.CHOOSE_SECOND_BEAT);
-    expect(wrapper.state('mouseOverBeatList')).toBe(BeatListOrientation.BOTTOM);
-
     // Closing restores all original state
     wrapper.find('button.close').simulate('click');
     expect(onCloseFn).toBeCalledTimes(1);
-    expect(wrapper.state('status')).toBe(BranchNavStatus.CHOOSE_FIRST_BEAT);
-    expect(wrapper.state('mouseOverBeatList')).toBe(BeatListOrientation.TOP);
   });
 
   function assertBLProps(
