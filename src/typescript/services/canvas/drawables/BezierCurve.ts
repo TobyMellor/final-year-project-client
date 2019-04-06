@@ -146,7 +146,7 @@ class BezierCurve extends Updatable {
     };
 
     const getDashOptions = () => {
-      if (this._isPreviewing) {
+      if (this._isPreviewing && this._fromPercentage !== this._toPercentage) {
         const dashOffset = (this._fromPercentage + this._toPercentage) / 100;
 
         return {

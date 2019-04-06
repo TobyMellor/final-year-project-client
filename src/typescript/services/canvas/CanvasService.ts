@@ -125,8 +125,10 @@ class CanvasService {
   }
 
   public removePreviewBezierCurve() {
-    this.scene.remove(this._previewingBezierCurve);
-    this._previewingBezierCurve = null;
+    if (this._previewingBezierCurve) {
+      this.scene.remove(this._previewingBezierCurve);
+      this._previewingBezierCurve = null;
+    }
   }
 }
 
