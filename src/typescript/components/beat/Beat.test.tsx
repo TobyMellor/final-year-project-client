@@ -18,6 +18,7 @@ describe('Beat Component', () => {
   beforeEach(() => {
     defaultProps = {
       UIBeat: getMockUIBeat(),
+      isInitiallyCentered: false,
       isQueued: false,
       isPlaying: false,
       isSelected: false,

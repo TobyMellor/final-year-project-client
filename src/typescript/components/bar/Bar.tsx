@@ -29,7 +29,7 @@ class Bar extends React.Component<BarProps, BarState> {
   render() {
     const {
       UIBar,
-      centeredBeatOrder,
+      initiallyCenteredBeatOrder,
       queuedBeatOrders,
       playingBeatOrder,
       disabledBeatOrders,
@@ -39,7 +39,7 @@ class Bar extends React.Component<BarProps, BarState> {
 
     const beatElements = UIBeats.map((UIBeat, beatOffsetInBar) => {
       const beatOrder = UIBeat.order;
-      const isInitiallyCentered = this.isBeatOrderIn(beatOrder, centeredBeatOrder);
+      const isInitiallyCentered = this.isBeatOrderIn(beatOrder, initiallyCenteredBeatOrder);
       const isQueued = this.isBeatOrderIn(beatOrder, ...queuedBeatOrders);
       const isPlaying = this.isBeatOrderIn(beatOrder, playingBeatOrder);
       const isSelected = this.isBeatSelected(beatOrder);

@@ -17,6 +17,7 @@ describe('BeatList Component', () => {
         getMockUIBar(0),
         getMockUIBar(1),
       ],
+      initiallyCenteredUIBeat: null,
       queuedUIBeats: [],
       playingUIBeat: null,
       disabledUIBeats: [],

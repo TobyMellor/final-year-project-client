@@ -24,13 +24,10 @@ class Beat extends React.Component<BeatProps, BeatState> {
     };
   }
 
-  componentDidMount() {
-    const { isInitiallyCentered } = this.props;
-
-    // Ensure that the first beat is initially visible to the left
-    // of the beat list
-    if (isInitiallyCentered) {
-      this.scrollBeatIntoView();
+  componentDidUpdate(nextProps: BeatProps) {
+    // This is used when matching the opposite BeatList's selection
+    if (nextProps.isInitiallyCentered !== this.props.isInitiallyCentered) {
+      this.scrollBeatIntoView(ScrollBehavior.Instant);
     }
   }
 
@@ -38,7 +35,7 @@ class Beat extends React.Component<BeatProps, BeatState> {
     return utils.shouldUpdate(
       this.props,
       nextProps,
-      ['isQueued', 'isPlaying', 'isSelected', 'isDisabled', 'zIndex'],
+      ['isInitiallyCentered', 'isQueued', 'isPlaying', 'isSelected', 'isDisabled', 'zIndex'],
     );
   }
 
@@ -158,7 +155,7 @@ class Beat extends React.Component<BeatProps, BeatState> {
     beatElement.dispatchEvent(new Event('scroll'));
   }
 
-  private scrollBeatIntoView() {
+  private scrollBeatIntoView(behavior: ScrollBehavior = ScrollBehavior.Smooth) {
     const beatElement = this.beatElement.current;
 
     if (!beatElement) {
@@ -166,10 +163,15 @@ class Beat extends React.Component<BeatProps, BeatState> {
     }
 
     beatElement.scrollIntoView({
-      behavior: 'smooth',
+      behavior,
       inline: 'center',
     });
   }
+}
+
+enum ScrollBehavior {
+  Instant = 'auto',
+  Smooth = 'smooth',
 }
 
 export default Beat;

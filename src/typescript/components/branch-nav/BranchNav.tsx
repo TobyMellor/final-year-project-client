@@ -27,14 +27,12 @@ class BranchNav extends React.Component<BranchNavProps, BranchNavState> {
     this.scrollTrackerContainerElement = React.createRef();
     this.branchNavBodyElement = React.createRef();
 
-    const firstUIBeat = this.props.UIBars.length && this.props.UIBars[0].beats[0];
-    this.state = this.getInitialState(firstUIBeat);
+    this.state = this.getInitialState();
   }
 
-  private getInitialState(firstUIBeat: UIBeatType): BranchNavState {
-    function defaultBeatListInfo(centeredUIBeat: UIBeatType = null): BeatListInfo {
+  private getInitialState(): BranchNavState {
+    function defaultBeatListInfo(): BeatListInfo {
       return {
-        centered: centeredUIBeat,
         queued: [],
         playing: null,
         selected: null,
@@ -45,7 +43,7 @@ class BranchNav extends React.Component<BranchNavProps, BranchNavState> {
     return {
       status: BranchNavStatus.CHOOSE_FIRST_BEAT,
       beatLists: {
-        [BeatListOrientation.TOP]: defaultBeatListInfo(firstUIBeat),
+        [BeatListOrientation.TOP]: defaultBeatListInfo(),
         [BeatListOrientation.BOTTOM]: defaultBeatListInfo(),
       },
       beatPreviewTimer: null,
@@ -74,7 +72,7 @@ class BranchNav extends React.Component<BranchNavProps, BranchNavState> {
       const hasBeatListUpdated = utils.hasUpdated(
         this.state.beatLists[orientation],
         nextState.beatLists[orientation],
-        ['queued', 'playing', 'selected', 'disabled'],
+        ['centered', 'queued', 'playing', 'selected', 'disabled'],
       );
 
       if (hasBeatListUpdated) {
@@ -104,14 +102,14 @@ class BranchNav extends React.Component<BranchNavProps, BranchNavState> {
     );
 
     const getBeatListElement = (orientation: BeatListOrientation) => {
-      const { centered, queued, playing, disabled } = beatLists[orientation];
+      const { initiallyCentered, queued, playing, disabled } = beatLists[orientation];
       const isHidden = orientation === BeatListOrientation.BOTTOM &&
                        status === BranchNavStatus.CHOOSE_FIRST_BEAT;
 
       return (
         <BeatList
           UIBars={UIBars}
-          centeredUIBeat={centered}
+          initiallyCenteredUIBeat={initiallyCentered}
           queuedUIBeats={queued}
           playingUIBeat={playing}
           disabledUIBeats={disabled}
@@ -224,9 +222,15 @@ class BranchNav extends React.Component<BranchNavProps, BranchNavState> {
     });
 
     if (this.state.status === BranchNavStatus.CHOOSE_FIRST_BEAT) {
-      this.setState({
-        scrollPriorityBeatList: beatListOrientation,
-        lastFocusedBeatList: BeatListOrientation.BOTTOM,
+      this.setState(({ beatLists }) => {
+        const beatListsCopy = utils.deepCopy(beatLists);
+        beatListsCopy[BeatListOrientation.BOTTOM].initiallyCentered = beatListsCopy[BeatListOrientation.TOP].selected;
+
+        return {
+          beatLists: beatListsCopy,
+          scrollPriorityBeatList: beatListOrientation,
+          lastFocusedBeatList: BeatListOrientation.BOTTOM,
+        };
       }, () => {
         const componentWidth = this.branchNavBodyElement.current.clientWidth;
 
@@ -355,7 +359,7 @@ class BranchNav extends React.Component<BranchNavProps, BranchNavState> {
 
     // Update the lastKnownScrollPosition and lastFocusedBeatList
     this.setState(({ beatLists }) => {
-      beatLists[beatListOrientation].lastKnownScrollPosition = newScrollLeftTarget;
+      beatLists[beatListOrientation].lastKnownScrollPosition = newScrollLeftTarget; // FIXME: Update through setState
 
       return {
         beatLists,
@@ -437,6 +441,7 @@ class BranchNav extends React.Component<BranchNavProps, BranchNavState> {
 
     if (status === BranchNavStatus.CHOOSE_FIRST_BEAT) {
       this.setState(({ beatLists }) => {
+        // FIXME: Update through setState
         beatLists[BeatListOrientation.BOTTOM].lastKnownScrollPosition = scrollLeftTarget !== -1
                                                                       ? scrollLeftTarget
                                                                       : beatLists[BeatListOrientation.TOP]

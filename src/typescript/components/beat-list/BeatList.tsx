@@ -31,7 +31,7 @@ class BeatList extends React.Component<BeatListProps, BeatListState> {
 
     const barElements = UIBars.map((UIBar) => {
       const {
-        centeredBeatOrder,
+        initiallyCenteredBeatOrder,
         queuedBeatOrders,
         playingBeatOrder,
         selectedBeatOrder,
@@ -40,7 +40,7 @@ class BeatList extends React.Component<BeatListProps, BeatListState> {
 
       return <Bar key={UIBar.order}
                   UIBar={UIBar}
-                  centeredBeatOrder={centeredBeatOrder}
+                  initiallyCenteredBeatOrder={initiallyCenteredBeatOrder}
                   queuedBeatOrders={queuedBeatOrders}
                   playingBeatOrder={playingBeatOrder}
                   selectedBeatOrder={selectedBeatOrder}
@@ -65,7 +65,7 @@ class BeatList extends React.Component<BeatListProps, BeatListState> {
 
   /**
    * An Important Beat Order for a bar is the order of a beat that is a:
-   *  - Centered Beat, or
+   *  - Initially Centered Beat, or
    *  - Queued Beat, or
    *  - Playing Beat, or
    *  - Selected Beat, or
@@ -77,13 +77,13 @@ class BeatList extends React.Component<BeatListProps, BeatListState> {
    * @param UIBar The bar that we're getting the important beats for
    */
   private getImportantBeatOrders(UIBar: UIBarType): {
-    centeredBeatOrder: number,
+    initiallyCenteredBeatOrder: number,
     queuedBeatOrders: number[],
     playingBeatOrder: number,
     selectedBeatOrder: number,
     disabledBeatOrders: number[],
   } {
-    const { centeredUIBeat, queuedUIBeats, playingUIBeat, disabledUIBeats } = this.props;
+    const { initiallyCenteredUIBeat, queuedUIBeats, playingUIBeat, disabledUIBeats } = this.props;
     const selectedUIBeat = this.state.selectedUIBeat;
 
     // Get the order of a beat, if it exists and it belongs to the bar
@@ -102,7 +102,7 @@ class BeatList extends React.Component<BeatListProps, BeatListState> {
     }
 
     return {
-      centeredBeatOrder: getOrder(centeredUIBeat),
+      initiallyCenteredBeatOrder: getOrder(initiallyCenteredUIBeat),
       queuedBeatOrders: getOrders(queuedUIBeats),
       playingBeatOrder: getOrder(playingUIBeat),
       selectedBeatOrder: getOrder(selectedUIBeat),

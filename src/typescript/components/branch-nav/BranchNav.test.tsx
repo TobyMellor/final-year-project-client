@@ -3,6 +3,7 @@ import { configure, mount } from 'enzyme';
 import * as Adapter from 'enzyme-adapter-react-16';
 import * as sinon from 'sinon';
 import BranchNav from './BranchNav';
+import Beat from '../beat/Beat';
 import { getMockUIBar } from '../../utils/tests';
 import { BeatListOrientation, BranchNavStatus } from '../../types/enums';
 import { BranchNavProps, UIBeatType, BranchNavState, QueuedUIBeat } from '../../types/general';
@@ -16,8 +17,12 @@ describe('BranchNav Component', () => {
   let clock: sinon.SinonFakeTimers;
   const TOP = BeatListOrientation.TOP;
   const BOTTOM = BeatListOrientation.BOTTOM;
+  let scrollBeatIntoViewStub: sinon.SinonStub;
 
   beforeEach(() => {
+    // @ts-ignore
+    scrollBeatIntoViewStub = sinon.stub(Beat.prototype, 'scrollBeatIntoView').callsFake(jest.fn());
+
     defaultProps = {
       UIBars: [
         getMockUIBar(0),
@@ -54,6 +59,7 @@ describe('BranchNav Component', () => {
 
   afterEach(() => {
     clock.restore();
+    scrollBeatIntoViewStub.restore();
   });
 
   it('clicking on a beat will update the state as expected', () => {
@@ -64,8 +70,8 @@ describe('BranchNav Component', () => {
     const topListFirstBeat = wrapper.find('Beat').first();
     const topListSecondBeat = wrapper.find('Bar').first().find('Beat').last();
     const bottomListLastBeat = wrapper.find('Beat').last();
-    const firstUIBar = getBeatFromWrapper(topListFirstBeat);
-    const secondUIBar = getBeatFromWrapper(topListSecondBeat);
+    const firstUIBeat = getBeatFromWrapper(topListFirstBeat);
+    const secondUIBeat = getBeatFromWrapper(topListSecondBeat);
     const lastUIBeat = getBeatFromWrapper(bottomListLastBeat);
 
     expect(wrapper.state('status')).toBe(BranchNavStatus.CHOOSE_FIRST_BEAT);
@@ -74,24 +80,24 @@ describe('BranchNav Component', () => {
     // Clicking a beat should progress the status
     topListFirstBeat.simulate('click');
     expect(wrapper.state('status')).toBe(BranchNavStatus.CHOOSE_SECOND_BEAT);
-    assertBLProps(wrapper, TOP, firstUIBar);
+    assertBLProps(wrapper, TOP, firstUIBeat);
 
     // Clicking that same beat should not progress the status, as you can't select the beat twice
     topListFirstBeat.simulate('click');
     expect(wrapper.state('status')).toBe(BranchNavStatus.CHOOSE_SECOND_BEAT);
-    assertBLProps(wrapper, TOP, firstUIBar);
+    assertBLProps(wrapper, TOP, firstUIBeat);
 
     // Similarly, clicking a different beat on the same list should not progress the state
     topListSecondBeat.simulate('click');
     expect(wrapper.state('status')).toBe(BranchNavStatus.CHOOSE_SECOND_BEAT);
-    assertBLProps(wrapper, TOP, secondUIBar);
-    assertBLProps(wrapper, BOTTOM, null, [secondUIBar]);
+    assertBLProps(wrapper, TOP, secondUIBeat);
+    assertBLProps(wrapper, BOTTOM, null, [secondUIBeat], null, [], firstUIBeat);
 
     // Clicking any beat in the next list should progress the state
     bottomListLastBeat.simulate('click');
     expect(wrapper.state('status')).toBe(BranchNavStatus.PREVIEWABLE);
-    assertBLProps(wrapper, TOP, secondUIBar, [lastUIBeat]);
-    assertBLProps(wrapper, BOTTOM, lastUIBeat, [secondUIBar]);
+    assertBLProps(wrapper, TOP, secondUIBeat, [lastUIBeat]);
+    assertBLProps(wrapper, BOTTOM, lastUIBeat, [secondUIBeat], null, [], firstUIBeat);
   });
 
   it('clicking preview and the back button should work as expected', () => {
@@ -218,6 +224,27 @@ describe('BranchNav Component', () => {
     expect(onCloseFn).toBeCalledTimes(1);
   });
 
+  it('sets the bottom beatLists initially centered beat to the first\'s selected one', () => {
+    const wrapper = mount(
+      <BranchNav {...defaultProps} />,
+    );
+
+    // When clicking a beat on the top for the first time, the initiallyCentered on the bottom
+    // should be that selected beat
+    const topListFirstBeat = wrapper.find('Beat').first();
+    const firstUIBeat = getBeatFromWrapper(topListFirstBeat);
+    topListFirstBeat.simulate('click');
+    expect(assertBLProps(wrapper, TOP, firstUIBeat));
+    expect(assertBLProps(wrapper, BOTTOM, null, [firstUIBeat], null, [], firstUIBeat));
+
+    // InitiallyCentered should only change if in the state BranchNavStatus.CHOOSE_FIRST_BEAT
+    const topListSecondBeat = wrapper.find('Bar').first().find('Beat').last();
+    const secondUIBeat = getBeatFromWrapper(topListSecondBeat);
+    topListSecondBeat.simulate('click');
+    expect(assertBLProps(wrapper, TOP, secondUIBeat)); // Selected changes
+    expect(assertBLProps(wrapper, BOTTOM, null, [secondUIBeat], null, [], firstUIBeat)); // initiallyCentered unchanged
+  });
+
   function assertBLProps(
     wrapper: any,
     orientation: BeatListOrientation,
@@ -225,10 +252,12 @@ describe('BranchNav Component', () => {
     disabled: UIBeatType[] | QueuedUIBeat[] = [],
     playing: UIBeatType | QueuedUIBeat = null,
     queued: UIBeatType[] | QueuedUIBeat[] = [],
+    initiallyCentered?: UIBeatType,
   ) {
     const beatList = wrapper.state('beatLists')[orientation];
 
     expect(beatList).toEqual({
+      initiallyCentered,
       queued,
       playing,
       selected,

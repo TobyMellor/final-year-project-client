@@ -20,7 +20,7 @@ export interface CreateBarsBeatsAndSegments {
 }
 
 export type BeatListInfo = {
-  centered: UIBeatType;
+  initiallyCentered?: UIBeatType;
   queued: UIBeatType[];
   playing: UIBeatType;
   selected: UIBeatType;
@@ -72,7 +72,7 @@ export interface BranchNavFooterProps {
 
 export interface BeatListProps {
   UIBars: UIBarType[];
-  centeredUIBeat: UIBeatType | null;
+  initiallyCenteredUIBeat?: UIBeatType;
   queuedUIBeats: UIBeatType[];
   playingUIBeat: UIBeatType | null;
   disabledUIBeats: UIBeatType[];
@@ -113,7 +113,7 @@ export interface BeatState {
 
 export interface BarProps {
   UIBar: UIBarType;
-  centeredBeatOrder: number;
+  initiallyCenteredBeatOrder: number;
   queuedBeatOrders: number[];
   playingBeatOrder: number;
   selectedBeatOrder: number;
