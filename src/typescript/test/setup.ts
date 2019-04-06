@@ -45,3 +45,7 @@ sinon.stub(THREE, 'WebGLRenderer').callsFake(
     };
   }),
 );
+
+(<any> global).requestAnimationFrame = (callback: () => any) => {
+  setTimeout(callback, 0);
+};

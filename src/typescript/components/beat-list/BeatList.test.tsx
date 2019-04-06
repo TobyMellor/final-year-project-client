@@ -5,12 +5,12 @@ import BeatList from './BeatList';
 import { getMockUIBar } from '../../utils/tests';
 import { BeatListOrientation } from '../../types/enums';
 import { BeatListProps } from '../../types/general';
+import { timeout } from '../../test/fixture';
 
 configure({ adapter: new Adapter() });
 
 describe('BeatList Component', () => {
   let defaultProps: BeatListProps;
-  let scrollToLeftFn: jest.Mock;
 
   beforeEach(() => {
     defaultProps = {
@@ -26,9 +26,6 @@ describe('BeatList Component', () => {
       onBeatClick: jest.fn(),
       onBeatListScroll: jest.fn(),
     };
-
-    // @ts-ignore
-    scrollBeatIntoViewFn = BeatList.prototype.scrollToLeft = jest.fn();
   });
 
   it('should only pass the important information to the corresponding bars', () => {
@@ -88,11 +85,5 @@ describe('BeatList Component', () => {
     wrapper.find('.bars').simulate('scroll');
     expect(defaultProps.onBeatListScroll).toBeCalledTimes(1);
     expect(scrollCallbackFn).toBeCalledTimes(1);
-  });
-
-  it('scrolls to the left when mounted', () => {
-    // Beat should be scrolled to the left when mounted
-    mount(<BeatList {...defaultProps} />);
-    expect(scrollToLeftFn).toBeCalledTimes(1);
   });
 });

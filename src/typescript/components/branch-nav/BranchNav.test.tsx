@@ -65,6 +65,7 @@ describe('BranchNav Component', () => {
     const wrapper = mount(
       <BranchNav {...defaultProps} />,
     );
+    wrapper.setProps({ isHidden: false });
 
     const topListFirstBeat = wrapper.find('Beat').first();
     const topListSecondBeat = wrapper.find('Bar').first().find('Beat').last();
@@ -227,6 +228,7 @@ describe('BranchNav Component', () => {
     const wrapper = mount(
       <BranchNav {...defaultProps} />,
     );
+    wrapper.setProps({ isHidden: false });
 
     // When clicking a beat on the top for the first time, the initiallyCentered on the bottom
     // should be that selected beat

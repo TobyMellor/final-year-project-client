@@ -761,7 +761,7 @@ class BranchNav extends React.Component<BranchNavProps, BranchNavState> {
 
   private getLastFocusedScrollLeft(): number | null {
     const { beatLists, lastFocusedBeatList } = this.state;
-    return beatLists[lastFocusedBeatList].lastKnownScrollLeft || null;
+    return lastFocusedBeatList && beatLists[lastFocusedBeatList].lastKnownScrollLeft || null;
   }
 }
 
