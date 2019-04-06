@@ -13,7 +13,6 @@ describe('Beat Component', () => {
   let defaultProps: BeatProps;
   let clock: sinon.SinonFakeTimers;
   let scrollBeatIntoViewFn: () => void;
-  let scrollBeatToLeftFn: () => void;
 
   beforeEach(() => {
     defaultProps = {
