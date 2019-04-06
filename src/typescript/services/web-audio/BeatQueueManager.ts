@@ -1,20 +1,26 @@
 import QueuedBeatModel from '../../models/web-audio/QueuedBeat';
-import BeatModel from '../../models/audio-analysis/Beat';
+import { BeatBatch, QueuedBeatBatch } from '../../types/general';
+import BranchModel from '../../models/branches/Branch';
+import config from '../../config';
 
 class BeatQueueManager {
-  private static queuedBeats: QueuedBeatModel[] = [];
+  private static queuedBeatBatches: QueuedBeatBatch[] = [];
 
   public static clear() {
-    this.queuedBeats = [];
+    this.queuedBeatBatches = [];
   }
 
-  public static add(audioContext: AudioContext, beats: BeatModel[]): QueuedBeatModel[] {
-    const lastSubmittedCurrentTime = this.getLastSubmittedCurrentTime(audioContext);
-    let secondsSinceFirstBeat = 0;
+  public static add(
+    audioContext: AudioContext,
+    { beatsToBranchOrigin, branch }: BeatBatch,
+  ): QueuedBeatBatch {
+    const firstSubmittedCurrentTimeInBatch = this.getNextSubmittedCurrentTime(audioContext);
+    let secondsSinceFirstBeatInBatch = 0;
 
-    const queuedBeats = beats.map((beat) => {
-      const submittedCurrentTime = lastSubmittedCurrentTime + secondsSinceFirstBeat;
-      secondsSinceFirstBeat += beat.durationSecs;
+    const queuedBeats = beatsToBranchOrigin.map((beat) => {
+      const submittedCurrentTime = firstSubmittedCurrentTimeInBatch + secondsSinceFirstBeatInBatch;
+
+      secondsSinceFirstBeatInBatch += beat.durationSecs;
 
       return new QueuedBeatModel({
         beat,
@@ -22,69 +28,57 @@ class BeatQueueManager {
       });
     });
 
-    this.queuedBeats.push(...queuedBeats);
+    this.queuedBeatBatches.push({
+      branch,
+      queuedBeatsToBranchOrigin: queuedBeats,
+    });
 
-    return queuedBeats;
+    return this.last();
   }
 
   /**
-   * Removes all of the beats in the queue until a certain beat
-   *
-   * @param queuedBeat The beat marking the end of the removals
+   * Returns the last queued BeatBatch
    */
-  public static removeUntil(queuedBeat: QueuedBeatModel) {
-    while (this.queuedBeats.length > 0 && queuedBeat.equals(this.queuedBeats[0])) {
-      this.queuedBeats.shift();
+  public static last(): QueuedBeatBatch | null {
+    if (this.queuedBeatBatches.length === 0) {
+      return null;
     }
+
+    return this.queuedBeatBatches[this.queuedBeatBatches.length - 1];
   }
 
   /**
-   * Returns the first queued beat in the queue
+   * Returns the last queued beat
    */
-  public static first(): QueuedBeatModel {
-    return this.queuedBeats[0];
+  public static lastQueuedBeat(): QueuedBeatModel | null {
+    const lastBeatBatch = this.last();
+
+    if (!lastBeatBatch) {
+      return null;
+    }
+
+    const { queuedBeatsToBranchOrigin } = lastBeatBatch;
+    return queuedBeatsToBranchOrigin[queuedBeatsToBranchOrigin.length - 1];
   }
 
   /**
-   * Returns the last queued beat in the queue
+   * Returns the next branch to be taken
    */
-  public static last(): QueuedBeatModel {
-    return this.queuedBeats[this.queuedBeats.length - 1];
+  public static lastBranch(): BranchModel | null {
+    return this.last() && this.last().branch;
   }
 
-  /**
-   * The last beat that's queued will always be a single destination beat of a branch.
-   * Before that beat will be the origin beat of a branch.
-   */
-  public static lastInBeatBatch(): QueuedBeatModel {
-    return this.queuedBeats[this.queuedBeats.length - 2];
-  }
+  private static getNextSubmittedCurrentTime(audioContext: AudioContext): number {
+    const lastQueuedBeat = this.lastQueuedBeat();
 
-  private static getLastSubmittedCurrentTime(audioContext: AudioContext): number {
-    if (this.queuedBeats.length) {
-      return this.last().submittedCurrentTime;
+    if (lastQueuedBeat) {
+      return lastQueuedBeat.submittedCurrentTime + lastQueuedBeat.beat.durationSecs;
     }
 
     // Add some delay to the first beat we schedule,
     // since currentTime will be in the past when the code
     // reaches source.start()
-    const SCHEDULING_DELAY = 1;
-
-    return audioContext.currentTime + SCHEDULING_DELAY;
-  }
-
-  private static getLastBeatStartSecs(): number {
-    if (this.queuedBeats.length) {
-      return this.last()
-                 .beat
-                 .startSecs;
-    }
-
-    return 0;
-  }
-
-  public static getQueuedBeats(): QueuedBeatModel[] {
-    return this.queuedBeats;
+    return audioContext.currentTime + config.audio.schedulingDelaySecs;
   }
 }
 

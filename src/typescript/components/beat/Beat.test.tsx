@@ -13,11 +13,11 @@ describe('Beat Component', () => {
   let defaultProps: BeatProps;
   let clock: sinon.SinonFakeTimers;
   let scrollBeatIntoViewFn: () => void;
-  let scrollBeatToLeftFn: () => void;
 
   beforeEach(() => {
     defaultProps = {
       UIBeat: getMockUIBeat(),
+      isInitiallyCentered: false,
       isQueued: false,
       isPlaying: false,
       isSelected: false,
@@ -36,8 +36,6 @@ describe('Beat Component', () => {
 
     // @ts-ignore
     scrollBeatIntoViewFn = Beat.prototype.scrollBeatIntoView = jest.fn();
-    // @ts-ignore
-    scrollBeatToLeftFn = Beat.prototype.scrollBeatToLeft = jest.fn();
   });
 
   afterEach(() => {
@@ -65,21 +63,6 @@ describe('Beat Component', () => {
     expect(invalidLoudnessFn).toThrowError();
     expect(validTimbreFn).not.toThrowError();
     expect(validLoudnessFn).not.toThrowError();
-  });
-
-  it('scrolls the first beat to the left', () => {
-    const wrapper = mount(<Beat {...defaultProps} />);
-
-    // The beat should be scrolled if it's the first beat (order: 0)
-    expect(scrollBeatToLeftFn).toBeCalledTimes(1);
-
-    // Change the order so this beat becomes the first one
-    wrapper.setProps({ UIBeat: { ...defaultProps.UIBeat, order: 1 } });
-    wrapper.unmount().mount();
-
-    // If it's not the first beat, the beat should not be scrolled (order: 1)
-    // In other words, function shouild not be called any more times
-    expect(scrollBeatToLeftFn).toBeCalledTimes(1);
   });
 
   it('executes onBeatMouseEnter when hovering over a beat', () => {

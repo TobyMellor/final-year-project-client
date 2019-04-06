@@ -60,11 +60,22 @@ class WorldPoint extends Primitive {
     return circle.getPointOnCircle(angleRadians);
   }
 
+  /**
+   * Gets a WorldPoint on a circle from a percentage
+   *
+   * @param songCircle The circle to get the point on
+   * @param percentage The percentage on the circle to get
+   * @param rotationOffsetOverride A rotation offset is added so 50% half way through a song
+   *                               will appear 50% relative to the songCircles current rotation.
+   *                               This can be manually overridden if you always want to, say,
+   *                               fix something to the bottom of a circle
+   */
   public static getPointOnCircleFromPercentage(
     { center: parentCircleCenter, radius: parentCircleRadius }: SongCircle,
     percentage: number,
+    rotationOffsetPercentage: number = this.rotationOffsetPercentage,
   ): WorldPoint {
-    const angleRadians = super.getAngleFromPercentage(percentage, this.rotationOffsetPercentage);
+    const angleRadians = super.getAngleFromPercentage(percentage, rotationOffsetPercentage);
     const circle = new Circle(parentCircleCenter, parentCircleRadius);
 
     return circle.getPointOnCircle(angleRadians);

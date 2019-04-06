@@ -23,6 +23,8 @@ export enum FYPEvent {
 }
 
 export enum BranchNavStatus {
+  // Advances from this state when the BranchNav is shown for the first time
+  NOT_YET_SHOWN = 'not_yet_shown',
 
   // The BranchNav's initial status. The user has not yet chosen the first beat
   CHOOSE_FIRST_BEAT = 'choose_first_beat',

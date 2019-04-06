@@ -199,7 +199,7 @@ class SongCircle extends Updatable {
       const {
         predictedSize: titlePredictedSize,
         fontSize: titleFontSize,
-      } = addTextWithSizeConstraint(0.2,
+      } = addTextWithSizeConstraint(0.3,
                                     titleMaxWidth,
                                     track.name,
                                     false,

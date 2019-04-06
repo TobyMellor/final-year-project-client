@@ -1,8 +1,6 @@
 /* tslint:disable max-line-length */
 // NOTE: I've added IDs manually to these responses
 
-import { sample } from '../mocker';
-
 export function getAnAudioAnalysisMock(ID: string) {
   const mocks = [
     // KIDS SEE GHOSTS

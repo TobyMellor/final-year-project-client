@@ -1,17 +1,25 @@
 import * as React from 'react';
+import config from '../../config';
 import Bar from '../bar/Bar';
 import cx from 'classnames';
 import { UIBarType, UIBeatType, BeatListProps, BeatListState } from '../../types/general';
 import { BeatListOrientation } from '../../types/enums';
 
 class BeatList extends React.Component<BeatListProps, BeatListState> {
+  private beatsElement: React.RefObject<HTMLDivElement>;
+
   constructor(props: BeatListProps) {
     super(props);
 
+    this.beatsElement = React.createRef();
     this.state = {
       selectedUIBeat: null,
       scrollCallbackFn: () => {},
     };
+  }
+
+  componentDidMount() {
+    requestAnimationFrame(() => this.scrollToLeft());
   }
 
   render() {
@@ -27,6 +35,7 @@ class BeatList extends React.Component<BeatListProps, BeatListState> {
 
     const barElements = UIBars.map((UIBar) => {
       const {
+        initiallyCenteredBeatOrder,
         queuedBeatOrders,
         playingBeatOrder,
         selectedBeatOrder,
@@ -35,6 +44,7 @@ class BeatList extends React.Component<BeatListProps, BeatListState> {
 
       return <Bar key={UIBar.order}
                   UIBar={UIBar}
+                  initiallyCenteredBeatOrder={initiallyCenteredBeatOrder}
                   queuedBeatOrders={queuedBeatOrders}
                   playingBeatOrder={playingBeatOrder}
                   selectedBeatOrder={selectedBeatOrder}
@@ -48,7 +58,8 @@ class BeatList extends React.Component<BeatListProps, BeatListState> {
 
     return (
       <div className={scrollbarClassNames}>
-        <div className={barsClassNames}
+        <div ref={this.beatsElement}
+             className={barsClassNames}
              onScroll={this.handleBeatListScroll.bind(this)}>
           {barElements}
         </div>
@@ -58,6 +69,7 @@ class BeatList extends React.Component<BeatListProps, BeatListState> {
 
   /**
    * An Important Beat Order for a bar is the order of a beat that is a:
+   *  - Initially Centered Beat, or
    *  - Queued Beat, or
    *  - Playing Beat, or
    *  - Selected Beat, or
@@ -69,12 +81,13 @@ class BeatList extends React.Component<BeatListProps, BeatListState> {
    * @param UIBar The bar that we're getting the important beats for
    */
   private getImportantBeatOrders(UIBar: UIBarType): {
+    initiallyCenteredBeatOrder: number,
     queuedBeatOrders: number[],
     playingBeatOrder: number,
     selectedBeatOrder: number,
     disabledBeatOrders: number[],
   } {
-    const { queuedUIBeats, playingUIBeat, disabledUIBeats } = this.props;
+    const { initiallyCenteredUIBeat, queuedUIBeats, playingUIBeat, disabledUIBeats } = this.props;
     const selectedUIBeat = this.state.selectedUIBeat;
 
     // Get the order of a beat, if it exists and it belongs to the bar
@@ -93,6 +106,7 @@ class BeatList extends React.Component<BeatListProps, BeatListState> {
     }
 
     return {
+      initiallyCenteredBeatOrder: getOrder(initiallyCenteredUIBeat),
       queuedBeatOrders: getOrders(queuedUIBeats),
       playingBeatOrder: getOrder(playingUIBeat),
       selectedBeatOrder: getOrder(selectedUIBeat),
@@ -129,6 +143,25 @@ class BeatList extends React.Component<BeatListProps, BeatListState> {
     scrollCallbackFn();
 
     onBeatListScroll(orientation, currentTarget);
+  }
+
+  /**
+   * Scrolls this beat to be at the very left of the beat list nav.
+   *
+   * It's difficult in CSS, as we've given the list additional left margin
+   * to allow the user to scroll the leftmost beat to the center
+   */
+  private scrollToLeft() {
+    const beatsElement = this.getBeatsElement();
+    const beatListWidth = beatsElement.clientWidth;
+
+    // Scroll the beat list so the first beat is aligned left
+    // This list gets given padding, so the first beat can scroll to the center
+    beatsElement.scrollLeft = (beatListWidth / 2) - config.ui.beat.beatWidthPx + config.ui.beat.beatMarginPx;
+  }
+
+  public getBeatsElement(): HTMLDivElement {
+    return this.beatsElement.current;
   }
 }
 

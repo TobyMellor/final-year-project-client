@@ -1,6 +1,6 @@
 import * as React from 'react';
 import cx from 'classnames';
-import ui from '../../config/ui';
+import config from '../../config';
 import * as utils from '../../utils/misc';
 import { BeatProps, BeatState } from '../../types/general';
 
@@ -24,13 +24,10 @@ class Beat extends React.Component<BeatProps, BeatState> {
     };
   }
 
-  componentDidMount() {
-    const { order } = this.props.UIBeat;
-
-    // Ensure that the first beat is initially visible to the left
-    // of the beat list
-    if (order === 0) {
-      this.scrollBeatToLeft();
+  componentWillUpdate(nextProps: BeatProps) {
+    // This is used when matching the opposite BeatList's selection
+    if (nextProps.isInitiallyCentered !== this.props.isInitiallyCentered) {
+      this.scrollBeatIntoView(ScrollBehavior.Instant);
     }
   }
 
@@ -38,7 +35,7 @@ class Beat extends React.Component<BeatProps, BeatState> {
     return utils.shouldUpdate(
       this.props,
       nextProps,
-      ['isQueued', 'isPlaying', 'isSelected', 'isDisabled', 'zIndex'],
+      ['isInitiallyCentered', 'isQueued', 'isPlaying', 'isSelected', 'isDisabled', 'zIndex'],
     );
   }
 
@@ -79,7 +76,7 @@ class Beat extends React.Component<BeatProps, BeatState> {
    * @param timbreNormalized The timbre of the beat, between 0 and 1
    */
   private getCircleColour(timbreNormalized: number): string {
-    return this.getCorrespondingClassName(ui.beat.availableColours, timbreNormalized);
+    return this.getCorrespondingClassName(config.ui.beat.availableColours, timbreNormalized);
   }
 
   /**
@@ -88,7 +85,7 @@ class Beat extends React.Component<BeatProps, BeatState> {
    * @param loudnessNormalized The loudness of the beat, between 0 and 1
    */
   private getCircleSize(loudnessNormalized: number): string {
-    return this.getCorrespondingClassName(ui.beat.availableSizes, loudnessNormalized);
+    return this.getCorrespondingClassName(config.ui.beat.availableSizes, loudnessNormalized);
   }
 
   /**
@@ -127,7 +124,7 @@ class Beat extends React.Component<BeatProps, BeatState> {
     onBeatClick(UIBeat, this.handleParentScroll.bind(this));
 
     // Scroll to the circle, after all animations have finished
-    setTimeout(() => this.scrollBeatIntoView(), ui.beat.expandAnimationDurationMs);
+    setTimeout(() => this.scrollBeatIntoView(), config.ui.beat.expandAnimationDurationMs);
   }
 
   /**
@@ -142,7 +139,7 @@ class Beat extends React.Component<BeatProps, BeatState> {
 
       // After some time, scroll the beat back into view (if it's still selected)
       this.scrollBeatIntoView();
-    }, ui.beat.scrollBackAfterMs);
+    }, config.ui.beat.scrollBackAfterMs);
 
     // Cancel and replace any scroll timer that may exist with this one
     // so the countdown begins again
@@ -155,33 +152,26 @@ class Beat extends React.Component<BeatProps, BeatState> {
 
   private triggerScrollEvent() {
     const beatElement = this.beatElement.current;
-
     beatElement.dispatchEvent(new Event('scroll'));
   }
 
-  private scrollBeatIntoView() {
+  private scrollBeatIntoView(behavior: ScrollBehavior = ScrollBehavior.Smooth) {
     const beatElement = this.beatElement.current;
 
+    if (!beatElement) {
+      return;
+    }
+
     beatElement.scrollIntoView({
-      behavior: 'smooth',
+      behavior,
       inline: 'center',
     });
   }
+}
 
-  /**
-   * Scrolls this beat to be at the very left of the beat list nav.
-   * It's difficult in CSS, as we've given the list additional left margin
-   * to allow the user to scroll the leftmost beat to the center
-   */
-  private scrollBeatToLeft() {
-    const beatElement = this.beatElement.current;
-    const beatListElement = beatElement.parentElement.parentElement;
-    const beatListWidth = beatListElement.clientWidth;
-
-    // Scroll the beat list so the first beat is aligned left
-    // This list gets given padding, so the first beat can scroll to the center
-    beatListElement.scrollLeft = (beatListWidth / 2) - ui.beat.beatMarginPx + ui.beat.beatMarginPx;
-  }
+enum ScrollBehavior {
+  Instant = 'auto',
+  Smooth = 'smooth',
 }
 
 export default Beat;

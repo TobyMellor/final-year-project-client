@@ -2,7 +2,6 @@ import Updatable from './Updatable';
 import * as THREE from 'three';
 import WorldPoint from './utils/WorldPoint';
 import Rotation from './utils/Rotation';
-import * as utils from '../../../utils/conversions';
 
 export type Drawable = {
   meshes: THREE.Mesh[];
@@ -25,8 +24,6 @@ class Scene {
   private _renderer: THREE.WebGLRenderer = null;
 
   private _updatables: Set<Updatable> = new Set();
-  private _lastRenderSecs: number = null;
-  private _rotationSpeed: number = 0;
 
   private constructor(whereToDraw: HTMLCanvasElement) {
     const scene = new THREE.Scene();
@@ -46,6 +43,9 @@ class Scene {
     this._scene = scene;
     this._camera = camera;
     this._renderer = renderer;
+
+    // Starts the render loop
+    requestAnimationFrame(() => this.render());
   }
 
   public static getInstance(whereToDraw: HTMLCanvasElement): Scene {
@@ -61,8 +61,13 @@ class Scene {
 
     this._scene.add(mesh);
     this._updatables.add(updatable);
+  }
 
-    this.render();
+  public remove(updatable: Updatable) {
+    const mesh = updatable.getMesh();
+
+    this._scene.remove(mesh);
+    this._updatables.delete(updatable);
   }
 
   private update() {
@@ -70,10 +75,13 @@ class Scene {
   }
 
   public render() {
+    // Update position/rotation/colour etc of THREE.js meshes
     this.update();
 
     // Re-render everything on the scene through THREE.js
     this._renderer.render(this._scene, this._camera);
+
+    requestAnimationFrame(() => this.render());
   }
 
   public animateRotation(
@@ -127,8 +135,6 @@ class Scene {
   public async setRotationPercentage(percentage: number) {
     WorldPoint.rotationOffsetPercentage = percentage;
     Rotation.rotationOffsetPercentage = percentage;
-
-    this.render();
   }
 }
 

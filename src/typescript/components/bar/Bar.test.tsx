@@ -13,6 +13,7 @@ describe('Bar Component', () => {
   beforeEach(() => {
     defaultProps = {
       UIBar: getMockUIBar(),
+      initiallyCenteredBeatOrder: -1,
       queuedBeatOrders: [],
       playingBeatOrder: -1,
       selectedBeatOrder: -1,

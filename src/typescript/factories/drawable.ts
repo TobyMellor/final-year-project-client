@@ -52,14 +52,24 @@ export function renderBezierCurves(
     const earliestPercentage = earliestBeat.getPercentageInTrack(trackDuration);
     const latestPercentage = latestBeat.getPercentageInTrack(trackDuration);
 
-    return new BezierCurve(scene,
-                           songCircle,
-                           branch,
-                           earliestPercentage,
-                           latestPercentage);
+    return renderBezierCurveFromPercentages(scene, songCircle, earliestPercentage, latestPercentage, branch);
   }
 
   return branches.map(branch => renderBezierCurve(branch));
+}
+
+export function renderBezierCurveFromPercentages(
+  scene: Scene,
+  songCircle: SongCircle,
+  earliestPercentage: number | null,
+  latestPercentage: number | null,
+  branch: BranchModel = null,
+): BezierCurve {
+  return new BezierCurve(scene,
+                         songCircle,
+                         earliestPercentage,
+                         latestPercentage,
+                         branch);
 }
 
 export function updateNextBezierCurve(
@@ -71,6 +81,10 @@ export function updateNextBezierCurve(
   if (nextBezierCurve) {
     nextBezierCurve.isNext = true;
   }
+}
+
+export function updateBezierCurve(bezierCurve: BezierCurve, earliestPercentage: number, latestPercentage: number) {
+  bezierCurve.updatePercentages(earliestPercentage, latestPercentage);
 }
 
 function getRadiusForSong(

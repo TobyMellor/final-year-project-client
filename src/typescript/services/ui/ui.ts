@@ -4,6 +4,7 @@ import SegmentModel from '../../models/audio-analysis/Segment';
 import { UIBarType, UIBeatType } from '../../types/general';
 import CanvasService from '../canvas/CanvasService';
 import WebAudioService from '../web-audio/WebAudioService';
+import * as math from '../../utils/math';
 
 export async function getUIBars(track: TrackModel): Promise<UIBarType[]> {
   const { bars, segments } = await track.getAudioAnalysis();
@@ -39,8 +40,8 @@ function getUIBeats(
   const beats = bar.beats;
 
   return beats.map(({ order, timbre: beatTimbre, maxLoudness: beatMaxLoudness, durationMs }) => {
-    const timbreNormalized = normalizeNumber(beatTimbre, minTimbre, maxTimbre);
-    const loudnessNormalized = normalizeNumber(beatMaxLoudness, minLoudness, maxLoudness);
+    const timbreNormalized = math.normalizeNumber(beatTimbre, minTimbre, maxTimbre);
+    const loudnessNormalized = math.normalizeNumber(beatMaxLoudness, minLoudness, maxLoudness);
 
     return {
       order,
@@ -72,10 +73,10 @@ function getTimbreAndLoudness(
                                             trimLoudnessDecimal);
 
   return {
-    minTimbre: Math.min(...trimmedTimbre),
-    maxTimbre: Math.max(...trimmedTimbre),
-    minLoudness: Math.min(...trimmedLoudness),
-    maxLoudness: Math.max(...trimmedLoudness),
+    minTimbre: math.getMin(trimmedTimbre),
+    maxTimbre: math.getMax(trimmedTimbre),
+    minLoudness: math.getMin(trimmedLoudness),
+    maxLoudness: math.getMax(trimmedLoudness),
   };
 }
 
@@ -89,30 +90,6 @@ function getTrimmedDataset(numbers: number[], trimDecimal: number) {
   sortedNumbers.splice(numberCount - elementstoTrim, elementstoTrim);
 
   return sortedNumbers;
-}
-
-function normalizeNumber(number: number, min: number, max: number): number {
-  const cappedNumber = capNumberBetween(number, min, max);
-  const normalizedNumber = (cappedNumber - min) / (max - min);
-
-  return normalizedNumber;
-}
-
-/**
- * Cap a number at a min and max value.
- *
- * e.g. If the max cap is 100, but the number is 1000,
- * the number will be capped at 100.
- *
- * @param number The number to cap
- * @param min The minimum number before capping
- * @param max The maximum number before capping
- */
-function capNumberBetween(number: number, min: number, max: number): number {
-  const lowerCapped = Math.max(number, min);
-  const numberCapped = Math.min(lowerCapped, max);
-
-  return numberCapped;
 }
 
 /**
@@ -147,4 +124,20 @@ export function previewBeatsWithOrders(beatOrders: number[], callbackFn: () => v
  */
 export function stopPlaying() {
   WebAudioService.getInstance().stop();
+}
+
+/**
+ * Displays the branch that will be created as the user
+ * is choosing the beats
+ *
+ * If a percentage is 0, it will be anchored to the bottom of the SongCircle
+ */
+export function previewBezierCurve(originPercentage: number, destinationPercentage: number | null) {
+  CanvasService.getInstance()
+               .previewBezierCurve(originPercentage, destinationPercentage);
+}
+
+export function removePreviewBezierCurve() {
+  CanvasService.getInstance()
+               .removePreviewBezierCurve();
 }

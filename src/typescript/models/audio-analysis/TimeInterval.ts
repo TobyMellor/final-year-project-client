@@ -51,7 +51,7 @@ class TimeIntervalModel {
     return percentage;
   }
 
-  private get endMs(): number {
+  public get endMs(): number {
     return this._start.ms + this._duration.ms;
   }
 

@@ -13,12 +13,16 @@ import { FYPEvent } from '../../types/enums';
 import { FYPEventPayload } from '../../types/general';
 import BezierCurve from './drawables/BezierCurve';
 import BranchModel from '../../models/branches/Branch';
+import * as math from '../../utils/math';
+import SongCircle from './drawables/SongCircle';
 
 class CanvasService {
   private static _instance: CanvasService = null;
 
   public scene: Scene = null;
+  private _parentSongCircle: SongCircle | null = null;
   private _bezierCurves: BezierCurve[] = [];
+  private _previewingBezierCurve: BezierCurve | null = null;
 
   private constructor(canvas: HTMLCanvasElement) {
     this.scene = Scene.getInstance(canvas);
@@ -27,9 +31,9 @@ class CanvasService {
     Dispatcher.getInstance()
               .on(FYPEvent.PlayingTrackBranchesAnalyzed, this, this.setSongCircles);
 
-    // When the Branch Service has given us new beats, update the next branch
+    // When a beat batch has started, highlight the next branch to be taken
     Dispatcher.getInstance()
-              .on(FYPEvent.BeatsReadyForQueueing, this, this.updateNextBezierCurve);
+              .on(FYPEvent.PlayingBeatBatch, this, this.updateNextBezierCurve);
 
     // When a beat batch has started, start the animation
     Dispatcher.getInstance()
@@ -56,21 +60,20 @@ class CanvasService {
     {
       playingTrack,
       childTracks,
-      forwardAndBackwardBranches: [forwardBranches],
+      forwardAndBackwardBranches: [_, backwardBranches],
     }: FYPEventPayload['PlayingTrackBranchesAnalyzed'],
   ) {
-    const parentSongCircle = drawableFactory.renderParentSongCircle(this.scene, playingTrack);
+    this._parentSongCircle = drawableFactory.renderParentSongCircle(this.scene, playingTrack);
 
     this._bezierCurves = drawableFactory.renderBezierCurves(this.scene,
-                                                            parentSongCircle,
-                                                            forwardBranches);
+                                                            this._parentSongCircle,
+                                                            backwardBranches);
 
     childTracks.forEach((childTrack) => {
-      // const percentage = utils.getRandomInteger();
-      const percentage = 0;
+      const percentage = math.getRandomInteger(); // TODO: Replace random position with an analysis of best entry
 
       drawableFactory.renderChildSongCircle(this.scene,
-                                            parentSongCircle,
+                                            this._parentSongCircle,
                                             childTrack,
                                             percentage);
     });
@@ -85,17 +88,13 @@ class CanvasService {
    *
    * @param eventPayload The next branch to be taken
    */
-  public async updateNextBezierCurve({ nextBranch }: FYPEventPayload['BeatsReadyForQueueing']) {
+  public async updateNextBezierCurve({ nextBranch }: FYPEventPayload['PlayingBeatBatch']) {
     const bezierCurves = this._bezierCurves;
     const nextBezierCurve = bezierCurves.find(({ branch }) => {
       return BranchModel.isSameBranch(branch, nextBranch);
     }) || null;
 
     drawableFactory.updateNextBezierCurve(this._bezierCurves, nextBezierCurve);
-  }
-
-  public async render() {
-    requestAnimationFrame(() => this.scene.render());
   }
 
   public setSongCircleRotation(percentage: number) {
@@ -108,6 +107,24 @@ class CanvasService {
     durationMs,
   }: FYPEventPayload['PlayingBeatBatch']) {
     this.scene.animateRotation(startPercentage, endPercentage, durationMs);
+  }
+
+  public previewBezierCurve(earliestPercentage: number | null, latestPercentage: number | null = earliestPercentage) {
+    if (!this._previewingBezierCurve) {
+      this._previewingBezierCurve = drawableFactory.renderBezierCurveFromPercentages(this.scene,
+                                                                                     this._parentSongCircle,
+                                                                                     earliestPercentage,
+                                                                                     latestPercentage);
+    } else {
+      drawableFactory.updateBezierCurve(this._previewingBezierCurve, earliestPercentage, latestPercentage);
+    }
+  }
+
+  public removePreviewBezierCurve() {
+    if (this._previewingBezierCurve) {
+      this.scene.remove(this._previewingBezierCurve);
+      this._previewingBezierCurve = null;
+    }
   }
 }
 

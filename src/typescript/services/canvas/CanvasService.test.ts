@@ -1,9 +1,7 @@
-import * as sinon from 'sinon';
 import CanvasService from './CanvasService';
 import Dispatcher from '../../events/Dispatcher';
 import * as fixture from '../../test/fixture';
 import Scene from './drawables/Scene';
-import Updatable from './drawables/Updatable';
 
 const THREE = require('three');
 

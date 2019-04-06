@@ -7,6 +7,7 @@ export default {
   },
   react: {
     bottom_branch_nav: {
+      not_yet_shown: 'Loading…',
       choose_first_beat: 'Select the first Beat',
       choose_second_beat: 'Select the second Beat',
       previewable: 'Preview Branch or choose again',

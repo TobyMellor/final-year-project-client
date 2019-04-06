@@ -20,11 +20,12 @@ export interface CreateBarsBeatsAndSegments {
 }
 
 export type BeatListInfo = {
+  initiallyCentered?: UIBeatType;
   queued: UIBeatType[];
   playing: UIBeatType;
   selected: UIBeatType;
   disabled: UIBeatType[];
-  lastKnownScrollPosition?: number;
+  lastKnownScrollLeft?: number;
 };
 
 export interface UIBeatType {
@@ -46,6 +47,9 @@ export interface QueuedUIBeat extends UIBeatType {
 
 export interface BranchNavProps {
   UIBars: UIBarType[];
+  isHidden?: boolean;
+  playthroughPercent?: number;
+  onClose: () => void;
 }
 
 export interface BranchNavState {
@@ -56,7 +60,6 @@ export interface BranchNavState {
   beatPreviewTimer: NodeJS.Timeout;
   lastFocusedBeatList: BeatListOrientation | null;
   scrollLeftTarget: number;
-  scrollPriorityBeatList: BeatListOrientation | null;
   mouseOverBeatList: BeatListOrientation | null;
 }
 
@@ -69,11 +72,13 @@ export interface BranchNavFooterProps {
 
 export interface BeatListProps {
   UIBars: UIBarType[];
+  initiallyCenteredUIBeat?: UIBeatType;
   queuedUIBeats: UIBeatType[];
   playingUIBeat: UIBeatType | null;
   disabledUIBeats: UIBeatType[];
   isHidden?: boolean;
   orientation: BeatListOrientation;
+  initialScrollLeft?: number;
   onBeatClick: (
     beatListOrientation: BeatListOrientation,
     UIBeat: UIBeatType,
@@ -91,6 +96,7 @@ export interface BeatListState {
 
 export interface BeatProps {
   UIBeat: UIBeatType;
+  isInitiallyCentered: boolean;
   isQueued: boolean;
   isPlaying: boolean;
   isSelected: boolean;
@@ -107,6 +113,7 @@ export interface BeatState {
 
 export interface BarProps {
   UIBar: UIBarType;
+  initiallyCenteredBeatOrder: number;
   queuedBeatOrders: number[];
   playingBeatOrder: number;
   selectedBeatOrder: number;
@@ -119,6 +126,11 @@ export interface BarProps {
 
 export interface BarState {
   zIndexes: number[];
+}
+
+export interface SettingsPanelProps {
+  onToggleBranchNavClick: () => void;
+  isBranchNavHidden: boolean;
 }
 
 export type FYPEventPayload = {
@@ -135,17 +147,28 @@ export type FYPEventPayload = {
   NextBeatsRequested: {
     playingTrack: TrackModel;
     beatBatchCount: number;
-    lastQueuedBeat: QueuedBeatModel | null;
+    nextBranch: BranchModel | null;
   };
   BeatsReadyForQueueing: {
     beats: BeatModel[];
-    nextBranch: BranchModel | null;
+    beatBatch: BeatBatch;
   };
   PlayingBeatBatch: {
+    nextBranch: BranchModel;
     startPercentage: number,
     endPercentage: number,
     durationMs: number,
   };
+};
+
+export type BeatBatch = {
+  beatsToBranchOrigin: BeatModel[], // Beats up to, but not including, the originBeat of the branch
+  branch: BranchModel,
+};
+
+export type QueuedBeatBatch = {
+  queuedBeatsToBranchOrigin: QueuedBeatModel[],
+  branch: BranchModel,
 };
 
 export type ForwardAndBackwardBranch = [ForwardBranchModel, BackwardBranchModel];
