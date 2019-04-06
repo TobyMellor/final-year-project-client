@@ -50,7 +50,6 @@ describe('BranchNav Component', () => {
       beatPreviewTimer: null,
       lastFocusedBeatList: null,
       scrollLeftTarget: -1,
-      scrollPriorityBeatList: null,
       mouseOverBeatList: BeatListOrientation.TOP,
     };
 

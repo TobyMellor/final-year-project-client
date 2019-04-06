@@ -47,6 +47,10 @@ export function decimalToPercentage(decimal: number): number {
   return decimal * 100;
 }
 
+export function percentageToDecimal(percentage: number): number {
+  return percentage / 100;
+}
+
 export function secondsToMilliseconds(seconds: number): number {
   return seconds * 1000;
 }

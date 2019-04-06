@@ -24,7 +24,7 @@ class Beat extends React.Component<BeatProps, BeatState> {
     };
   }
 
-  componentDidUpdate(nextProps: BeatProps) {
+  componentWillUpdate(nextProps: BeatProps) {
     // This is used when matching the opposite BeatList's selection
     if (nextProps.isInitiallyCentered !== this.props.isInitiallyCentered) {
       this.scrollBeatIntoView(ScrollBehavior.Instant);

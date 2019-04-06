@@ -44,7 +44,8 @@ class App extends React.Component<AppProps, AppState> {
         <BranchNav key={branchNavKey}
                    UIBars={UIBars}
                    isHidden={isBranchNavHidden}
-                   onClose={() => this.handleToggleBranchNav()} />
+                   onClose={() => this.handleToggleBranchNav()}
+                   playthroughPercent={0} />
         <SettingsPanel onToggleBranchNavClick={() => this.handleToggleBranchNav()}
                        isBranchNavHidden={isBranchNavHidden} />
       </React.Fragment>

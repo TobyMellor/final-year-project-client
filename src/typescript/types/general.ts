@@ -25,7 +25,7 @@ export type BeatListInfo = {
   playing: UIBeatType;
   selected: UIBeatType;
   disabled: UIBeatType[];
-  lastKnownScrollPosition?: number;
+  lastKnownScrollLeft?: number;
 };
 
 export interface UIBeatType {
@@ -48,6 +48,7 @@ export interface QueuedUIBeat extends UIBeatType {
 export interface BranchNavProps {
   UIBars: UIBarType[];
   isHidden?: boolean;
+  playthroughPercent?: number;
   onClose: () => void;
 }
 
@@ -59,7 +60,6 @@ export interface BranchNavState {
   beatPreviewTimer: NodeJS.Timeout;
   lastFocusedBeatList: BeatListOrientation | null;
   scrollLeftTarget: number;
-  scrollPriorityBeatList: BeatListOrientation | null;
   mouseOverBeatList: BeatListOrientation | null;
 }
 
