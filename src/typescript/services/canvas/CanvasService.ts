@@ -123,6 +123,11 @@ class CanvasService {
       drawableFactory.updateBezierCurve(this._previewingBezierCurve, earliestPercentage, latestPercentage);
     }
   }
+
+  public removePreviewBezierCurve() {
+    this.scene.remove(this._previewingBezierCurve);
+    this._previewingBezierCurve = null;
+  }
 }
 
 export default CanvasService;

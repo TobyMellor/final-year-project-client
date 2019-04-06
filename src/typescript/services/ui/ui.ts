@@ -136,3 +136,8 @@ export function previewBezierCurve(originPercentage: number, destinationPercenta
   CanvasService.getInstance()
                .previewBezierCurve(originPercentage, destinationPercentage);
 }
+
+export function removePreviewBezierCurve() {
+  CanvasService.getInstance()
+               .removePreviewBezierCurve();
+}

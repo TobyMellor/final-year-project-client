@@ -84,7 +84,7 @@ class BranchNav extends React.Component<BranchNavProps, BranchNavState> {
   }
 
   render() {
-    const { UIBars, isHidden, onClose } = this.props;
+    const { UIBars, isHidden } = this.props;
     const { status, beatLists } = this.state;
     const helperTextForStatus = this.getHelperTextForStatus(status);
     const branchNavClassNames = cx(
@@ -138,7 +138,7 @@ class BranchNav extends React.Component<BranchNavProps, BranchNavState> {
             <div className="modal-header">
               <h5 className="modal-title">Create a Branch</h5>
               <h3 className="modal-title-feedback">{helperTextForStatus}</h3>
-              <button type="button" className="close" data-dismiss="modal" onClick={() => onClose()}>
+              <button type="button" className="close" data-dismiss="modal" onClick={() => this.handleOnClose()}>
                 <span>&times;</span>
               </button>
             </div>
@@ -173,6 +173,11 @@ class BranchNav extends React.Component<BranchNavProps, BranchNavState> {
    */
   private getHelperTextForStatus(status: BranchNavStatus): string {
     return Translator.react.bottom_branch_nav[status];
+  }
+
+  private handleOnClose() {
+    uiService.removePreviewBezierCurve();
+    this.props.onClose();
   }
 
   /**
@@ -420,6 +425,13 @@ class BranchNav extends React.Component<BranchNavProps, BranchNavState> {
    * If we haven't, we'll smoothly attempt to catch up the scroll tracker and repeat.
    */
   private handleScrollTracker() {
+    // The scrollTracker can be moved during initialization,
+    // But this shouldn't be called if it's hidden
+    const { isHidden } = this.props;
+    if (isHidden) {
+      return;
+    }
+
     const { scrollLeftTarget, beatLists, lastFocusedBeatList, status } = this.state;
     const { scrollLeft, scrollWidth, clientWidth } = this.scrollTrackerContainerElement.current;
     const isCaughtUpToTarget = this.isScrollTrackerCaughtUp(scrollLeft, scrollLeftTarget);

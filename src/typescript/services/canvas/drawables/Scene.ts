@@ -65,6 +65,15 @@ class Scene {
     this.render();
   }
 
+  public remove(updatable: Updatable) {
+    const mesh = updatable.getMesh();
+
+    this._scene.remove(mesh);
+    this._updatables.delete(updatable);
+
+    this.render();
+  }
+
   private update() {
     this._updatables.forEach(updatable => updatable.update());
   }

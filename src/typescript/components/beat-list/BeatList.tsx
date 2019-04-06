@@ -18,6 +18,10 @@ class BeatList extends React.Component<BeatListProps, BeatListState> {
     };
   }
 
+  componentDidMount() {
+    requestAnimationFrame(() => this.scrollToLeft());
+  }
+
   render() {
     const { orientation, UIBars, isHidden } = this.props;
     const barsClassNames = cx('bars', { selected: this.state.selectedUIBeat !== null });
@@ -139,6 +143,21 @@ class BeatList extends React.Component<BeatListProps, BeatListState> {
     scrollCallbackFn();
 
     onBeatListScroll(orientation, currentTarget);
+  }
+
+  /**
+   * Scrolls this beat to be at the very left of the beat list nav.
+   *
+   * It's difficult in CSS, as we've given the list additional left margin
+   * to allow the user to scroll the leftmost beat to the center
+   */
+  private scrollToLeft() {
+    const beatsElement = this.beatsElement.current;
+    const beatListWidth = beatsElement.clientWidth;
+
+    // Scroll the beat list so the first beat is aligned left
+    // This list gets given padding, so the first beat can scroll to the center
+    beatsElement.scrollLeft = (beatListWidth / 2) - config.ui.beat.beatWidthPx + config.ui.beat.beatMarginPx;
   }
 }
 
