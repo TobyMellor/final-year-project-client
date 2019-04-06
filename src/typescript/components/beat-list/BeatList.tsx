@@ -152,12 +152,16 @@ class BeatList extends React.Component<BeatListProps, BeatListState> {
    * to allow the user to scroll the leftmost beat to the center
    */
   private scrollToLeft() {
-    const beatsElement = this.beatsElement.current;
+    const beatsElement = this.getBeatsElement();
     const beatListWidth = beatsElement.clientWidth;
 
     // Scroll the beat list so the first beat is aligned left
     // This list gets given padding, so the first beat can scroll to the center
     beatsElement.scrollLeft = (beatListWidth / 2) - config.ui.beat.beatWidthPx + config.ui.beat.beatMarginPx;
+  }
+
+  public getBeatsElement(): HTMLDivElement {
+    return this.beatsElement.current;
   }
 }
 
