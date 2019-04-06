@@ -448,7 +448,7 @@ class BranchNav extends React.Component<BranchNavProps, BranchNavState> {
 
     // Check if we've caught up to the last scrollLeft target that was set
     if (isCaughtUpToTarget) {
-      const newScrollLeftTarget = beatLists[lastFocusedBeatList].lastKnownScrollPosition || null;
+      const newScrollLeftTarget = this.getLastFocusedScrollPosition();
       const isCaughtUpToNewTarget = this.isScrollTrackerCaughtUp(scrollLeft, newScrollLeftTarget);
 
       // Set a new scrollLeft target if the scrollTracker is still not synced
@@ -461,24 +461,35 @@ class BranchNav extends React.Component<BranchNavProps, BranchNavState> {
       });
     }
 
-    // Obtain the up-to-date scroll percentage for a BeatList
-    // Note: don't use lastKnownScrollPosition as it may be outdated
-    //       (e.g. if it's scrolled back by itself when the user is not focusing on it)
-    const getScrollPercentageForBeatList = (orientation: BeatListOrientation): number => {
+    const scrollTrackerScrollPercent = this.getScrollPercent(scrollLeft, scrollWidth, clientWidth);
+    const getExactBeatListScrollPercent = (orientation: BeatListOrientation): number => {
+      // If it's the first stage, use the scroll tracker as we know it's in sync
+      if (status === BranchNavStatus.CHOOSE_FIRST_BEAT) {
+        return scrollTrackerScrollPercent;
+      }
+
+      // If the scrollTracker and the BeatList are in sync, use the scrollTrackerScrollPercent to avoid wobbling
+      const isCaughtUp = orientation === lastFocusedBeatList && scrollLeft === this.getLastFocusedScrollPosition();
+      if (isCaughtUp) {
+        return scrollTrackerScrollPercent;
+      }
+
+      // For the BeatList that's not utilising the scroll tracker, get the exact up-to-date percentage
       const beatListElement = this.getBeatListElement(orientation).current;
       const scrollableBeatListElement = beatListElement.getBeatsElement();
 
-      return this.getScrollPercentage(scrollableBeatListElement.scrollLeft, scrollWidth, clientWidth);
+      return this.getScrollPercent(scrollableBeatListElement.scrollLeft, scrollWidth, clientWidth);
     };
 
-    const topScrollPercent = getScrollPercentageForBeatList(TOP);
-    const bottomScrollPercent = status === BranchNavStatus.CHOOSE_FIRST_BEAT
-                              ? topScrollPercent
-                              : getScrollPercentageForBeatList(BOTTOM);
-    const thisScrollPercent = lastFocusedBeatList === TOP ? topScrollPercent : bottomScrollPercent;
+    const topBeatListExactScrollPercent = getExactBeatListScrollPercent(TOP);
+    const bottomBeatListExactScrollPercent = getExactBeatListScrollPercent(BOTTOM);
 
-    uiService.previewBezierCurve(topScrollPercent, bottomScrollPercent); // Preview before setSongCircleRotation
-    uiService.setSongCircleRotation(thisScrollPercent);
+    uiService.setSongCircleRotation(scrollTrackerScrollPercent);
+    // Preview before setSongCircleRotation
+    uiService.previewBezierCurve(
+      topBeatListExactScrollPercent,
+      bottomBeatListExactScrollPercent,
+    );
   }
 
   /**
@@ -489,7 +500,7 @@ class BranchNav extends React.Component<BranchNavProps, BranchNavState> {
    * @param scrollWidth The element's .scrollWidth
    * @param clientWidth The element's .clientWidth
    */
-  private getScrollPercentage(
+  private getScrollPercent(
     scrollLeft: number,
     scrollWidth: number,
     clientWidth: number,
@@ -712,6 +723,11 @@ class BranchNav extends React.Component<BranchNavProps, BranchNavState> {
     }
 
     return this.bottomBeatListElement;
+  }
+
+  private getLastFocusedScrollPosition(): number | null {
+    const { beatLists, lastFocusedBeatList } = this.state;
+    return beatLists[lastFocusedBeatList].lastKnownScrollPosition || null;
   }
 }
 
