@@ -97,10 +97,6 @@ class CanvasService {
     drawableFactory.updateNextBezierCurve(this._bezierCurves, nextBezierCurve);
   }
 
-  public async render() {
-    requestAnimationFrame(() => this.scene.render());
-  }
-
   public setSongCircleRotation(percentage: number) {
     this.scene.setRotationPercentage(percentage);
   }
