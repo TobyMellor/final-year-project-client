@@ -461,10 +461,6 @@ class BranchNav extends React.Component<BranchNavProps, BranchNavState> {
       });
     }
 
-    if (status === BranchNavStatus.CHOOSE_FIRST_BEAT) {
-      beatLists[BOTTOM].lastKnownScrollPosition = beatLists[TOP].lastKnownScrollPosition;
-    }
-
     // Obtain the up-to-date scroll percentage for a BeatList
     // Note: don't use lastKnownScrollPosition as it may be outdated
     //       (e.g. if it's scrolled back by itself when the user is not focusing on it)
@@ -476,7 +472,9 @@ class BranchNav extends React.Component<BranchNavProps, BranchNavState> {
     };
 
     const topScrollPercent = getScrollPercentageForBeatList(TOP);
-    const bottomScrollPercent = getScrollPercentageForBeatList(BOTTOM);
+    const bottomScrollPercent = status === BranchNavStatus.CHOOSE_FIRST_BEAT
+                              ? topScrollPercent
+                              : getScrollPercentageForBeatList(BOTTOM);
     const thisScrollPercent = lastFocusedBeatList === TOP ? topScrollPercent : bottomScrollPercent;
 
     uiService.previewBezierCurve(topScrollPercent, bottomScrollPercent); // Preview before setSongCircleRotation
