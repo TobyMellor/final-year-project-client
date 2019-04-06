@@ -5,7 +5,6 @@ import BeatList from './BeatList';
 import { getMockUIBar } from '../../utils/tests';
 import { BeatListOrientation } from '../../types/enums';
 import { BeatListProps } from '../../types/general';
-import { timeout } from '../../test/fixture';
 
 configure({ adapter: new Adapter() });
 
