@@ -15,6 +15,7 @@ import BezierCurve from './drawables/BezierCurve';
 import BranchModel from '../../models/branches/Branch';
 import * as math from '../../utils/math';
 import SongCircle from './drawables/SongCircle';
+import Needle, { NeedleType } from './drawables/Needle';
 
 class CanvasService {
   private static _instance: CanvasService = null;
@@ -22,6 +23,8 @@ class CanvasService {
   public scene: Scene = null;
   private _parentSongCircle: SongCircle | null = null;
   private _bezierCurves: BezierCurve[] = [];
+  private _playingNeedle: Needle | null = null;
+  private _previewingNeedle: Needle | null = null;
   private _previewingBezierCurve: BezierCurve | null = null;
 
   private constructor(canvas: HTMLCanvasElement) {
@@ -64,13 +67,15 @@ class CanvasService {
     }: FYPEventPayload['PlayingTrackBranchesAnalyzed'],
   ) {
     this._parentSongCircle = drawableFactory.renderParentSongCircle(this.scene, playingTrack);
+    this._playingNeedle = drawableFactory.renderNeedle(this.scene, this._parentSongCircle, NeedleType.PLAYING, 0);
 
     this._bezierCurves = drawableFactory.renderBezierCurves(this.scene,
                                                             this._parentSongCircle,
                                                             backwardBranches);
 
     childTracks.forEach((childTrack) => {
-      const percentage = math.getRandomInteger(); // TODO: Replace random position with an analysis of best entry
+      // const percentage = math.getRandomInteger(); // TODO: Replace random position with an analysis of best entry
+      const percentage = 25;
 
       drawableFactory.renderChildSongCircle(this.scene,
                                             this._parentSongCircle,
@@ -105,8 +110,12 @@ class CanvasService {
     startPercentage,
     endPercentage,
     durationMs,
+    type,
   }: FYPEventPayload['PlayingBeatBatch']) {
-    this.scene.animateRotation(startPercentage, endPercentage, durationMs);
+    this.scene.animateRotation(startPercentage,
+                               endPercentage,
+                               durationMs,
+                               (rotationPercentage: number) => this.updateNeedle(type, rotationPercentage));
   }
 
   public previewBezierCurve(earliestPercentage: number | null, latestPercentage: number | null = earliestPercentage) {
@@ -125,6 +134,16 @@ class CanvasService {
       this.scene.remove(this._previewingBezierCurve);
       this._previewingBezierCurve = null;
     }
+  }
+
+  public updateNeedle(needleType: NeedleType, percentage: number) {
+    const needle = needleType === NeedleType.PLAYING ? this._playingNeedle : this._previewingNeedle;
+
+    if (!needle) {
+      throw new Error('Needle has not been rendered yet!');
+    }
+
+    drawableFactory.updateNeedle(needle, percentage);
   }
 }
 

@@ -10,7 +10,6 @@ class SongCircle extends Updatable {
   private static BACKGROUND_COLOUR: number = 0xFFFFFF;
   private static TEXT_COLOUR: number = 0xFFFFFF;
   public static EDGE_COLOUR: number = 0x000000;
-  private static HIGHLIGHT_COLOUR: number = 0xE74C3C;
   private static DARK_OVERLAY_OPACITY: number = 0.6;
   private static CIRCLE_RESOLUTION = 1;
   private static DEGREES_IN_CIRCLE = 360;
@@ -19,7 +18,7 @@ class SongCircle extends Updatable {
     scene: Scene,
     public track: Track,
     public radius: number,
-    private _lineWidth: number,
+    public lineWidth: number,
     private _parentSongCircle: SongCircle = null,
     private _percentage: number = -1,
     backgroundColour: number = null, // If present, this overrides the album art
@@ -27,12 +26,10 @@ class SongCircle extends Updatable {
     super();
 
     this.addCircle(track, radius, backgroundColour);
-    this.addCircleOutline(radius, _lineWidth);
+    this.addCircleOutline(radius, lineWidth);
 
     if (_parentSongCircle) {
-      this.addText(track, radius, _lineWidth);
-    } else {
-      this.addNeedle(_lineWidth);
+      this.addText(track, radius, lineWidth);
     }
 
     super.addAll(scene);
@@ -215,19 +212,6 @@ class SongCircle extends Updatable {
     });
   }
 
-  private addNeedle(lineWidth: number) {
-    const geometry = new THREE.PlaneGeometry(lineWidth * 4, lineWidth / 4);
-    const material = new THREE.MeshBasicMaterial({ color: SongCircle.HIGHLIGHT_COLOUR });
-    const position = WorldPoint.getPointOnCircleFromPercentage(this, 0);
-
-    super.createAndAddMesh({
-      geometry,
-      material,
-      position,
-      renderOrder: 2,
-    });
-  }
-
   public get center(): WorldPoint {
     if (!this._parentSongCircle) {
       return WorldPoint.getPoint(0, 0, Scene.Z_BASE_DISTANCE);
@@ -236,11 +220,9 @@ class SongCircle extends Updatable {
     const centerWorldPoint = WorldPoint.getCenterPointOfCircleFromPercentage(this._parentSongCircle,
                                                                              this._percentage,
                                                                              this.radius,
-                                                                             this._lineWidth);
+                                                                             this.lineWidth);
 
-    centerWorldPoint.z = Scene.Z_BASE_DISTANCE;
-
-    return centerWorldPoint;
+    return centerWorldPoint.alignToSceneBase();
   }
 
   protected getRenderOrder(): number {

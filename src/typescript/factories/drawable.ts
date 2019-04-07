@@ -3,6 +3,7 @@ import TrackModel from '../models/audio-analysis/Track';
 import Scene from '../services/canvas/drawables/Scene';
 import BezierCurve from '../services/canvas/drawables/BezierCurve';
 import BranchModel from '../models/branches/Branch';
+import Needle, { NeedleType } from '../services/canvas/drawables/Needle';
 
 export function renderParentSongCircle(
   scene: Scene,
@@ -85,6 +86,20 @@ export function updateNextBezierCurve(
 
 export function updateBezierCurve(bezierCurve: BezierCurve, earliestPercentage: number, latestPercentage: number) {
   bezierCurve.updatePercentages(earliestPercentage, latestPercentage);
+}
+
+export function renderNeedle(scene: Scene, songCircle: SongCircle, needleType: NeedleType, percentage: number): Needle {
+  return new Needle(scene,
+                    songCircle,
+                    needleType,
+                    percentage);
+}
+
+export function updateNeedle(needle: Needle, percentage: number) {
+  // Offset whatever percentage we're given in order to fix it to the bottom
+  const inversePercentage = 100 - percentage;
+
+  needle.percentage = inversePercentage;
 }
 
 function getRadiusForSong(

@@ -17,6 +17,7 @@ import { FYPEventPayload } from '../../types/general';
 import QueuedBeatModel from '../../models/web-audio/QueuedBeat';
 import * as utils from '../../utils/conversions';
 import BranchModel from '../../models/branches/Branch';
+import { NeedleType } from '../canvas/drawables/Needle';
 
 class WebAudioService {
   private static _instance: WebAudioService;
@@ -235,7 +236,7 @@ class WebAudioService {
     const songDuration = this._playingTrack.duration;
     const startPercentage = startBeat.getPercentageInTrack(songDuration);
     const endPercentage = endBeat.getPercentageInTrack(songDuration);
-    const durationMs = endBeat.startMs - startBeat.endMs; // TODO: Check endMs and startMs usage
+    const durationMs = endBeat.startMs - startBeat.endMs;
 
     Dispatcher.getInstance()
               .dispatch(FYPEvent.PlayingBeatBatch, {
@@ -243,6 +244,7 @@ class WebAudioService {
                 startPercentage,
                 endPercentage,
                 durationMs,
+                type: NeedleType.PLAYING, // TODO: Implement PLAYING and PREVIEWING needles
               });
   }
 }

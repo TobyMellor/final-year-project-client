@@ -373,6 +373,7 @@ class BranchNav extends React.Component<BranchNavProps, BranchNavState> {
 
     // Don't scroll the beat list if the user's mouse is not hovering over it
     if (mouseOverBeatList && mouseOverBeatList !== beatListOrientation) {
+      console.debug('Mouse over blocking scrolling', mouseOverBeatList, beatListOrientation);
       return;
     }
 
@@ -443,6 +444,7 @@ class BranchNav extends React.Component<BranchNavProps, BranchNavState> {
     // The scrollTracker can be moved during initialization, don't allow animations to take place
     const { scrollLeftTarget, beatLists, lastFocusedBeatList, status } = this.state;
     if (status === BranchNavStatus.NOT_YET_SHOWN) {
+      console.debug('NOT_YET_SHOWN blocking scroll');
       return;
     }
 

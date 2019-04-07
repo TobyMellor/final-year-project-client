@@ -7,6 +7,7 @@ import BranchModel from '../models/branches/Branch';
 import ForwardBranchModel from '../models/branches/ForwardBranch';
 import BackwardBranchModel from '../models/branches/BackwardBranch';
 import QueuedBeatModel from '../models/web-audio/QueuedBeat';
+import { NeedleType } from '../services/canvas/drawables/Needle';
 
 export type TimeIdentifier = {
   ms: number;
@@ -154,6 +155,7 @@ export type FYPEventPayload = {
     beatBatch: BeatBatch;
   };
   PlayingBeatBatch: {
+    type: NeedleType.PLAYING,
     nextBranch: BranchModel;
     startPercentage: number,
     endPercentage: number,

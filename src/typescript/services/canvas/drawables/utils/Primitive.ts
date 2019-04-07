@@ -1,4 +1,5 @@
 import * as conversions from '../../../../utils/conversions';
+import Scene from '../Scene';
 
 abstract class Primitive {
   public x: number;
@@ -33,6 +34,12 @@ abstract class Primitive {
     const angle: number = conversions.percentageToRadians(percentageWithOffset);
 
     return angle;
+  }
+
+  public alignToSceneBase() {
+    this.z = Scene.Z_BASE_DISTANCE;
+
+    return this;
   }
 }
 
