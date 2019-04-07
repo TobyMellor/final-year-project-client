@@ -1,7 +1,5 @@
 import DispatcherEvent, { Callback } from './DispatcherEvent';
 import * as loggerService from '../services/logging/logger';
-import config from '../config';
-import { FYPEvent } from '../types/enums';
 
 interface Events {
   [key: string]: DispatcherEvent;
@@ -30,19 +28,16 @@ class Dispatcher {
     }
   }
 
-  on(eventName: string, context: Object, callbackFn: Callback['callbackFn']) {
+  on(eventName: string, callbackFn: Callback) {
     loggerService.debug(`Listener for ${eventName} registered!`);
 
     // If this is the first time we've seen this event, register it
     if (!this.events[eventName]) {
-      this.events[eventName] = new DispatcherEvent(eventName);
+      this.events[eventName] = new DispatcherEvent();
     }
 
     return this.events[eventName]
-               .registerCallback({
-                 context,
-                 callbackFn,
-               });
+               .registerCallback(callbackFn);
   }
 }
 

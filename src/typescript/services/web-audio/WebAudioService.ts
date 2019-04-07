@@ -54,12 +54,12 @@ class WebAudioService {
 
     // Once we've loaded the track, analyzed it, and rendered the visuals
     Dispatcher.getInstance()
-              .on(FYPEvent.PlayingTrackRendered, this, this.loadPlayingTrack);
+              .on(FYPEvent.PlayingTrackRendered, () => this.loadPlayingTrack());
 
     if (config.fyp.shouldPlayMusic) {
       // When the Branch Service has given us new beats
       Dispatcher.getInstance()
-                .on(FYPEvent.BeatsReadyForQueueing, this, this.queueBeatsForPlaying);
+                .on(FYPEvent.BeatsReadyForQueueing, data => this.queueBeatsForPlaying(data));
     }
   }
 
@@ -206,6 +206,8 @@ class WebAudioService {
     this._audioBufferSourceNodes = [];
 
     BeatQueueManager.clear();
+
+    this.dispatchPlayingBeatBatchStopped();
   }
 
   // Signal that we're ready to receive beats to play
@@ -249,6 +251,13 @@ class WebAudioService {
                 endPercentage,
                 durationMs,
                 source,
+              });
+  }
+
+  private dispatchPlayingBeatBatchStopped() {
+    Dispatcher.getInstance()
+              .dispatch(FYPEvent.PlayingBeatBatchStopped, {
+
               });
   }
 }

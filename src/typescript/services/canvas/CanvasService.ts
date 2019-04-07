@@ -32,15 +32,18 @@ class CanvasService {
 
     // Once we've loaded and analyzed the playing track, display the song circles
     Dispatcher.getInstance()
-              .on(FYPEvent.PlayingTrackBranchesAnalyzed, this, this.setSongCircles);
+              .on(FYPEvent.PlayingTrackBranchesAnalyzed, data => this.setSongCircles(data));
 
     // When a beat batch has started, highlight the next branch to be taken
     Dispatcher.getInstance()
-              .on(FYPEvent.PlayingBeatBatch, this, this.updateNextBezierCurve);
+              .on(FYPEvent.PlayingBeatBatch, data => this.updateNextBezierCurve(data));
 
     // When a beat batch has started, start the animation
     Dispatcher.getInstance()
-              .on(FYPEvent.PlayingBeatBatch, this, this.startSongCircleRotation);
+              .on(FYPEvent.PlayingBeatBatch, data => this.startSongCircleRotation(data));
+
+    // Dispatcher.getInstance()
+    //           .on(FYPEvent.PlayingBeatBatchStopped, data => this.stop());
   }
 
   public static getInstance(canvas?: HTMLCanvasElement): CanvasService {

@@ -21,12 +21,12 @@ class BranchService {
   private constructor() {
     // Once we've loaded the first songs from Spotify, perform the Audio Analysis
     Dispatcher.getInstance()
-              .on(FYPEvent.PlayingTrackChanged, this, this.setBranches);
+              .on(FYPEvent.PlayingTrackChanged, data => this.setBranches(data));
 
     // When the next beats are requested, identify the next branch to be taken and
     // queue the relevant beats
     Dispatcher.getInstance()
-              .on(FYPEvent.NextBeatsRequested, this, this.dispatchBeatBatches);
+              .on(FYPEvent.NextBeatsRequested, data => this.dispatchBeatBatches(data));
   }
 
   public static getInstance(): BranchService {

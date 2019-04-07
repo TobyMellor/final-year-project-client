@@ -66,7 +66,7 @@ describe('Web Audio Service', () => {
   function mockEventListener(event: FYPEvent): jest.Mock {
     const fn = jest.fn(() => {});
 
-    dispatcher.on(event, {}, fn);
+    dispatcher.on(event, fn);
 
     return fn;
   }

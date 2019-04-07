@@ -1,16 +1,10 @@
-import { FYPEvent } from '../types/enums';
 
-export type Callback = {
-  context: Object,
-  callbackFn: (data: any) => void,
-};
+export type Callback = (data: any) => void;
 
 class DispatcherEvent {
-  private eventName: string;
   private callbacks: Callback[];
 
-  constructor(eventName: string) {
-    this.eventName = eventName;
+  constructor() {
     this.callbacks = [];
   }
 
@@ -23,11 +17,7 @@ class DispatcherEvent {
 
     // Bind the callbacks to their context (so 'this' works inside the callback),
     // and run the callback
-    callbacks.forEach(({ context, callbackFn }: Callback) => {
-      const bindedCallbackFn = callbackFn.bind(context);
-
-      return bindedCallbackFn(data);
-    });
+    callbacks.forEach((callbackFn: Callback) => callbackFn(data));
   }
 
   public getListenerCount(): number {

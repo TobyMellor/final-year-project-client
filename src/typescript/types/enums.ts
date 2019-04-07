@@ -20,6 +20,9 @@ export enum FYPEvent {
   // A beat batch has started playing. This event may be fired with some precision loss
   // (setTimeout), so don't use it for audio
   PlayingBeatBatch = 'playing_beat_batch',
+
+  // The audio has stopped, and any animations should stop
+  PlayingBeatBatchStopped = 'playing_beat_batch_stopped',
 }
 
 export enum BranchNavStatus {

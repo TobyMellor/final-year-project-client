@@ -68,7 +68,7 @@ export function listenPlayingTrackRendered(): () => void {
   const callbackFn = jest.fn();
 
   Dispatcher.getInstance()
-            .on(FYPEvent.PlayingTrackRendered, this, callbackFn);
+            .on(FYPEvent.PlayingTrackRendered, data => callbackFn(data));
 
   return callbackFn;
 }

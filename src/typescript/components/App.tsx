@@ -33,7 +33,7 @@ class App extends React.Component<AppProps, AppState> {
 
     // When a new song has been loaded and analyzed
     Dispatcher.getInstance()
-              .on(FYPEvent.PlayingTrackBranchesAnalyzed, this, this.updateBars);
+              .on(FYPEvent.PlayingTrackBranchesAnalyzed, data => this.updateBars(data));
   }
 
   render() {
