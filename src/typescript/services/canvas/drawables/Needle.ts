@@ -1,17 +1,10 @@
-import config from '../../../config';
 import Scene from './Scene';
 import SongCircle from './SongCircle';
-import BranchModel from '../../../models/branches/Branch';
 import Updatable from './Updatable';
 import * as THREE from 'three';
 import WorldPoint from './utils/WorldPoint';
 import Rotation from './utils/Rotation';
-const MeshLine = require('three.meshline');
-
-export enum NeedleType {
-  PLAYING = 'playing',
-  PREVIEWING = 'previewing',
-}
+import { NeedleType } from '../../../types/enums';
 
 class Needle extends Updatable {
   private static RELATIVE_WIDTH: number = 0.25;
@@ -52,7 +45,7 @@ class Needle extends Updatable {
     switch (needleType) {
       case NeedleType.PLAYING:
         return 0xE74C3C;
-      case NeedleType.PREVIEWING:
+      case NeedleType.BRANCH_NAV:
         return 0xF1C40F;
       default:
         throw new Error('Unknown NeedleType');

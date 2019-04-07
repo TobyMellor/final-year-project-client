@@ -28,7 +28,7 @@ describe('BranchNav Component', () => {
         getMockUIBar(0),
         getMockUIBar(1),
       ],
-      onClose: jest.fn(),
+      onRequestClose: jest.fn(),
     };
 
     previewableState = {
@@ -214,14 +214,14 @@ describe('BranchNav Component', () => {
   });
 
   it('closing the modal calls onCloseFn', () => {
-    const onCloseFn = jest.fn();
+    const onRequestCloseFn = jest.fn();
     const wrapper = mount(
-      <BranchNav {...defaultProps} onClose={onCloseFn} />,
+      <BranchNav {...defaultProps} onRequestClose={onRequestCloseFn} />,
     );
 
     // Closing restores all original state
     wrapper.find('button.close').simulate('click');
-    expect(onCloseFn).toBeCalledTimes(1);
+    expect(onRequestCloseFn).toBeCalledTimes(1);
   });
 
   it('sets the bottom beatLists initially centered beat to the first\'s selected one', () => {

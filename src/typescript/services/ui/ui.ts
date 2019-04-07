@@ -5,6 +5,8 @@ import { UIBarType, UIBeatType } from '../../types/general';
 import CanvasService from '../canvas/CanvasService';
 import WebAudioService from '../web-audio/WebAudioService';
 import * as math from '../../utils/math';
+import { NeedleType } from '../../types/enums';
+import WorldPoint from '../canvas/drawables/utils/WorldPoint';
 
 export async function getUIBars(track: TrackModel): Promise<UIBarType[]> {
   const { bars, segments } = await track.getAudioAnalysis();
@@ -102,7 +104,7 @@ function getTrimmedDataset(numbers: number[], trimDecimal: number) {
  */
 export function setSongCircleRotation(scrollPercentage: number) {
   CanvasService.getInstance()
-               .setSongCircleRotation(scrollPercentage);
+               .setSongCircleRotation(NeedleType.BRANCH_NAV, scrollPercentage);
 }
 
 /**
@@ -140,4 +142,14 @@ export function previewBezierCurve(originPercentage: number, destinationPercenta
 export function removePreviewBezierCurve() {
   CanvasService.getInstance()
                .removePreviewBezierCurve();
+}
+
+/**
+ * Get how far the user is through the song
+ *
+ * This can be obtained directly from the rotationOffsetPercentage
+ * set by other services
+ */
+export function getPlaythroughPercent() {
+  return WorldPoint.rotationOffsetPercentage;
 }

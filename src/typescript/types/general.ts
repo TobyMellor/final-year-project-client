@@ -1,13 +1,12 @@
 import SegmentModel from '../models/audio-analysis/Segment';
 import BeatModel from '../models/audio-analysis/Beat';
 import BarModel from '../models/audio-analysis/Bar';
-import { BeatListOrientation, BranchNavStatus } from './enums';
+import { BeatListOrientation, BranchNavStatus, NeedleType } from './enums';
 import TrackModel from '../models/audio-analysis/Track';
 import BranchModel from '../models/branches/Branch';
 import ForwardBranchModel from '../models/branches/ForwardBranch';
 import BackwardBranchModel from '../models/branches/BackwardBranch';
 import QueuedBeatModel from '../models/web-audio/QueuedBeat';
-import { NeedleType } from '../services/canvas/drawables/Needle';
 
 export type TimeIdentifier = {
   ms: number;
@@ -49,8 +48,7 @@ export interface QueuedUIBeat extends UIBeatType {
 export interface BranchNavProps {
   UIBars: UIBarType[];
   isHidden?: boolean;
-  playthroughPercent?: number;
-  onClose: () => void;
+  onRequestClose: () => void;
 }
 
 export interface BranchNavState {
@@ -132,6 +130,7 @@ export interface BarState {
 export interface SettingsPanelProps {
   onToggleBranchNavClick: () => void;
   isBranchNavHidden: boolean;
+  isBranchNavDisabled: boolean;
 }
 
 export type FYPEventPayload = {
@@ -155,7 +154,7 @@ export type FYPEventPayload = {
     beatBatch: BeatBatch;
   };
   PlayingBeatBatch: {
-    type: NeedleType.PLAYING,
+    source: NeedleType,
     nextBranch: BranchModel;
     startPercentage: number,
     endPercentage: number,

@@ -43,3 +43,15 @@ export enum BeatListOrientation {
   TOP = 'top',
   BOTTOM = 'bottom',
 }
+
+export enum NeedleType {
+  // Indicates where the is in the song
+  // Always present when music is playing
+  // Focused when BranchNav hidden or BranchNav.state === PREVIEWING
+  PLAYING = 'playing',
+
+  // Indicates where the user is scrolled in the BranchNav
+  // Always present when BranchNav is shown
+  // Focused when BranchNav.state !== PREVIEWING
+  BRANCH_NAV = 'branch_nav',
+}

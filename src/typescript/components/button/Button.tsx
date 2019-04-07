@@ -8,6 +8,7 @@ interface ButtonProps {
   label: string;
   shouldFadeIn?: boolean;
   shouldHide?: boolean;
+  disabled?: boolean;
 }
 
 interface ButtonState {
@@ -34,16 +35,19 @@ class Button extends React.Component<ButtonProps, ButtonState> {
   }
 
   handleClick() {
-    this.props.onButtonClick();
+    if (!this.props.disabled) {
+      this.props.onButtonClick();
+    }
   }
 
   render() {
-    const { colourClassName, label, shouldFadeIn, shouldHide } = this.props;
+    const { colourClassName, label, shouldFadeIn, shouldHide, disabled } = this.props;
     const { hasFadeFinished } = this.state;
     const classNames = cx(
       'btn',
       colourClassName,
       {
+        disabled,
         'start-fade': shouldFadeIn && !hasFadeFinished,
         'end-fade': shouldFadeIn && hasFadeFinished,
         'd-none': shouldHide,

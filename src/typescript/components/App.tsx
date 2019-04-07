@@ -14,6 +14,7 @@ interface AppProps {}
 interface AppState {
   UIBars: UIBarType[];
   isBranchNavHidden: boolean;
+  isBranchNavDisabled: boolean;
   branchNavKey: number;
   branchNavClearTimer: NodeJS.Timeout | null;
 }
@@ -25,6 +26,7 @@ class App extends React.Component<AppProps, AppState> {
     this.state = {
       UIBars: [],
       isBranchNavHidden: true,
+      isBranchNavDisabled: false,
       branchNavKey: 1,
       branchNavClearTimer: null,
     };
@@ -35,7 +37,7 @@ class App extends React.Component<AppProps, AppState> {
   }
 
   render() {
-    const { UIBars, isBranchNavHidden, branchNavKey } = this.state;
+    const { UIBars, isBranchNavHidden, isBranchNavDisabled, branchNavKey } = this.state;
 
     return (
       <React.Fragment>
@@ -44,10 +46,10 @@ class App extends React.Component<AppProps, AppState> {
         <BranchNav key={branchNavKey}
                    UIBars={UIBars}
                    isHidden={isBranchNavHidden}
-                   onClose={() => this.handleToggleBranchNav()}
-                   playthroughPercent={0} />
+                   onRequestClose={() => this.handleToggleBranchNav()} />
         <SettingsPanel onToggleBranchNavClick={() => this.handleToggleBranchNav()}
-                       isBranchNavHidden={isBranchNavHidden} />
+                       isBranchNavHidden={isBranchNavHidden}
+                       isBranchNavDisabled={isBranchNavDisabled} />
       </React.Fragment>
     );
   }
@@ -61,6 +63,7 @@ class App extends React.Component<AppProps, AppState> {
     this.setState(
       ({ isBranchNavHidden }) => ({
         isBranchNavHidden: !isBranchNavHidden,
+        isBranchNavDisabled: true,
       }),
       () => {
         // If the BranchNav has been hidden for some amount of time,
@@ -72,6 +75,10 @@ class App extends React.Component<AppProps, AppState> {
             }));
           }
         }, config.ui.resetBranchNavAfterHiddenMs);
+
+        setTimeout(() => {
+          this.setState({ isBranchNavDisabled: false });
+        }, config.ui.scrollToDurationMs);
 
         // Replace any existing timer
         clearTimeout(this.state.branchNavClearTimer);

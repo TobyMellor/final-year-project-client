@@ -56,18 +56,22 @@ class Scene {
     return this._instance = new this(whereToDraw);
   }
 
-  public add(updatable: Updatable) {
-    const mesh = updatable.getMesh();
+  public add(...updatables: Updatable[]) {
+    updatables.forEach((updatable) => {
+      const mesh = updatable.getMesh();
 
-    this._scene.add(mesh);
-    this._updatables.add(updatable);
+      this._scene.add(mesh);
+      this._updatables.add(updatable);
+    });
   }
 
-  public remove(updatable: Updatable) {
-    const mesh = updatable.getMesh();
+  public remove(...updatables: Updatable[]) {
+    updatables.forEach((updatable) => {
+      const mesh = updatable.getMesh();
 
-    this._scene.remove(mesh);
-    this._updatables.delete(updatable);
+      this._scene.remove(mesh);
+      this._updatables.delete(updatable);
+    });
   }
 
   private update() {
@@ -84,6 +88,15 @@ class Scene {
     requestAnimationFrame(() => this.render());
   }
 
+  /**
+   * Animates a rotation from a percent, to a percent
+   *
+   * @param startRotationPercentage Where the rotation should start
+   * @param endRotationPercentage Where the rotation should end
+   * @param durationMs How long the rotation should take
+   * @param rotationCallbackFn Signals to the CanvasService to update the
+   *                           rotation, and update the position of the Needle
+   */
   public animateRotation(
     startRotationPercentage: number,
     endRotationPercentage: number,
@@ -91,7 +104,7 @@ class Scene {
     rotationCallbackFn: (rotationPercentage: number) => void,
   ) {
     // Immediately rotate to the start percentage
-    this.setRotationPercentage(startRotationPercentage);
+    rotationCallbackFn(startRotationPercentage);
 
     let animationEndMs: number;
 
@@ -100,7 +113,7 @@ class Scene {
 
       // If the animation has ended
       if (remainingMs < 0) {
-        this.setRotationPercentage(endRotationPercentage);
+        rotationCallbackFn(endRotationPercentage);
         return;
       }
 
@@ -113,8 +126,6 @@ class Scene {
       const currentRotationPercentage = (endRotationPercentage - startRotationPercentage)
                                       * animationDecimal
                                       + startRotationPercentage;
-
-      this.setRotationPercentage(currentRotationPercentage);
 
       // Fire the callback, letting the CanvasService know we've rotated
       // (and need to, for example, update the playing needle)

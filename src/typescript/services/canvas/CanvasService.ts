@@ -9,13 +9,13 @@
 import Dispatcher from '../../events/Dispatcher';
 import Scene from '../canvas/drawables/Scene';
 import * as drawableFactory from '../../factories/drawable';
-import { FYPEvent } from '../../types/enums';
+import { FYPEvent, NeedleType } from '../../types/enums';
 import { FYPEventPayload } from '../../types/general';
 import BezierCurve from './drawables/BezierCurve';
 import BranchModel from '../../models/branches/Branch';
-import * as math from '../../utils/math';
 import SongCircle from './drawables/SongCircle';
-import Needle, { NeedleType } from './drawables/Needle';
+import Needle from './drawables/Needle';
+import * as math from '../../utils/math';
 
 class CanvasService {
   private static _instance: CanvasService = null;
@@ -24,8 +24,8 @@ class CanvasService {
   private _parentSongCircle: SongCircle | null = null;
   private _bezierCurves: BezierCurve[] = [];
   private _playingNeedle: Needle | null = null;
-  private _previewingNeedle: Needle | null = null;
-  private _previewingBezierCurve: BezierCurve | null = null;
+  private _branchNavNeedle: Needle | null = null;
+  private _branchNavBezierCurve: BezierCurve | null = null;
 
   private constructor(canvas: HTMLCanvasElement) {
     this.scene = Scene.getInstance(canvas);
@@ -74,8 +74,7 @@ class CanvasService {
                                                             backwardBranches);
 
     childTracks.forEach((childTrack) => {
-      // const percentage = math.getRandomInteger(); // TODO: Replace random position with an analysis of best entry
-      const percentage = 25;
+      const percentage = math.getRandomInteger(); // TODO: Replace random position with an analysis of best entry
 
       drawableFactory.renderChildSongCircle(this.scene,
                                             this._parentSongCircle,
@@ -102,48 +101,70 @@ class CanvasService {
     drawableFactory.updateNextBezierCurve(this._bezierCurves, nextBezierCurve);
   }
 
-  public setSongCircleRotation(percentage: number) {
+  public setSongCircleRotation(focusedNeedleType: NeedleType, percentage: number) {
+    this.updateNeedle(focusedNeedleType, percentage);
     this.scene.setRotationPercentage(percentage);
   }
 
   public startSongCircleRotation({
+    source,
     startPercentage,
     endPercentage,
     durationMs,
-    type,
   }: FYPEventPayload['PlayingBeatBatch']) {
-    this.scene.animateRotation(startPercentage,
-                               endPercentage,
-                               durationMs,
-                               (rotationPercentage: number) => this.updateNeedle(type, rotationPercentage));
+    const isBranchNavPreviewing = source === NeedleType.BRANCH_NAV;
+
+    this.scene.animateRotation(
+      startPercentage,
+      endPercentage,
+      durationMs,
+      (rotationPercentage: number) => {
+        if (this.isBranchNavOpen() || isBranchNavPreviewing) {
+          // Update ONLY the needle
+          this.updateNeedle(NeedleType.PLAYING, rotationPercentage);
+          return;
+        }
+
+        // Update BOTH the needle and the rotation
+        this.setSongCircleRotation(NeedleType.PLAYING, rotationPercentage);
+      },
+    );
   }
 
   public previewBezierCurve(earliestPercentage: number | null, latestPercentage: number | null = earliestPercentage) {
-    if (!this._previewingBezierCurve) {
-      this._previewingBezierCurve = drawableFactory.renderBezierCurveFromPercentages(this.scene,
-                                                                                     this._parentSongCircle,
-                                                                                     earliestPercentage,
-                                                                                     latestPercentage);
-    } else {
-      drawableFactory.updateBezierCurve(this._previewingBezierCurve, earliestPercentage, latestPercentage);
+    if (this.isBranchNavOpen()) {
+      drawableFactory.updateBezierCurve(this._branchNavBezierCurve, earliestPercentage, latestPercentage);
+      return;
     }
+
+    this._branchNavNeedle = drawableFactory.renderNeedle(this.scene, this._parentSongCircle, NeedleType.BRANCH_NAV, 0);
+    this._branchNavBezierCurve = drawableFactory.renderBezierCurveFromPercentages(this.scene,
+                                                                                  this._parentSongCircle,
+                                                                                  earliestPercentage,
+                                                                                  latestPercentage);
   }
 
   public removePreviewBezierCurve() {
-    if (this._previewingBezierCurve) {
-      this.scene.remove(this._previewingBezierCurve);
-      this._previewingBezierCurve = null;
+    if (!this.isBranchNavOpen()) {
+      return;
     }
+
+    this.scene.remove(this._branchNavBezierCurve, this._branchNavNeedle);
+    this._branchNavBezierCurve = this._branchNavBezierCurve = null;
   }
 
   public updateNeedle(needleType: NeedleType, percentage: number) {
-    const needle = needleType === NeedleType.PLAYING ? this._playingNeedle : this._previewingNeedle;
+    const needle = needleType === NeedleType.PLAYING ? this._playingNeedle : this._branchNavNeedle;
 
     if (!needle) {
       throw new Error('Needle has not been rendered yet!');
     }
 
     drawableFactory.updateNeedle(needle, percentage);
+  }
+
+  private isBranchNavOpen(): boolean {
+    return this._branchNavBezierCurve !== null;
   }
 }
 

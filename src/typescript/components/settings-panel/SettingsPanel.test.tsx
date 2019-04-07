@@ -10,7 +10,8 @@ describe('Settings Panel Component', () => {
     const handleBranchNavClickFn = jest.fn();
     const wrapperSettingsPanel = mount(
       <SettingsPanel isBranchNavHidden={true}
-                     onToggleBranchNavClick={() => handleBranchNavClickFn()} />);
+                     onToggleBranchNavClick={() => handleBranchNavClickFn()}
+                     isBranchNavDisabled={false} />);
 
     // Initial state of button
     expect(wrapperSettingsPanel.find('Button').prop('label')).toBe('Add Branch');

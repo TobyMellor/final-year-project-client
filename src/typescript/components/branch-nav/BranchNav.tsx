@@ -90,31 +90,20 @@ class BranchNav extends React.Component<BranchNavProps, BranchNavState> {
     return false;
   }
 
-  componentWillUpdate({ isHidden, playthroughPercent }: BranchNavProps, { status }: BranchNavState) {
+  componentWillUpdate({ isHidden }: BranchNavProps, { status }: BranchNavState) {
     if (this.props.isHidden !== isHidden) {
-      let scrollLeft: number;
+      const playthroughPercent = uiService.getPlaythroughPercent();
 
       if (!isHidden) {
-        if (status === BranchNavStatus.NOT_YET_SHOWN) {
-          this.setState({ status: BranchNavStatus.CHOOSE_FIRST_BEAT });
-        }
-
-        const scrollTrackerContainerElement = this.scrollTrackerContainerElement.current;
-        scrollLeft = this.getLastFocusedScrollLeft();
-
-        // Snap the scrollTracker to wherever they are in the song
-        scrollTrackerContainerElement.scrollLeft = playthroughPercent;
+        this.handleOnShow(playthroughPercent, status);
       } else {
-        const scrollPercent = playthroughPercent;
-        scrollLeft = this.getScrollLeftFromScrollPercent(scrollPercent);
+        this.handleOnClose();
       }
-
-      this.smoothlyCatchUpScrollTracker(scrollLeft);
     }
   }
 
   render() {
-    const { UIBars, isHidden } = this.props;
+    const { UIBars, isHidden, onRequestClose } = this.props;
     const { status, beatLists } = this.state;
     const helperTextForStatus = this.getHelperTextForStatus(status);
     const branchNavClassNames = cx(
@@ -170,7 +159,7 @@ class BranchNav extends React.Component<BranchNavProps, BranchNavState> {
             <div className="modal-header">
               <h5 className="modal-title">Create a Branch</h5>
               <h3 className="modal-title-feedback">{helperTextForStatus}</h3>
-              <button type="button" className="close" data-dismiss="modal" onClick={() => this.handleOnClose()}>
+              <button type="button" className="close" data-dismiss="modal" onClick={() => onRequestClose()}>
                 <span>&times;</span>
               </button>
             </div>
@@ -197,6 +186,25 @@ class BranchNav extends React.Component<BranchNavProps, BranchNavState> {
     );
   }
 
+  private handleOnShow(playthroughPercent: number, status: BranchNavStatus) {
+    if (status === BranchNavStatus.NOT_YET_SHOWN) {
+      this.setState({ status: BranchNavStatus.CHOOSE_FIRST_BEAT });
+    }
+
+    const startScrollLeft = this.getScrollLeftFromScrollPercent(playthroughPercent);
+    const targetScrollLeft = this.getLastFocusedScrollLeft();
+    const scrollTrackerContainerElement = this.scrollTrackerContainerElement.current;
+
+    // Snap the scrollTracker to wherever they are in the song
+    scrollTrackerContainerElement.scrollLeft = startScrollLeft;
+
+    this.smoothlyCatchUpScrollTracker(targetScrollLeft);
+  }
+
+  private handleOnClose() {
+    uiService.removePreviewBezierCurve();
+  }
+
   /**
    * Retrieve the instruction text in the modal header depending
    * on the current status.
@@ -205,11 +213,6 @@ class BranchNav extends React.Component<BranchNavProps, BranchNavState> {
    */
   private getHelperTextForStatus(status: BranchNavStatus): string {
     return Translator.react.bottom_branch_nav[status];
-  }
-
-  private handleOnClose() {
-    uiService.removePreviewBezierCurve();
-    this.props.onClose();
   }
 
   /**
@@ -341,7 +344,7 @@ class BranchNav extends React.Component<BranchNavProps, BranchNavState> {
     const status = this.state.status;
 
     // If only one BeatList is shown, don't bother calculating
-    if (status === BranchNavStatus.CHOOSE_FIRST_BEAT) {
+    if (status === BranchNavStatus.NOT_YET_SHOWN || status === BranchNavStatus.CHOOSE_FIRST_BEAT) {
       return;
     }
 
@@ -491,12 +494,12 @@ class BranchNav extends React.Component<BranchNavProps, BranchNavState> {
     const topBeatListExactScrollPercent = getExactBeatListScrollPercent(TOP);
     const bottomBeatListExactScrollPercent = getExactBeatListScrollPercent(BOTTOM);
 
-    uiService.setSongCircleRotation(scrollTrackerScrollPercent);
     // Preview before setSongCircleRotation
     uiService.previewBezierCurve(
       topBeatListExactScrollPercent,
       bottomBeatListExactScrollPercent,
     );
+    uiService.setSongCircleRotation(scrollTrackerScrollPercent);
   }
 
   /**

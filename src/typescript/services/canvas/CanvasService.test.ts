@@ -20,6 +20,7 @@ describe('Canvas Service', () => {
   it('renders bezier curves on PlayingTrackBranchesAnalyzed', async () => {
     const parentSongCircleCount = 1;
     const bezierCurveCount = 2;
+    const playingNeedleCount = 1;
     const childSongCircleCount = 0;
 
     const playingTrackRenderedCallbackFn = fixture.listenPlayingTrackRendered();
@@ -36,7 +37,7 @@ describe('Canvas Service', () => {
     // There should be 1 song sircle, and 2 bezier curves on the scene
     expect(playingTrackRenderedCallbackFn).toBeCalledTimes(1);
     expect(addUpdatableFn).toBeCalledTimes(
-      parentSongCircleCount + bezierCurveCount + childSongCircleCount,
+      parentSongCircleCount + bezierCurveCount + playingNeedleCount + childSongCircleCount,
     );
   });
 });

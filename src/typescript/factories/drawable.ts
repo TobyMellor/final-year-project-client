@@ -3,7 +3,8 @@ import TrackModel from '../models/audio-analysis/Track';
 import Scene from '../services/canvas/drawables/Scene';
 import BezierCurve from '../services/canvas/drawables/BezierCurve';
 import BranchModel from '../models/branches/Branch';
-import Needle, { NeedleType } from '../services/canvas/drawables/Needle';
+import Needle from '../services/canvas/drawables/Needle';
+import { NeedleType } from '../types/enums';
 
 export function renderParentSongCircle(
   scene: Scene,

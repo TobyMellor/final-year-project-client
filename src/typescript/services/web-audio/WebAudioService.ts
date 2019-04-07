@@ -10,14 +10,13 @@
 import TrackModel from '../../models/audio-analysis/Track';
 import Dispatcher from '../../events/Dispatcher';
 import * as trackFactory from '../../factories/track';
-import { FYPEvent } from '../../types/enums';
+import { FYPEvent, NeedleType } from '../../types/enums';
 import BeatQueueManager from './BeatQueueManager';
 import config from '../../config';
 import { FYPEventPayload } from '../../types/general';
 import QueuedBeatModel from '../../models/web-audio/QueuedBeat';
 import * as utils from '../../utils/conversions';
 import BranchModel from '../../models/branches/Branch';
-import { NeedleType } from '../canvas/drawables/Needle';
 
 class WebAudioService {
   private static _instance: WebAudioService;
@@ -127,6 +126,7 @@ class WebAudioService {
    */
   private async queueBeatsForPlaying(
     { beatBatch }: FYPEventPayload['BeatsReadyForQueueing'],
+    source: NeedleType = NeedleType.PLAYING,
     onEndedCallbackFn?: () => void,
   ) {
     if (!beatBatch || !beatBatch.beatsToBranchOrigin || beatBatch.beatsToBranchOrigin.length === 0) {
@@ -138,7 +138,8 @@ class WebAudioService {
 
     // When the first beat has started, we want to dispatch the "PlayingBeatBatch" event
     const onStartedFn = () => this.dispatchPlayingBeatBatch(queuedBeatBatch.queuedBeatsToBranchOrigin[0],
-                                                            queuedBeatBatch.branch);
+                                                            queuedBeatBatch.branch,
+                                                            source);
 
     queuedBeatBatch.queuedBeatsToBranchOrigin.forEach((queuedBeat, i) => {
       const { startSecs, durationSecs } = queuedBeat.beat;
@@ -171,6 +172,7 @@ class WebAudioService {
 
     return this.queueBeatsForPlaying(
       { beats: previewingBeats, beatBatch: null },
+      NeedleType.BRANCH_NAV,
       beatOnEndedCallbackFn,
     );
   }
@@ -227,10 +229,12 @@ class WebAudioService {
    *
    * @param startQueuedBeat The start beat of the batch
    * @param endQueuedBeat The origin beat of a branch
+   * @param source Who made the request
    */
   private dispatchPlayingBeatBatch(
     { beat: startBeat }: QueuedBeatModel,
     nextBranch: BranchModel,
+    source: NeedleType,
   ) {
     const endBeat = nextBranch.originBeat;
     const songDuration = this._playingTrack.duration;
@@ -244,7 +248,7 @@ class WebAudioService {
                 startPercentage,
                 endPercentage,
                 durationMs,
-                type: NeedleType.PLAYING, // TODO: Implement PLAYING and PREVIEWING needles
+                source,
               });
   }
 }
