@@ -150,16 +150,16 @@ export type FYPEventPayload = {
     nextBranch: BranchModel | null;
   };
   BeatsReadyForQueueing: {
-    beats: BeatModel[];
     beatBatch: BeatBatch;
   };
   PlayingBeatBatch: {
-    source: NeedleType,
+    source: NeedleType;
     nextBranch: BranchModel;
-    startPercentage: number,
-    endPercentage: number,
-    durationMs: number,
+    startPercentage: number;
+    endPercentage: number;
+    durationMs: number;
   };
+  PlayingBeatBatchStopped: {};
 };
 
 export type BeatBatch = {

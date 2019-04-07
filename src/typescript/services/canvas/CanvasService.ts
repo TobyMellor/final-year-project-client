@@ -16,6 +16,7 @@ import BranchModel from '../../models/branches/Branch';
 import SongCircle from './drawables/SongCircle';
 import Needle from './drawables/Needle';
 import * as math from '../../utils/math';
+import { setSongCircleRotation } from '../ui/ui';
 
 class CanvasService {
   private static _instance: CanvasService = null;
@@ -26,6 +27,7 @@ class CanvasService {
   private _playingNeedle: Needle | null = null;
   private _branchNavNeedle: Needle | null = null;
   private _branchNavBezierCurve: BezierCurve | null = null;
+  private _isAnimating = false;
 
   private constructor(canvas: HTMLCanvasElement) {
     this.scene = Scene.getInstance(canvas);
@@ -42,8 +44,8 @@ class CanvasService {
     Dispatcher.getInstance()
               .on(FYPEvent.PlayingBeatBatch, data => this.startSongCircleRotation(data));
 
-    // Dispatcher.getInstance()
-    //           .on(FYPEvent.PlayingBeatBatchStopped, data => this.stop());
+    Dispatcher.getInstance()
+              .on(FYPEvent.PlayingBeatBatchStopped, () => this.stopSongCircleRotation());
   }
 
   public static getInstance(canvas?: HTMLCanvasElement): CanvasService {
@@ -96,6 +98,11 @@ class CanvasService {
    * @param eventPayload The next branch to be taken
    */
   public async updateNextBezierCurve({ nextBranch }: FYPEventPayload['PlayingBeatBatch']) {
+    if (!nextBranch) {
+      drawableFactory.updateNextBezierCurve(this._bezierCurves, null);
+      return;
+    }
+
     const bezierCurves = this._bezierCurves;
     const nextBezierCurve = bezierCurves.find(({ branch }) => {
       return BranchModel.isSameBranch(branch, nextBranch);
@@ -115,6 +122,8 @@ class CanvasService {
     endPercentage,
     durationMs,
   }: FYPEventPayload['PlayingBeatBatch']) {
+    this._isAnimating = true;
+
     const isBranchNavPreviewing = source === NeedleType.BRANCH_NAV;
 
     this.scene.animateRotation(
@@ -122,16 +131,26 @@ class CanvasService {
       endPercentage,
       durationMs,
       (rotationPercentage: number) => {
+        if (!this._isAnimating) {
+          return false;
+        }
+
         if (this.isBranchNavOpen() || isBranchNavPreviewing) {
           // Update ONLY the needle
           this.updateNeedle(NeedleType.PLAYING, rotationPercentage);
-          return;
+        } else {
+          // Update BOTH the needle and the rotation
+          this.setSongCircleRotation(NeedleType.PLAYING, rotationPercentage);
         }
 
-        // Update BOTH the needle and the rotation
-        this.setSongCircleRotation(NeedleType.PLAYING, rotationPercentage);
+        return true;
       },
     );
+  }
+
+  public stopSongCircleRotation() {
+    this._isAnimating = false;
+    this.setSongCircleRotation(NeedleType.PLAYING, 0);
   }
 
   public previewBezierCurve(earliestPercentage: number | null, latestPercentage: number | null = earliestPercentage) {

@@ -101,7 +101,7 @@ class Scene {
     startRotationPercentage: number,
     endRotationPercentage: number,
     durationMs: number,
-    rotationCallbackFn: (rotationPercentage: number) => void,
+    rotationCallbackFn: (rotationPercentage: number) => boolean,
   ) {
     // Immediately rotate to the start percentage
     rotationCallbackFn(startRotationPercentage);
@@ -129,7 +129,10 @@ class Scene {
 
       // Fire the callback, letting the CanvasService know we've rotated
       // (and need to, for example, update the playing needle)
-      rotationCallbackFn(currentRotationPercentage);
+      const shouldContinueAnimation = rotationCallbackFn(currentRotationPercentage);
+      if (!shouldContinueAnimation) {
+        return;
+      }
 
       // Repeat until the animation has finished
       requestAnimationFrame(renderFn);

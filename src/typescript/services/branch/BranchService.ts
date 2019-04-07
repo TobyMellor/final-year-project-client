@@ -1,9 +1,10 @@
 import Dispatcher from '../../events/Dispatcher';
-import { FYPEvent } from '../../types/enums';
+import { FYPEvent, BranchType } from '../../types/enums';
 import BranchModel from '../../models/branches/Branch';
 import { generateBranches } from './branches/branch-management';
 import BeatModel from '../../models/audio-analysis/Beat';
 import { FYPEventPayload, ForwardAndBackwardBranches, BeatBatch } from '../../types/general';
+import * as branchFactory from '../../factories/branch';
 
 /**
  * Branch Service
@@ -80,15 +81,7 @@ class BranchService {
   ): BeatModel {
     const futureBranches = this.getFutureBranches(allBranches, fromBeat.startMs);
     const nextBranch = this.getBestBranch(futureBranches);
-
-    // All beats between, but not including, the fromBeat and the next branch's originBeat
-    const beatsBetweenFromAndOrigin = this.getBeatsBetween(allBeats,
-                                                           fromBeat,
-                                                           nextBranch.originBeat);
-    const beatBatch: BeatBatch = {
-      beatsToBranchOrigin: [fromBeat, ...beatsBetweenFromAndOrigin],
-      branch: nextBranch,
-    };
+    const beatBatch = branchFactory.createBeatBatch(allBeats, fromBeat, nextBranch);
 
     Dispatcher.getInstance()
               .dispatch(FYPEvent.BeatsReadyForQueueing, {
@@ -98,14 +91,6 @@ class BranchService {
 
     const lastBeatInThisBatch = nextBranch.destinationBeat;
     return lastBeatInThisBatch;
-  }
-
-  private getBeatsBetween(
-    allBeats: BeatModel[],
-    { order: fromBeatOrder }: BeatModel,
-    { order: toBeatOrder }: BeatModel,
-  ): BeatModel[] {
-    return allBeats.slice(fromBeatOrder + 1, toBeatOrder);
   }
 
   private getFutureBranches(

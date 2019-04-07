@@ -5,7 +5,7 @@ import { UIBarType, UIBeatType } from '../../types/general';
 import CanvasService from '../canvas/CanvasService';
 import WebAudioService from '../web-audio/WebAudioService';
 import * as math from '../../utils/math';
-import { NeedleType } from '../../types/enums';
+import { NeedleType, BranchType } from '../../types/enums';
 import WorldPoint from '../canvas/drawables/utils/WorldPoint';
 
 export async function getUIBars(track: TrackModel): Promise<UIBarType[]> {
@@ -110,14 +110,20 @@ export function setSongCircleRotation(scrollPercentage: number) {
 /**
  * Plays a series of beats to the user, and executes a callback when
  * they've finished playing.
- *
- * @param beatOrders Order of the beats
- * @param callbackFn Callback to be executed when playing has finished
  */
-export function previewBeatsWithOrders(beatOrders: number[], callbackFn: () => void) {
+export function previewBeatsWithOrders(
+  beforeOriginBeatOrders: number[],
+  originBeatOrder: number,
+  destinationBeatOrder: number,
+  afterDestinationBeatOrders: number[],
+  onEndedCallbackFn: () => void,
+) {
   WebAudioService.getInstance()
-                 .previewBeatsWithOrders(beatOrders,
-                                         callbackFn.bind(this));
+                 .previewBeatsWithOrders(beforeOriginBeatOrders,
+                                         originBeatOrder,
+                                         destinationBeatOrder,
+                                         afterDestinationBeatOrders,
+                                         onEndedCallbackFn.bind(this));
 }
 
 /**

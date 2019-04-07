@@ -106,17 +106,25 @@ class TrackModel {
 
   public async getBeats(): Promise<BeatModel[]> {
     const { beats } = await this.getAudioAnalysis();
-
     return beats;
   }
 
+  /**
+   * Returns an array of beats containing orders in the given
+   * beatOrders array.
+   *
+   * NOTE: The returned array contains empty elements for convenience, so you can
+   *       beatsWithOrders[beatOrder] and have it return that beat
+   *
+   * @param beatOrders Find the beats with these orders
+   */
   public async getBeatsWithOrders(beatOrders: number[]): Promise<BeatModel[]> {
     const beats = await this.getBeats();
     const beatsWithOrders: BeatModel[] = [];
 
     // Find the beats with the correct .order, ensure the requested order is kept
-    beatOrders.forEach((beatOrder, i) => {
-      beatsWithOrders[i] = beats[beatOrder];
+    beatOrders.forEach((beatOrder) => {
+      beatsWithOrders[beatOrder] = beats[beatOrder];
     });
 
     return beatsWithOrders;

@@ -32,7 +32,7 @@ describe('Beat Queue Manager', () => {
     ];
   });
 
-  it('should toggle music through config.fyp.shouldPlayMusic', async () => {
+  it('can add beat batches to the BeatQueueManager', async () => {
     const audioContext = new AudioContext();
     const beatBatch1 = {
       beatsToBranchOrigin: [beats[0], beats[1], beats[2]],

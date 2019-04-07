@@ -20,7 +20,7 @@ describe('Web Audio Service', () => {
     webAudioService = getFreshWebAudioService();
   });
 
-  it('should toggle music through config.fyp.shouldPlayMusic', async () => {
+  it.skip('should toggle music through config.fyp.shouldPlayMusic', async () => {
     // @ts-ignore
     const queueBeatsForPlayingFn = WebAudioService.prototype.queueBeatsForPlaying = jest.fn();
 

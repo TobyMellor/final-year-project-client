@@ -58,3 +58,8 @@ export enum NeedleType {
   // Focused when BranchNav.state !== PREVIEWING
   BRANCH_NAV = 'branch_nav',
 }
+
+export enum BranchType {
+  FORWARD = 'forward',
+  BACKWARD = 'backward',
+}

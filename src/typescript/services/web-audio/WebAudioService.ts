@@ -10,13 +10,15 @@
 import TrackModel from '../../models/audio-analysis/Track';
 import Dispatcher from '../../events/Dispatcher';
 import * as trackFactory from '../../factories/track';
-import { FYPEvent, NeedleType } from '../../types/enums';
+import { FYPEvent, NeedleType, BranchType } from '../../types/enums';
 import BeatQueueManager from './BeatQueueManager';
-import config from '../../config';
-import { FYPEventPayload } from '../../types/general';
+import { FYPEventPayload, BeatBatch, QueuedBeatBatch } from '../../types/general';
 import QueuedBeatModel from '../../models/web-audio/QueuedBeat';
 import * as utils from '../../utils/conversions';
 import BranchModel from '../../models/branches/Branch';
+import fyp from '../../config/fyp';
+import * as branchFactory from '../../factories/branch';
+import BeatModel from '../../models/audio-analysis/Beat';
 
 class WebAudioService {
   private static _instance: WebAudioService;
@@ -56,11 +58,9 @@ class WebAudioService {
     Dispatcher.getInstance()
               .on(FYPEvent.PlayingTrackRendered, () => this.loadPlayingTrack());
 
-    if (config.fyp.shouldPlayMusic) {
-      // When the Branch Service has given us new beats
-      Dispatcher.getInstance()
-                .on(FYPEvent.BeatsReadyForQueueing, data => this.queueBeatsForPlaying(data));
-    }
+    // When the Branch Service has given us new beats
+    Dispatcher.getInstance()
+              .on(FYPEvent.BeatsReadyForQueueing, data => this.queueBeatsForPlaying(data));
   }
 
   public static getInstance(): WebAudioService {
@@ -137,9 +137,7 @@ class WebAudioService {
     let lastBufferSource: AudioBufferSourceNode;
 
     // When the first beat has started, we want to dispatch the "PlayingBeatBatch" event
-    const onStartedFn = () => this.dispatchPlayingBeatBatch(queuedBeatBatch.queuedBeatsToBranchOrigin[0],
-                                                            queuedBeatBatch.branch,
-                                                            source);
+    const onStartedFn = () => this.dispatchPlayingBeatBatch(queuedBeatBatch, source);
 
     queuedBeatBatch.queuedBeatsToBranchOrigin.forEach((queuedBeat, i) => {
       const { startSecs, durationSecs } = queuedBeat.beat;
@@ -165,15 +163,51 @@ class WebAudioService {
     }
   }
 
-  public async previewBeatsWithOrders(beatOrders: number[], beatOnEndedCallbackFn: () => void) {
-    const previewingBeats = await this._playingTrack.getBeatsWithOrders(beatOrders);
-
+  /**
+   *
+   * @param beatOrders All of the orders of the beats that will play, sorted
+   * @param originBeatOrder
+   * @param destinationBeatOrder
+   * @param onEndedCallbackFn
+   */
+  public async previewBeatsWithOrders(
+    beforeOriginBeatOrders: number[],
+    originBeatOrder: number,
+    destinationBeatOrder: number,
+    afterDestinationBeatOrders: number[],
+    onEndedCallbackFn: () => void,
+  ) {
     this.stop();
 
-    return this.queueBeatsForPlaying(
-      { beats: previewingBeats, beatBatch: null },
-      NeedleType.BRANCH_NAV,
-      beatOnEndedCallbackFn,
+    function createBeatBatch(beatOrders: number[], branch: BranchModel | null): BeatBatch {
+      const beatsToBranchOrigin = beatOrders.map(beatOrder => beats[beatOrder]);
+
+      return {
+        beatsToBranchOrigin,
+        branch,
+      };
+    }
+
+    const branchType = originBeatOrder < destinationBeatOrder ? BranchType.FORWARD : BranchType.BACKWARD;
+    const beats = await this._playingTrack.getBeatsWithOrders(
+      [...beforeOriginBeatOrders, originBeatOrder, destinationBeatOrder, ...afterDestinationBeatOrders],
+    );
+    const branch = branchFactory.createBranchFromType(branchType, beats[originBeatOrder], beats[destinationBeatOrder]);
+
+    // Preview everything up to, and including, the origin beat
+    const firstBeatBatch = createBeatBatch([...beforeOriginBeatOrders, originBeatOrder], branch);
+    this.queueBeatsForPlaying(
+      { beatBatch: firstBeatBatch },
+      NeedleType.PLAYING,
+      () => {},
+    );
+
+    // Preview everything after the destination beat
+    const secondBeatBatch = createBeatBatch(afterDestinationBeatOrders, null);
+    this.queueBeatsForPlaying(
+      { beatBatch: secondBeatBatch },
+      NeedleType.PLAYING,
+      onEndedCallbackFn,
     );
   }
 
@@ -187,7 +221,17 @@ class WebAudioService {
     const source = this._audioContext.createBufferSource();
 
     source.buffer = audioBuffer;
-    source.connect(this._audioContext.destination);
+
+    if (fyp.shouldPlayMusic) {
+      source.connect(this._audioContext.destination);
+    } else {
+      const gainNode = this._audioContext.createGain();
+      gainNode.gain.setValueAtTime(0, 0);
+
+      source.connect(gainNode);
+      gainNode.connect(this._audioContext.destination);
+    }
+
     source.start(when, offset, duration);
 
     if (onStartedFn) {
@@ -202,7 +246,10 @@ class WebAudioService {
 
   public stop() {
     // Stop all queued samples, then clear them from memory
-    this._audioBufferSourceNodes.forEach(source => source.stop());
+    this._audioBufferSourceNodes.forEach((source) => {
+      source.onended = null;
+      source.stop();
+    });
     this._audioBufferSourceNodes = [];
 
     BeatQueueManager.clear();
@@ -234,15 +281,15 @@ class WebAudioService {
    * @param source Who made the request
    */
   private dispatchPlayingBeatBatch(
-    { beat: startBeat }: QueuedBeatModel,
-    nextBranch: BranchModel,
+    { branch: nextBranch, queuedBeatsToBranchOrigin: beats }: QueuedBeatBatch,
     source: NeedleType,
   ) {
-    const endBeat = nextBranch.originBeat;
+    const startBeat = beats[0].beat;
+    const endBeat = beats[beats.length - 1].beat;
     const songDuration = this._playingTrack.duration;
     const startPercentage = startBeat.getPercentageInTrack(songDuration);
     const endPercentage = endBeat.getPercentageInTrack(songDuration);
-    const durationMs = endBeat.startMs - startBeat.endMs;
+    const durationMs = endBeat.endMs - startBeat.startMs;
 
     Dispatcher.getInstance()
               .dispatch(FYPEvent.PlayingBeatBatch, {
@@ -256,9 +303,7 @@ class WebAudioService {
 
   private dispatchPlayingBeatBatchStopped() {
     Dispatcher.getInstance()
-              .dispatch(FYPEvent.PlayingBeatBatchStopped, {
-
-              });
+              .dispatch(FYPEvent.PlayingBeatBatchStopped);
   }
 }
 

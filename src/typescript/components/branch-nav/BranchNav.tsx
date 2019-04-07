@@ -5,7 +5,7 @@ import cx from 'classnames';
 import * as uiService from '../../services/ui/ui';
 import * as utils from '../../utils/misc';
 import * as conversions from '../../utils/conversions';
-import { BeatListOrientation, BranchNavStatus } from '../../types/enums';
+import { BeatListOrientation, BranchNavStatus, BranchType } from '../../types/enums';
 import {
   BeatListInfo,
   QueuedUIBeat,
@@ -15,6 +15,7 @@ import {
   BranchNavState,
 } from '../../types/general';
 import BranchNavFooter from './BranchNavFooter';
+import config from '../../config';
 
 const TOP = BeatListOrientation.TOP;
 const BOTTOM = BeatListOrientation.BOTTOM;
@@ -581,24 +582,28 @@ class BranchNav extends React.Component<BranchNavProps, BranchNavState> {
     startOrientation: BeatListOrientation,
     endOrientation: BeatListOrientation,
   ) {
-    const queuedUIBeats = [
-      ...this.getAdjacentBeats(originBar,
-                               originBeat,
-                               true,
-                               true,
-                               startOrientation),
-      ...this.getAdjacentBeats(destinationBar,
-                               destinationBeat,
-                               false,
-                               false,
-                               endOrientation),
+    const beatsBeforeOrigin = this.getAdjacentBeats(
+      originBar,
+      originBeat,
+      true,
+      startOrientation,
+    );
+    const beatsAfterDestination = this.getAdjacentBeats(
+      destinationBar,
+      destinationBeat,
+      false,
+      endOrientation,
+    );
+    const beatPath = [
+      ...beatsBeforeOrigin,
+      { ...originBeat, orientation: startOrientation }, // originBeat: QueuedUIBeat
+      ...beatsAfterDestination,
     ];
-    const queuedUIBeatOrders = queuedUIBeats.map(beat => beat.order);
 
     setTimeout(() => {
-      this.updatePlayingBeats(queuedUIBeats);
-      this.updateQueuedBeats(queuedUIBeats);
-    }, queuedUIBeats[0].durationMs);
+      this.updatePlayingBeats(beatPath);
+      this.updateQueuedBeats(beatPath);
+    }, conversions.secondsToMilliseconds(config.audio.schedulingDelaySecs));
 
     // Play the opposite branch
     const callbackFn = () => {
@@ -616,7 +621,11 @@ class BranchNav extends React.Component<BranchNavProps, BranchNavState> {
       }
     };
 
-    uiService.previewBeatsWithOrders(queuedUIBeatOrders, callbackFn);
+    uiService.previewBeatsWithOrders(beatsBeforeOrigin.map(b => b.order),
+                                     originBeat.order,
+                                     destinationBeat.order,
+                                     beatsAfterDestination.map(b => b.order),
+                                     callbackFn);
   }
 
   /**
@@ -633,7 +642,6 @@ class BranchNav extends React.Component<BranchNavProps, BranchNavState> {
     anchorBar: UIBarType,
     anchorBeat: UIBeatType,
     shouldReturnBeatsBefore: boolean,
-    shouldIncludeInputBeat: boolean,
     orientation: string,
   ): QueuedUIBeat[] {
     const { beats: anchorBarBeats, order: anchorBarOrder } = anchorBar;
@@ -658,12 +666,6 @@ class BranchNav extends React.Component<BranchNavProps, BranchNavState> {
       ...adjacentBarBeats,
       ...adjacentBeatsInBar,
     ];
-
-    // Whether or not to include the anchorBeat. This function is called twice; for the originBeat
-    // and the destBeat. When playing, only the originBeat OR the destinationBeat can be played
-    if (shouldIncludeInputBeat) {
-      adjacentBeats.push(anchorBeat);
-    }
 
     const queuedUIBeats = adjacentBeats.map((beat) => {
       return {
