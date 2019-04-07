@@ -135,7 +135,7 @@ class CanvasService {
           return false;
         }
 
-        if (this.isBranchNavOpen() || isBranchNavPreviewing) {
+        if (this.isBranchNavOpen() && !isBranchNavPreviewing) {
           // Update ONLY the needle
           this.updateNeedle(NeedleType.PLAYING, rotationPercentage);
         } else {

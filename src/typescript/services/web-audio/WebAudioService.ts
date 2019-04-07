@@ -198,7 +198,7 @@ class WebAudioService {
     const firstBeatBatch = createBeatBatch([...beforeOriginBeatOrders, originBeatOrder], branch);
     this.queueBeatsForPlaying(
       { beatBatch: firstBeatBatch },
-      NeedleType.PLAYING,
+      NeedleType.BRANCH_NAV,
       () => {},
     );
 
@@ -206,7 +206,7 @@ class WebAudioService {
     const secondBeatBatch = createBeatBatch(afterDestinationBeatOrders, null);
     this.queueBeatsForPlaying(
       { beatBatch: secondBeatBatch },
-      NeedleType.PLAYING,
+      NeedleType.BRANCH_NAV,
       onEndedCallbackFn,
     );
   }
