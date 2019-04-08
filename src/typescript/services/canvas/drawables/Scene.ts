@@ -1,7 +1,10 @@
 import Updatable from './Updatable';
 import * as THREE from 'three';
+import { OrbitControls } from 'three-orbitcontrols-ts';
 import WorldPoint from './utils/WorldPoint';
 import Rotation from './utils/Rotation';
+import * as conversions from '../../../utils/conversions';
+import config from '../../../config';
 
 export type Drawable = {
   meshes: THREE.Mesh[];
@@ -10,25 +13,32 @@ export type Drawable = {
 class Scene {
   private static _instance: Scene = null;
 
-  public static BUFFER_NUM_COMPONENTS: number = 3; // How many dimensions?
   public static Z_BASE_DISTANCE = -5;
 
   private static CAMERA_FOV_DEGREES: number = 45;
-  private static CAMERA_ASPECT_RATIO: number = window.innerWidth / window.innerHeight;
   public static CAMERA_Z_CLIP_NEAR: number = 0.1;
   public static CAMERA_Z_CLIP_FAR: number = 3000.0;
-  public static CAMERA_POSITION: number[] = [0.0, 0.0, -5.0];
 
   private _scene: THREE.Scene = null;
   private _camera: THREE.Camera = null;
   private _renderer: THREE.WebGLRenderer = null;
+  private _light: THREE.SpotLight = null;
 
   private _updatables: Set<Updatable> = new Set();
 
+  // The last known NDC coordinates of the mouse
+  private _panTargetX: number = 0;
+  private _panTargetY: number = 0;
+
+  // The current NDC coordinates of the pan, eventually will match _panTarget
+  private _panActualX: number = 0;
+  private _panActualY: number = 0;
+
   private constructor(whereToDraw: HTMLCanvasElement) {
     const scene = new THREE.Scene();
+    const aspectRatio = this.getAspectRatio();
     const camera = new THREE.PerspectiveCamera(Scene.CAMERA_FOV_DEGREES,
-                                               Scene.CAMERA_ASPECT_RATIO,
+                                               aspectRatio,
                                                Scene.CAMERA_Z_CLIP_NEAR,
                                                Scene.CAMERA_Z_CLIP_FAR);
 
@@ -37,15 +47,34 @@ class Scene {
       antialias: true,
     });
     renderer.setPixelRatio(window.devicePixelRatio);
-    renderer.setClearColor(0xFFFFFF);
+    renderer.setClearColor(config.drawables.background.colour.background);
     renderer.setSize(window.innerWidth, window.innerHeight);
+
+    // const light = new THREE.SpotLight(0xFFFFFF, 0.05, 50);
+    // // light.position.set(0, 0, 500);
+    // light.castShadow = true;
+    // scene.add(light);
 
     this._scene = scene;
     this._camera = camera;
     this._renderer = renderer;
+    // this._light = light;
+
+    document.addEventListener('mousemove', (e: MouseEvent) => this.onMouseMove(e), false);
 
     // Starts the render loop
     requestAnimationFrame(() => this.render());
+  }
+
+  private onMouseMove({ clientX, clientY }: MouseEvent) {
+    const [x, y] = conversions.canvasPointToNDC(clientX, clientY);
+
+    this._panTargetX = x;
+    this._panTargetY = y;
+  }
+
+  private getAspectRatio() {
+    return window.innerWidth / window.innerHeight;
   }
 
   public static getInstance(whereToDraw: HTMLCanvasElement): Scene {
@@ -81,6 +110,15 @@ class Scene {
   public render() {
     // Update position/rotation/colour etc of THREE.js meshes
     this.update();
+
+    this._panActualX += (this._panTargetX - this._panActualX) * config.scene.panCatchupSpeed;
+    this._panActualY += (this._panTargetY - this._panActualY) * config.scene.panCatchupSpeed;
+    this._camera.position.x = -this._panActualX * config.scene.panAmount;
+    this._camera.position.y = this._panActualY * config.scene.panAmount;
+    this._camera.lookAt(WorldPoint.getPoint(0, 0, Scene.Z_BASE_DISTANCE).toVector3());
+
+    // this._light.position.x = -this._panActualX * 10;
+    // this._light.position.y = this._panActualY * 10;
 
     // Re-render everything on the scene through THREE.js
     this._renderer.render(this._scene, this._camera);

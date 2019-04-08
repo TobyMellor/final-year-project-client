@@ -5,6 +5,7 @@ import BezierCurve from '../services/canvas/drawables/BezierCurve';
 import BranchModel from '../models/branches/Branch';
 import Needle from '../services/canvas/drawables/Needle';
 import { NeedleType, BezierCurveType } from '../types/enums';
+import config from '../config';
 
 export function renderParentSongCircle(
   scene: Scene,
@@ -18,7 +19,7 @@ export function renderParentSongCircle(
                                           lineWidth,
                                           null,
                                           -1,
-                                          0xFFFFFF);
+                                          config.drawables.songCircle.colour.background);
 
   return parentSongCircle;
 }

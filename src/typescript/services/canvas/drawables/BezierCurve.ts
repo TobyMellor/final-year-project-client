@@ -52,7 +52,7 @@ class BezierCurve extends Updatable {
     line.setGeometry(geometry);
 
     const material = new MeshLine.MeshLineMaterial({
-      resolution: new THREE.Vector2(window.innerWidth, window.innerHeight),
+      resolution: new THREE.Vector3(window.innerWidth, window.innerHeight, 10),
       sizeAttenuation: 0,
       near: Scene.CAMERA_Z_CLIP_NEAR,
       far: Scene.CAMERA_Z_CLIP_FAR,

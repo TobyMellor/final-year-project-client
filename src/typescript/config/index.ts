@@ -4,6 +4,7 @@ import canvas from './canvas';
 import drawables from './drawables';
 import fyp from './fyp';
 import mock from './mock';
+import scene from './scene';
 import ui from './ui';
 
 const config = {
@@ -13,6 +14,7 @@ const config = {
   drawables,
   fyp,
   mock,
+  scene,
   ui,
 };
 

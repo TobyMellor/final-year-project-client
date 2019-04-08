@@ -37,13 +37,15 @@ class SongCircle extends Updatable {
       const texture = new THREE.TextureLoader().load(track.bestImageURL);
 
       material = new THREE.MeshPhongMaterial({
-        emissive: config.drawables.songCircle.colour.background,
+        emissive: 0xFFFFFF,
         emissiveMap: texture,
         emissiveIntensity: 1 - config.drawables.songCircle.opacity.darkOverlay,
       });
     } else {
       material = new THREE.MeshBasicMaterial({ color: backgroundColour });
     }
+
+    material.depthTest = false;
 
     super.createAndAddMesh({
       geometry,
@@ -110,7 +112,7 @@ class SongCircle extends Updatable {
         const geometry = new THREE.TextGeometry(text, {
           font,
           size: fontSize,
-          height: 0,
+          height: 0.01,
           curveSegments: 4,
         });
 

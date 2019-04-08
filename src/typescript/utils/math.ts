@@ -4,10 +4,12 @@
  * @param number The number to normalize
  * @param min The min number in a dataset, where min ≠ max
  * @param max The max number in a dataset, where min ≠ max
+ * @param from The normalized lower bound (default is 0)
+ * @param to The normalized upper bound (default is 1)
  */
-export function normalizeNumber(number: number, min: number, max: number): number {
+export function normalizeNumber(number: number, min: number, max: number, from: number = 0, to: number = 1): number {
   const cappedNumber = capNumberBetween(number, min, max);
-  const normalizedNumber = (cappedNumber - min) / (max - min);
+  const normalizedNumber = (to - from) * (cappedNumber - min) / (max - min) + from;
 
   return normalizedNumber;
 }
