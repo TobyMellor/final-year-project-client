@@ -3,7 +3,7 @@ import Nav from './Nav';
 import CircleCanvas from './CircleCanvas';
 import BranchNav from './branch-nav/BranchNav';
 import { getUIBars } from '../services/ui/ui';
-import { FYPEvent } from '../types/enums';
+import { FYPEvent, BranchNavStatus } from '../types/enums';
 import Dispatcher from '../events/Dispatcher';
 import { UIBarType, FYPEventPayload } from '../types/general';
 import SettingsPanel from './settings-panel/SettingsPanel';
@@ -33,7 +33,7 @@ class App extends React.Component<AppProps, AppState> {
 
     // When a new song has been loaded and analyzed
     Dispatcher.getInstance()
-              .on(FYPEvent.PlayingTrackRendered, data => this.updateBars(data));
+              .on(FYPEvent.PlayingTrackBranchesAnalyzed, data => this.updateBars(data));
   }
 
   render() {
@@ -46,7 +46,7 @@ class App extends React.Component<AppProps, AppState> {
         <BranchNav key={branchNavKey}
                    UIBars={UIBars}
                    isHidden={isBranchNavHidden}
-                   onRequestClose={() => this.handleToggleBranchNav()} />
+                   onRequestClose={(status: BranchNavStatus) => this.handleToggleBranchNav(status)} />
         <SettingsPanel onToggleBranchNavClick={() => this.handleToggleBranchNav()}
                        isBranchNavHidden={isBranchNavHidden}
                        isBranchNavDisabled={isBranchNavDisabled} />
@@ -59,7 +59,7 @@ class App extends React.Component<AppProps, AppState> {
    * resets the BranchNav to it's original state if the BranchNav
    * has been hidden for some amount of time
    */
-  private handleToggleBranchNav() {
+  private handleToggleBranchNav(status: BranchNavStatus = null) {
     this.setState(
       ({ isBranchNavHidden }) => ({
         isBranchNavHidden: !isBranchNavHidden,
@@ -68,13 +68,14 @@ class App extends React.Component<AppProps, AppState> {
       () => {
         // If the BranchNav has been hidden for some amount of time,
         // reset the BranchNav to it's original state
+        const clearMs = status !== BranchNavStatus.FINISHED ? config.ui.resetBranchNavAfterHiddenMs : 0;
         const branchNavClearTimer = setTimeout(() => {
           if (this.state.isBranchNavHidden) {
             this.setState(({ branchNavKey }) => ({
               branchNavKey: branchNavKey + 1,
             }));
           }
-        }, config.ui.resetBranchNavAfterHiddenMs);
+        }, clearMs);
 
         setTimeout(() => {
           this.setState({ isBranchNavDisabled: false });
@@ -87,7 +88,7 @@ class App extends React.Component<AppProps, AppState> {
     );
   }
 
-  private async updateBars({ playingTrack }: FYPEventPayload['PlayingTrackRendered']) {
+  private async updateBars({ playingTrack }: FYPEventPayload['PlayingTrackBranchesAnalyzed']) {
     const UIBars = await getUIBars(playingTrack);
 
     this.setState({

@@ -71,9 +71,11 @@ export class BranchManager {
       return sortedForward;
     }
 
+    const forwardCopy = [...forwardBranches];
+    const backwardCopy = [...backwardBranches];
     return [
-      ...removeInaccessibleBranches(sortBranches(forwardBranches) as ForwardBranchModel[]),
-      ...sortBranches(backwardBranches),
+      ...removeInaccessibleBranches(sortBranches(forwardCopy) as ForwardBranchModel[]),
+      ...sortBranches(backwardCopy),
     ];
   }
 }

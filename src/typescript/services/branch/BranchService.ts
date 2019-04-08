@@ -52,7 +52,8 @@ class BranchService {
 
   private async setBranches({ playingTrack, childTracks }: FYPEventPayload['PlayingTrackChanged']) {
     const [_, backwardBranches] = await BranchManager.generate(playingTrack);
-    this.dispatchBranchAdded(backwardBranches, playingTrack, childTracks);
+    this.dispatchBranchesAnalyzed(playingTrack, childTracks);
+    this.dispatchBranchAdded(backwardBranches);
   }
 
   private async dispatchBeatBatches(
@@ -99,14 +100,16 @@ class BranchService {
     return lastBeatInThisBatch;
   }
 
-  private dispatchBranchAdded(
-    branchesAdded: BranchModel[],
-    playingTrack: TrackModel = null,
-    childTracks: TrackModel[] = null,
-  ) {
+  private dispatchBranchAdded(branchesAdded: BranchModel[]) {
     Dispatcher.getInstance()
               .dispatch(FYPEvent.PlayingTrackBranchAdded, {
                 branchesAdded,
+              });
+  }
+
+  private dispatchBranchesAnalyzed(playingTrack: TrackModel, childTracks: TrackModel[]) {
+    Dispatcher.getInstance()
+              .dispatch(FYPEvent.PlayingTrackBranchesAnalyzed, {
                 playingTrack,
                 childTracks,
               });

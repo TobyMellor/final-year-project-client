@@ -49,7 +49,7 @@ export interface QueuedUIBeat extends UIBeatType {
 export interface BranchNavProps {
   UIBars: UIBarType[];
   isHidden?: boolean;
-  onRequestClose: () => void;
+  onRequestClose: (status: BranchNavStatus) => void;
 }
 
 export interface BranchNavState {
@@ -139,14 +139,14 @@ export type FYPEventPayload = {
     playingTrack: TrackModel;
     childTracks: TrackModel[];
   };
+  PlayingTrackBranchesAnalyzed: {
+    playingTrack: TrackModel | null;
+    childTracks: TrackModel[] | null;
+  };
   PlayingTrackBranchAdded: {
     branchesAdded: BranchModel[];
-    playingTrack: TrackModel | null; // If new song has been analysed
-    childTracks: TrackModel[] | null; // If new song has been analysed
   };
-  PlayingTrackRendered: {
-    playingTrack: TrackModel | null;
-  };
+  PlayingTrackRendered: {};
   NextBeatsRequested: {
     playingTrack: TrackModel;
     beatBatchCount: number;

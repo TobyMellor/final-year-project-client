@@ -4,8 +4,10 @@ export enum FYPEvent {
   // Signals that the branches should be analyzed for the new song
   PlayingTrackChanged = 'playing_track_changed',
 
-  // Either the branch analysis has finished, or the user added an additional branch
-  // Signals that the new branch(es) should be rendered (and potentially other elements on the canvas)
+  // The branches been created behind the scenes
+  PlayingTrackBranchesAnalyzed = 'playing_track_branches_analyzed',
+
+  // Either FYPEvent.PlayingTrackBranchesAnalyzed, or a branch was added manually
   PlayingTrackBranchAdded = 'playing_track_branch_added',
 
   // The Playing Track has completed the first render since it was changed
@@ -40,6 +42,9 @@ export enum BranchNavStatus {
 
   // The user is currently previewing the branch they've made
   PREVIEWING = 'previewing',
+
+  // The branch is being created and the BranchNav is about to close
+  FINISHED = 'finished',
 }
 
 export enum BeatListOrientation {

@@ -12,6 +12,7 @@ export default {
       choose_second_beat: 'Select the second Beat',
       previewable: 'Preview Branch or choose again',
       previewing: 'Confirm Branch or choose again',
+      finished: 'Creating the branch…',
     },
   },
 };

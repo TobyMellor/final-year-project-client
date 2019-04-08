@@ -87,17 +87,12 @@ class CanvasService {
   }
 
   public async renderBezierCurves(
-    { playingTrack, branchesAdded }: FYPEventPayload['PlayingTrackBranchAdded'],
+    { branchesAdded }: FYPEventPayload['PlayingTrackBranchAdded'],
   ) {
 
     this._bezierCurves = drawableFactory.renderBezierCurves(this.scene,
                                                             this._parentSongCircle,
                                                             branchesAdded);
-
-    Dispatcher.getInstance()
-              .dispatch(FYPEvent.PlayingTrackRendered, {
-                playingTrack,
-              });
   }
 
   /**

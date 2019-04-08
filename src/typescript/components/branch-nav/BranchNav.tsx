@@ -5,7 +5,12 @@ import cx from 'classnames';
 import * as uiService from '../../services/ui/ui';
 import * as utils from '../../utils/misc';
 import * as conversions from '../../utils/conversions';
-import { BeatListOrientation as Orientation, BranchNavStatus as Status, BezierCurveType } from '../../types/enums';
+import {
+  BeatListOrientation as Orientation,
+  BranchNavStatus as Status,
+  BezierCurveType,
+  BranchNavStatus,
+} from '../../types/enums';
 import {
   BeatListInfo,
   QueuedUIBeat,
@@ -160,7 +165,7 @@ class BranchNav extends React.Component<BranchNavProps, BranchNavState> {
             <div className="modal-header">
               <h5 className="modal-title">Create a Branch</h5>
               <h3 className="modal-title-feedback">{helperTextForStatus}</h3>
-              <button type="button" className="close" data-dismiss="modal" onClick={() => onRequestClose()}>
+              <button type="button" className="close" data-dismiss="modal" onClick={() => onRequestClose(status)}>
                 <span>&times;</span>
               </button>
             </div>
@@ -347,8 +352,19 @@ class BranchNav extends React.Component<BranchNavProps, BranchNavState> {
     uiService.stopPlaying();
   }
 
-  private handleCreateBranchClick() {
-    console.log('Our work here is done!');
+  private async handleCreateBranchClick() {
+    const { status, beatLists } = this.state;
+    const { onRequestClose } = this.props;
+
+    if (status === Status.PREVIEWING) {
+      uiService.stopPlaying();
+    }
+
+    const firstBeatOrder = beatLists[TOP].selected.order;
+    const secondBeatOrder = beatLists[BOTTOM].selected.order;
+    await uiService.createBranch(firstBeatOrder, secondBeatOrder);
+
+    this.setState({ status: BranchNavStatus.FINISHED }, () => onRequestClose(Status.FINISHED));
   }
 
   /**
