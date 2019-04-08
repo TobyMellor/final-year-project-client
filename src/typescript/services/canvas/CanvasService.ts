@@ -16,7 +16,6 @@ import BranchModel from '../../models/branches/Branch';
 import SongCircle from './drawables/SongCircle';
 import Needle from './drawables/Needle';
 import * as math from '../../utils/math';
-import { setSongCircleRotation } from '../ui/ui';
 
 class CanvasService {
   private static _instance: CanvasService = null;
@@ -32,9 +31,13 @@ class CanvasService {
   private constructor(canvas: HTMLCanvasElement) {
     this.scene = Scene.getInstance(canvas);
 
-    // Once we've loaded and analyzed the playing track, display the song circles
+    // When the currently playing track has changed or it's loaded for the first time, render the circles
     Dispatcher.getInstance()
-              .on(FYPEvent.PlayingTrackBranchesAnalyzed, data => this.setSongCircles(data));
+              .on(FYPEvent.PlayingTrackChanged, data => this.renderSongCircles(data));
+
+    // When the branch analysis has finished, or a user has manually added a song
+    Dispatcher.getInstance()
+              .on(FYPEvent.PlayingTrackBranchAdded, data => this.renderBezierCurves(data));
 
     // When a beat batch has started, highlight the next branch to be taken
     Dispatcher.getInstance()
@@ -64,19 +67,14 @@ class CanvasService {
    *
    * @param eventContents The track that's playing, and the loaded child tracks
    */
-  public async setSongCircles(
+  public async renderSongCircles(
     {
       playingTrack,
       childTracks,
-      forwardAndBackwardBranches: [_, backwardBranches],
-    }: FYPEventPayload['PlayingTrackBranchesAnalyzed'],
+    }: FYPEventPayload['PlayingTrackChanged'],
   ) {
     this._parentSongCircle = drawableFactory.renderParentSongCircle(this.scene, playingTrack);
     this._playingNeedle = drawableFactory.renderNeedle(this.scene, this._parentSongCircle, NeedleType.PLAYING, 0);
-
-    this._bezierCurves = drawableFactory.renderBezierCurves(this.scene,
-                                                            this._parentSongCircle,
-                                                            backwardBranches);
 
     childTracks.forEach((childTrack) => {
       const percentage = math.getRandomInteger(); // TODO: Replace random position with an analysis of best entry
@@ -86,9 +84,20 @@ class CanvasService {
                                             childTrack,
                                             percentage);
     });
+  }
+
+  public async renderBezierCurves(
+    { playingTrack, branchesAdded }: FYPEventPayload['PlayingTrackBranchAdded'],
+  ) {
+
+    this._bezierCurves = drawableFactory.renderBezierCurves(this.scene,
+                                                            this._parentSongCircle,
+                                                            branchesAdded);
 
     Dispatcher.getInstance()
-              .dispatch(FYPEvent.PlayingTrackRendered);
+              .dispatch(FYPEvent.PlayingTrackRendered, {
+                playingTrack,
+              });
   }
 
   /**

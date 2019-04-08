@@ -139,16 +139,18 @@ export type FYPEventPayload = {
     playingTrack: TrackModel;
     childTracks: TrackModel[];
   };
-  PlayingTrackBranchesAnalyzed: {
-    playingTrack: TrackModel;
-    childTracks: TrackModel[];
-    forwardAndBackwardBranches: ForwardAndBackwardBranches;
+  PlayingTrackBranchAdded: {
+    branchesAdded: BranchModel[];
+    playingTrack: TrackModel | null; // If new song has been analysed
+    childTracks: TrackModel[] | null; // If new song has been analysed
   };
-  PlayingTrackRendered: {};
+  PlayingTrackRendered: {
+    playingTrack: TrackModel | null;
+  };
   NextBeatsRequested: {
     playingTrack: TrackModel;
     beatBatchCount: number;
-    nextBranch: BranchModel | null;
+    nextBranch: BranchModel | null; // Not present when previewing through BranchNav
   };
   BeatsReadyForQueueing: {
     beatBatch: BeatBatch;

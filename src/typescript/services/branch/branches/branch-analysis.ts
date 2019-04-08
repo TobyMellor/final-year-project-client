@@ -2,6 +2,7 @@ import BeatModel from '../../../models/audio-analysis/Beat';
 import * as math from '../../../utils/math';
 import config from '../../../config';
 import SegmentModel from '../../../models/audio-analysis/Segment';
+import AudioAnalysisModel from '../../../models/audio-analysis/AudioAnalysis';
 
 // The un-normalized distance score, and the two beats
 type BeatPairInfo = {
@@ -12,9 +13,9 @@ type BeatPairInfo = {
 };
 
 // The two beats that are similar
-type SimilarBeatPair = [BeatModel, BeatModel];
+export type SimilarBeatPair = [BeatModel, BeatModel];
 
-export function getSimilarBeats(beats: BeatModel[]): SimilarBeatPair[] {
+export function getSimilarBeats({ beats }: AudioAnalysisModel): SimilarBeatPair[] {
   const filteredBeats = beats.filter(isConfidenceHigh);
   const beatPairs: BeatPairInfo[] = [];
 
@@ -140,4 +141,35 @@ function getSegmentsDistance(
 
     return distance + getSegmentDistance(segment, otherSegment);
   }, 0);
+}
+
+export function getMockedSimilarBeats(
+  { trackID, beats }: AudioAnalysisModel,
+): SimilarBeatPair[] {
+  const beatPairs: SimilarBeatPair[] = [];
+
+  if (trackID === '4RVbK6cV0VqWdpCDcx3hiT') { // Reborn
+    beatPairs.push([beats[52], beats[100]]);
+    beatPairs.push([beats[53], beats[325]]);
+  } else if (trackID === '3aUFrxO1B8EW63QchEl3wX') { // Feel The Love
+    // Mock goes here
+  } else if (trackID === '2hmHlBM0kPBm17Y7nVIW9f') { // My Propeller
+    // Mock goes here
+  } else if (trackID === '6wVWJl64yoTzU27EI8ep20') { // Crying Lightning
+    beatPairs.push([beats[43], beats[230]]);
+    beatPairs.push([beats[253], beats[354]]);
+    beatPairs.push([beats[100], beats[120]]);
+    beatPairs.push([beats[120], beats[164]]);
+    beatPairs.push([beats[10], beats[205]]);
+    beatPairs.push([beats[10], beats[205]]);
+    beatPairs.push([beats[25], beats[75]]);
+  } else if (trackID === '3O8NlPh2LByMU9lSRSHedm') { // Controlla
+    beatPairs.push([beats[65], beats[100]]);
+    beatPairs.push([beats[4], beats[200]]);
+    beatPairs.push([beats[150], beats[183]]);
+  } else {
+    // Mock goes here
+  }
+
+  return beatPairs;
 }

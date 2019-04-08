@@ -33,7 +33,7 @@ class App extends React.Component<AppProps, AppState> {
 
     // When a new song has been loaded and analyzed
     Dispatcher.getInstance()
-              .on(FYPEvent.PlayingTrackBranchesAnalyzed, data => this.updateBars(data));
+              .on(FYPEvent.PlayingTrackRendered, data => this.updateBars(data));
   }
 
   render() {
@@ -87,7 +87,7 @@ class App extends React.Component<AppProps, AppState> {
     );
   }
 
-  private async updateBars({ playingTrack }: FYPEventPayload['PlayingTrackBranchesAnalyzed']) {
+  private async updateBars({ playingTrack }: FYPEventPayload['PlayingTrackRendered']) {
     const UIBars = await getUIBars(playingTrack);
 
     this.setState({

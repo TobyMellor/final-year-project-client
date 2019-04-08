@@ -4,9 +4,9 @@ export enum FYPEvent {
   // Signals that the branches should be analyzed for the new song
   PlayingTrackChanged = 'playing_track_changed',
 
-  // The Branch Analysis has finished for the Playing Track
-  // Signals that the new song and branches should be rendered
-  PlayingTrackBranchesAnalyzed = 'playing_track_branches_analyzed',
+  // Either the branch analysis has finished, or the user added an additional branch
+  // Signals that the new branch(es) should be rendered (and potentially other elements on the canvas)
+  PlayingTrackBranchAdded = 'playing_track_branch_added',
 
   // The Playing Track has completed the first render since it was changed
   PlayingTrackRendered = 'playing_track_rendered',

@@ -13,12 +13,10 @@ import * as trackFactory from '../../factories/track';
 import { FYPEvent, NeedleType, BranchType } from '../../types/enums';
 import BeatQueueManager from './BeatQueueManager';
 import { FYPEventPayload, BeatBatch, QueuedBeatBatch } from '../../types/general';
-import QueuedBeatModel from '../../models/web-audio/QueuedBeat';
 import * as utils from '../../utils/conversions';
 import BranchModel from '../../models/branches/Branch';
 import fyp from '../../config/fyp';
 import * as branchFactory from '../../factories/branch';
-import BeatModel from '../../models/audio-analysis/Beat';
 
 class WebAudioService {
   private static _instance: WebAudioService;
@@ -37,12 +35,12 @@ class WebAudioService {
     this._audioContext = new AudioContext();
 
     const trackIDs: string[] = [
+      '6wVWJl64yoTzU27EI8ep20', // Crying Lightning
       '4RVbK6cV0VqWdpCDcx3hiT', // Reborn
       '3O8NlPh2LByMU9lSRSHedm', // Controlla
-      '6wVWJl64yoTzU27EI8ep20', // Crying Lightning
       '3aUFrxO1B8EW63QchEl3wX',
       '2hmHlBM0kPBm17Y7nVIW9f',
-      // '0wwPcA6wtMf6HUMpIRdeP7',
+      '0wwPcA6wtMf6HUMpIRdeP7',
     ];
     const trackRequests: Promise<TrackModel>[] = trackIDs.map(ID => trackFactory.createTrack(ID));
 
@@ -180,9 +178,7 @@ class WebAudioService {
     }
 
     const branchType = originBeatOrder < destinationBeatOrder ? BranchType.FORWARD : BranchType.BACKWARD;
-    const beats = await this._playingTrack.getBeatsWithOrders(
-      [...beforeOriginBeatOrders, originBeatOrder, destinationBeatOrder, ...afterDestinationBeatOrders],
-    );
+    const beats = await this._playingTrack.getBeats();
     const branch = branchFactory.createBranchFromType(branchType, beats[originBeatOrder], beats[destinationBeatOrder]);
 
     // Stop the audio, move the playing Needle to where we will start from
@@ -232,7 +228,6 @@ class WebAudioService {
     if (onStartedFn) {
       setTimeout(() => {
         // If we've called this.stop(), don't request more beats.
-        // This source no longer exists.
         if (!this._audioBufferSourceNodes.has(source)) {
           return;
         }

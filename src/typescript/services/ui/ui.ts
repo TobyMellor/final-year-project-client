@@ -8,6 +8,8 @@ import * as math from '../../utils/math';
 import { NeedleType, BezierCurveType } from '../../types/enums';
 import WorldPoint from '../canvas/drawables/utils/WorldPoint';
 import * as conversions from '../../utils/conversions';
+import * as branchFactory from '../../factories/branch';
+import BranchService from '../branch/BranchService';
 
 export async function getUIBars(track: TrackModel): Promise<UIBarType[]> {
   const { bars, segments } = await track.getAudioAnalysis();
@@ -181,4 +183,13 @@ export function getUIBeatPercents(firstUIBeat: UIBeatType, secondUIBeat: UIBeatT
   const secondDecimal = secondUIBeat.startMs / trackDurationMs;
 
   return [firstDecimal, secondDecimal].map(conversions.decimalToPercentage) as [number, number];
+}
+
+export async function createBranch(firstBeatOrder: number, secondBeatOrder: number) {
+  const playingTrack = WebAudioService.getInstance()
+                                      .getPlayingTrack();
+  const beats = await playingTrack.getBeats();
+
+  BranchService.getInstance()
+               .createBranch(beats[firstBeatOrder], beats[secondBeatOrder]);
 }

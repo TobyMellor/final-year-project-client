@@ -1,10 +1,14 @@
 import Dispatcher from '../../events/Dispatcher';
 import { FYPEvent, BranchType } from '../../types/enums';
 import BranchModel from '../../models/branches/Branch';
-import { generateBranches } from './branches/branch-management';
+import { BranchManager } from './branches/branch-management';
 import BeatModel from '../../models/audio-analysis/Beat';
-import { FYPEventPayload, ForwardAndBackwardBranches, BeatBatch } from '../../types/general';
+import { FYPEventPayload } from '../../types/general';
 import * as branchFactory from '../../factories/branch';
+import TrackModel from '../../models/audio-analysis/Track';
+import { SimilarBeatPair } from './branches/branch-analysis';
+import ForwardBranchModel from '../../models/branches/ForwardBranch';
+import BackwardBranchModel from '../../models/branches/BackwardBranch';
 
 /**
  * Branch Service
@@ -16,8 +20,6 @@ import * as branchFactory from '../../factories/branch';
 
 class BranchService {
   private static _instance: BranchService;
-
-  private _forwardAndBackwardBranches: ForwardAndBackwardBranches = [[], []];
 
   private constructor() {
     // Once we've loaded the first songs from Spotify, perform the Audio Analysis
@@ -34,19 +36,23 @@ class BranchService {
     return this._instance || (this._instance = new this());
   }
 
+  public createBranch(firstBeat: BeatModel, secondBeat: BeatModel) {
+    const [earliestBeat, latestBeat] = firstBeat.order < secondBeat.order
+                                     ? [firstBeat, secondBeat]
+                                     : [secondBeat, firstBeat];
+    BranchManager.createBranches([earliestBeat, latestBeat]);
+
+    this.dispatchBranchAdded([
+      new BackwardBranchModel({
+        earliestBeat,
+        latestBeat,
+      }),
+    ]);
+  }
+
   private async setBranches({ playingTrack, childTracks }: FYPEventPayload['PlayingTrackChanged']) {
-    const [forward, backward] = this._forwardAndBackwardBranches
-                              = await generateBranches(playingTrack);
-
-    // The last forward branch cannot be taken
-    forward.pop();
-
-    Dispatcher.getInstance()
-              .dispatch(FYPEvent.PlayingTrackBranchesAnalyzed, {
-                playingTrack,
-                childTracks,
-                forwardAndBackwardBranches: [forward, backward],
-              });
+    const [_, backwardBranches] = await BranchManager.generate(playingTrack);
+    this.dispatchBranchAdded(backwardBranches, playingTrack, childTracks);
   }
 
   private async dispatchBeatBatches(
@@ -57,7 +63,7 @@ class BranchService {
     }: FYPEventPayload['NextBeatsRequested'],
   ) {
     const { beats } = await playingTrack.getAudioAnalysis();
-    const branches = this.getBranches();
+    const branches = BranchManager.getBranches();
     let fromBeat = nextBranch && nextBranch.destinationBeat || beats[0];
 
     for (let i = 0; i < beatBatchCount; i += 1) {
@@ -93,6 +99,19 @@ class BranchService {
     return lastBeatInThisBatch;
   }
 
+  private dispatchBranchAdded(
+    branchesAdded: BranchModel[],
+    playingTrack: TrackModel = null,
+    childTracks: TrackModel[] = null,
+  ) {
+    Dispatcher.getInstance()
+              .dispatch(FYPEvent.PlayingTrackBranchAdded, {
+                branchesAdded,
+                playingTrack,
+                childTracks,
+              });
+  }
+
   private getFutureBranches(
     branches: BranchModel[],
     beyondTimeMs: number,
@@ -102,9 +121,7 @@ class BranchService {
     }
 
     return branches.filter(({ originBeat }) => {
-      const branchStartMs = originBeat.startMs;
-
-      return branchStartMs > beyondTimeMs;
+      return originBeat.startMs > beyondTimeMs;
     });
   }
 
@@ -113,11 +130,6 @@ class BranchService {
     const randomBranch = branches[randomIndex];
 
     return randomBranch;
-  }
-
-  private getBranches(): BranchModel[] {
-    const [forward, backward] = this._forwardAndBackwardBranches;
-    return [...forward, ...backward];
   }
 }
 

@@ -45,15 +45,15 @@ export function forwardAndBackwardBranches(
   return [forwardBranches, backwardBranches];
 }
 
-export async function dispatchPlayingTrackBranchesAnalyzed(branchQuantity: number = 2) {
+export async function dispatchPlayingTrackBranchAdded(branchQuantity: number = 2) {
   const playingTrack = track();
   const audioAnalysis = await playingTrack.getAudioAnalysis();
   const branches = forwardAndBackwardBranches(audioAnalysis, branchQuantity);
 
   Dispatcher.getInstance()
-            .dispatch(FYPEvent.PlayingTrackBranchesAnalyzed, {
+            .dispatch(FYPEvent.PlayingTrackBranchAdded, {
               playingTrack,
-              forwardAndBackwardBranches: branches,
+              branchesAdded: branches,
               childTracks: [],
             });
 }

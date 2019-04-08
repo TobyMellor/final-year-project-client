@@ -4,6 +4,7 @@ import BackwardBranchModel from '../models/branches/BackwardBranch';
 import { ForwardAndBackwardBranch, BeatBatch } from '../types/general';
 import { BranchType } from '../types/enums';
 import BranchModel from '../models/branches/Branch';
+import TrackModel from '../models/audio-analysis/Track';
 
 export function createForwardAndBackwardBranch(
   earliestBeat: BeatModel,
