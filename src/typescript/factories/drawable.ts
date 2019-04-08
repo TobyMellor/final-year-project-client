@@ -4,7 +4,7 @@ import Scene from '../services/canvas/drawables/Scene';
 import BezierCurve from '../services/canvas/drawables/BezierCurve';
 import BranchModel from '../models/branches/Branch';
 import Needle from '../services/canvas/drawables/Needle';
-import { NeedleType } from '../types/enums';
+import { NeedleType, BezierCurveType } from '../types/enums';
 
 export function renderParentSongCircle(
   scene: Scene,
@@ -54,7 +54,12 @@ export function renderBezierCurves(
     const earliestPercentage = earliestBeat.getPercentageInTrack(trackDuration);
     const latestPercentage = latestBeat.getPercentageInTrack(trackDuration);
 
-    return renderBezierCurveFromPercentages(scene, songCircle, earliestPercentage, latestPercentage, branch);
+    return renderBezierCurveFromPercentages(scene,
+                                            songCircle,
+                                            BezierCurveType.NORMAL,
+                                            earliestPercentage,
+                                            latestPercentage,
+                                            branch);
   }
 
   return branches.map(branch => renderBezierCurve(branch));
@@ -63,12 +68,14 @@ export function renderBezierCurves(
 export function renderBezierCurveFromPercentages(
   scene: Scene,
   songCircle: SongCircle,
+  type: BezierCurveType,
   earliestPercentage: number | null,
   latestPercentage: number | null,
   branch: BranchModel = null,
 ): BezierCurve {
   return new BezierCurve(scene,
                          songCircle,
+                         type,
                          earliestPercentage,
                          latestPercentage,
                          branch);
@@ -78,10 +85,10 @@ export function updateNextBezierCurve(
   bezierCurves: BezierCurve[],
   nextBezierCurve: BezierCurve | null,
 ) {
-  bezierCurves.forEach(bezierCurve => bezierCurve.isNext = false);
+  bezierCurves.forEach(bezierCurve => bezierCurve.type = BezierCurveType.NORMAL);
 
   if (nextBezierCurve) {
-    nextBezierCurve.isNext = true;
+    nextBezierCurve.type = BezierCurveType.NEXT;
   }
 }
 

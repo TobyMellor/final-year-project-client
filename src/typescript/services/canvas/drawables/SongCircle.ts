@@ -5,15 +5,9 @@ import * as conversions from '../../../utils/conversions';
 import Updatable from './Updatable';
 import Circle from './utils/Circle';
 import * as THREE from 'three';
+import config from '../../../config';
 
 class SongCircle extends Updatable {
-  private static BACKGROUND_COLOUR: number = 0xFFFFFF;
-  private static TEXT_COLOUR: number = 0xFFFFFF;
-  public static EDGE_COLOUR: number = 0x000000;
-  private static DARK_OVERLAY_OPACITY: number = 0.6;
-  private static CIRCLE_RESOLUTION = 1;
-  private static DEGREES_IN_CIRCLE = 360;
-
   constructor(
     scene: Scene,
     public track: Track,
@@ -36,16 +30,16 @@ class SongCircle extends Updatable {
   }
 
   private addCircle(track: Track, radius: number, backgroundColour: number) {
-    const geometry = new THREE.CircleGeometry(radius, SongCircle.DEGREES_IN_CIRCLE);
+    const geometry = new THREE.CircleGeometry(radius, config.drawables.songCircle.degreesInCircle);
     let material;
 
     if (backgroundColour === null) {
       const texture = new THREE.TextureLoader().load(track.bestImageURL);
 
       material = new THREE.MeshPhongMaterial({
-        emissive: SongCircle.BACKGROUND_COLOUR,
+        emissive: config.drawables.songCircle.colour.background,
         emissiveMap: texture,
-        emissiveIntensity: 1 - SongCircle.DARK_OVERLAY_OPACITY,
+        emissiveIntensity: 1 - config.drawables.songCircle.opacity.darkOverlay,
       });
     } else {
       material = new THREE.MeshBasicMaterial({ color: backgroundColour });
@@ -62,7 +56,7 @@ class SongCircle extends Updatable {
   private addCircleOutline(radius: number, lineWidth: number) {
     const geometry = new THREE.Geometry();
 
-    for (let i = 0; i <= SongCircle.DEGREES_IN_CIRCLE; i += SongCircle.CIRCLE_RESOLUTION) {
+    for (let i = 0; i <= config.drawables.songCircle.degreesInCircle; i += config.drawables.songCircle.resolution) {
       const NUMBER_OF_VERTICES = 4;
       const nextVertexCount = i * NUMBER_OF_VERTICES;
       const angleRadians = conversions.degreesToRadians(nextVertexCount);
@@ -89,7 +83,7 @@ class SongCircle extends Updatable {
       );
     }
 
-    const material = new THREE.MeshBasicMaterial({ color: SongCircle.EDGE_COLOUR });
+    const material = new THREE.MeshBasicMaterial({ color: config.drawables.songCircle.colour.edge });
 
     super.createAndAddMesh({
       geometry,
@@ -134,7 +128,7 @@ class SongCircle extends Updatable {
         // (instead of the LEFT of the text)
         centerX(geometry);
 
-        const material = new THREE.MeshBasicMaterial({ color: SongCircle.TEXT_COLOUR });
+        const material = new THREE.MeshBasicMaterial({ color: config.drawables.songCircle.colour.text });
         const textMesh = new THREE.Mesh(geometry, material);
 
         return textMesh;

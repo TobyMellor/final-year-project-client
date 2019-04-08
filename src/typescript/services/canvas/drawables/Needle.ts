@@ -5,11 +5,9 @@ import * as THREE from 'three';
 import WorldPoint from './utils/WorldPoint';
 import Rotation from './utils/Rotation';
 import { NeedleType } from '../../../types/enums';
+import config from '../../../config';
 
 class Needle extends Updatable {
-  private static RELATIVE_WIDTH: number = 0.25;
-  private static RELATIVE_HEIGHT: number = 4;
-
   constructor(
     scene: Scene,
     private _songCircle: SongCircle,
@@ -54,8 +52,8 @@ class Needle extends Updatable {
 
   private getHeightAndWidth(songCircle: SongCircle): [number, number] {
     const songCircleLineWidth = songCircle.lineWidth;
-    const height = songCircleLineWidth * Needle.RELATIVE_HEIGHT;
-    const width = songCircleLineWidth * Needle.RELATIVE_WIDTH;
+    const height = songCircleLineWidth * config.drawables.needle.relativeHeight;
+    const width = songCircleLineWidth * config.drawables.needle.relativeWidth;
 
     return [height, width];
   }

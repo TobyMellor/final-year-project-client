@@ -63,3 +63,17 @@ export enum BranchType {
   FORWARD = 'forward',
   BACKWARD = 'backward',
 }
+
+export enum BezierCurveType {
+  // Exists in the song, but will not be played next (faded out)
+  NORMAL = 'normal',
+
+  // Will be played next in the song (darker)
+  NEXT = 'next',
+
+  // The user is currently scrolling through the BranchNav (dashed)
+  SCAFFOLD = 'scaffold',
+
+  // The user is previewing this branch in the BranchNav
+  PREVIEW = 'preview',
+}

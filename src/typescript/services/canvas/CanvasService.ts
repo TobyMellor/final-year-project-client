@@ -9,7 +9,7 @@
 import Dispatcher from '../../events/Dispatcher';
 import Scene from '../canvas/drawables/Scene';
 import * as drawableFactory from '../../factories/drawable';
-import { FYPEvent, NeedleType } from '../../types/enums';
+import { FYPEvent, NeedleType, BezierCurveType } from '../../types/enums';
 import { FYPEventPayload } from '../../types/general';
 import BezierCurve from './drawables/BezierCurve';
 import BranchModel from '../../models/branches/Branch';
@@ -162,6 +162,7 @@ class CanvasService {
     this._branchNavNeedle = drawableFactory.renderNeedle(this.scene, this._parentSongCircle, NeedleType.BRANCH_NAV, 0);
     this._branchNavBezierCurve = drawableFactory.renderBezierCurveFromPercentages(this.scene,
                                                                                   this._parentSongCircle,
+                                                                                  BezierCurveType.SCAFFOLD,
                                                                                   earliestPercentage,
                                                                                   latestPercentage);
   }
