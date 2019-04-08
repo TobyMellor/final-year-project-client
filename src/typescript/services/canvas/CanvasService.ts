@@ -45,7 +45,7 @@ class CanvasService {
               .on(FYPEvent.PlayingBeatBatch, data => this.startSongCircleRotation(data));
 
     Dispatcher.getInstance()
-              .on(FYPEvent.PlayingBeatBatchStopped, () => this.stopSongCircleRotation());
+              .on(FYPEvent.PlayingBeatBatchStopped, data => this.stopSongCircleRotation(data));
   }
 
   public static getInstance(canvas?: HTMLCanvasElement): CanvasService {
@@ -111,8 +111,7 @@ class CanvasService {
     drawableFactory.updateNextBezierCurve(this._bezierCurves, nextBezierCurve);
   }
 
-  public setSongCircleRotation(focusedNeedleType: NeedleType, percentage: number) {
-    this.updateNeedle(focusedNeedleType, percentage);
+  public setSongCircleRotation(percentage: number) {
     this.scene.setRotationPercentage(percentage);
   }
 
@@ -135,27 +134,33 @@ class CanvasService {
           return false;
         }
 
-        if (this.isBranchNavOpen() && !isBranchNavPreviewing) {
-          // Update ONLY the needle
-          this.updateNeedle(NeedleType.PLAYING, rotationPercentage);
-        } else {
-          // Update BOTH the needle and the rotation
-          this.setSongCircleRotation(NeedleType.PLAYING, rotationPercentage);
+        if (!this.isBranchNavOpen() || isBranchNavPreviewing) {
+          this.setSongCircleRotation(rotationPercentage);
         }
+
+        this.updateNeedle(NeedleType.PLAYING, rotationPercentage);
 
         return true;
       },
     );
   }
 
-  public stopSongCircleRotation() {
+  public stopSongCircleRotation({ resetPercentage }: FYPEventPayload['PlayingBeatBatchStopped']) {
     this._isAnimating = false;
-    this.setSongCircleRotation(NeedleType.PLAYING, 0);
+
+    if (resetPercentage !== null) {
+      this.setSongCircleRotation(resetPercentage);
+      this.updateNeedle(NeedleType.PLAYING, resetPercentage);
+    }
   }
 
-  public previewBezierCurve(earliestPercentage: number | null, latestPercentage: number | null = earliestPercentage) {
+  public previewBezierCurve(
+    type: BezierCurveType,
+    earliestPercentage: number | null,
+    latestPercentage: number | null = earliestPercentage,
+  ) {
     if (this.isBranchNavOpen()) {
-      drawableFactory.updateBezierCurve(this._branchNavBezierCurve, earliestPercentage, latestPercentage);
+      drawableFactory.updateBezierCurve(this._branchNavBezierCurve, type, earliestPercentage, latestPercentage);
       return;
     }
 

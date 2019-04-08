@@ -1,4 +1,4 @@
 export default {
   debug: true,
-  shouldPlayMusic: false,
+  shouldPlayMusic: true,
 };

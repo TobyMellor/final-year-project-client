@@ -25,7 +25,7 @@ class WebAudioService {
 
   private _audioContext: AudioContext;
   private _audioBuffer: AudioBuffer;
-  private _audioBufferSourceNodes: AudioBufferSourceNode[] = [];
+  private _audioBufferSourceNodes: Set<AudioBufferSourceNode> = new Set();
 
   private _tracks: TrackModel[] = [];
   private _playingTrack: TrackModel = null;
@@ -163,13 +163,6 @@ class WebAudioService {
     }
   }
 
-  /**
-   *
-   * @param beatOrders All of the orders of the beats that will play, sorted
-   * @param originBeatOrder
-   * @param destinationBeatOrder
-   * @param onEndedCallbackFn
-   */
   public async previewBeatsWithOrders(
     beforeOriginBeatOrders: number[],
     originBeatOrder: number,
@@ -177,8 +170,6 @@ class WebAudioService {
     afterDestinationBeatOrders: number[],
     onEndedCallbackFn: () => void,
   ) {
-    this.stop();
-
     function createBeatBatch(beatOrders: number[], branch: BranchModel | null): BeatBatch {
       const beatsToBranchOrigin = beatOrders.map(beatOrder => beats[beatOrder]);
 
@@ -193,6 +184,10 @@ class WebAudioService {
       [...beforeOriginBeatOrders, originBeatOrder, destinationBeatOrder, ...afterDestinationBeatOrders],
     );
     const branch = branchFactory.createBranchFromType(branchType, beats[originBeatOrder], beats[destinationBeatOrder]);
+
+    // Stop the audio, move the playing Needle to where we will start from
+    const resetPercentage = beats[beforeOriginBeatOrders[0]].getPercentageInTrack(this._playingTrack.duration);
+    this.stop(resetPercentage);
 
     // Preview everything up to, and including, the origin beat
     const firstBeatBatch = createBeatBatch([...beforeOriginBeatOrders, originBeatOrder], branch);
@@ -235,26 +230,37 @@ class WebAudioService {
     source.start(when, offset, duration);
 
     if (onStartedFn) {
-      setTimeout(onStartedFn,
-                 utils.secondsToMilliseconds(when - this._audioContext.currentTime));
+      setTimeout(() => {
+        // If we've called this.stop(), don't request more beats.
+        // This source no longer exists.
+        if (!this._audioBufferSourceNodes.has(source)) {
+          return;
+        }
+
+        onStartedFn();
+      }, utils.secondsToMilliseconds(when - this._audioContext.currentTime));
     }
 
-    this._audioBufferSourceNodes.push(source);
+    this._audioBufferSourceNodes.add(source);
 
     return source;
   }
 
-  public stop() {
+  /**
+   * @param resetPercentage Where to move the NeedleType.PLAYING after the audio is stopped
+   *                        Leaving this value as null will not change the position
+   */
+  public stop(resetPercentage: number = null) {
     // Stop all queued samples, then clear them from memory
     this._audioBufferSourceNodes.forEach((source) => {
       source.onended = null;
       source.stop();
     });
-    this._audioBufferSourceNodes = [];
+    this._audioBufferSourceNodes.clear();
 
     BeatQueueManager.clear();
 
-    this.dispatchPlayingBeatBatchStopped();
+    this.dispatchPlayingBeatBatchStopped(resetPercentage);
   }
 
   // Signal that we're ready to receive beats to play
@@ -301,9 +307,11 @@ class WebAudioService {
               });
   }
 
-  private dispatchPlayingBeatBatchStopped() {
+  private dispatchPlayingBeatBatchStopped(resetPercentage: number | null) {
     Dispatcher.getInstance()
-              .dispatch(FYPEvent.PlayingBeatBatchStopped);
+              .dispatch(FYPEvent.PlayingBeatBatchStopped, {
+                resetPercentage,
+              });
   }
 }
 

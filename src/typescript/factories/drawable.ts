@@ -92,7 +92,13 @@ export function updateNextBezierCurve(
   }
 }
 
-export function updateBezierCurve(bezierCurve: BezierCurve, earliestPercentage: number, latestPercentage: number) {
+export function updateBezierCurve(
+  bezierCurve: BezierCurve,
+  type: BezierCurveType,
+  earliestPercentage: number,
+  latestPercentage: number,
+) {
+  bezierCurve.type = type;
   bezierCurve.updatePercentages(earliestPercentage, latestPercentage);
 }
 

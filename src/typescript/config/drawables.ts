@@ -26,7 +26,7 @@ const bezierCurve = {
     [BezierCurveType.NORMAL]: 0xD9D9D9,
     [BezierCurveType.NEXT]: songCircle.colour.edge,
     [BezierCurveType.SCAFFOLD]: 0xF1C40F,
-    [BezierCurveType.PREVIEW]: 0xF1C40F,
+    [BezierCurveType.PREVIEW]: 0x2ECC71,
   },
 };
 

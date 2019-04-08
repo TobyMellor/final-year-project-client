@@ -33,6 +33,7 @@ export interface UIBeatType {
   barOrder: number;
   timbreNormalized: number;
   loudnessNormalized: number;
+  startMs: number;
   durationMs: number;
 }
 
@@ -159,7 +160,9 @@ export type FYPEventPayload = {
     endPercentage: number;
     durationMs: number;
   };
-  PlayingBeatBatchStopped: {};
+  PlayingBeatBatchStopped: {
+    resetPercentage: number | null; // Where to move NeedleType.PLAYING after stopping
+  };
 };
 
 export type BeatBatch = {

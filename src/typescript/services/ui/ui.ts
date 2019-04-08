@@ -5,8 +5,9 @@ import { UIBarType, UIBeatType } from '../../types/general';
 import CanvasService from '../canvas/CanvasService';
 import WebAudioService from '../web-audio/WebAudioService';
 import * as math from '../../utils/math';
-import { NeedleType, BranchType } from '../../types/enums';
+import { NeedleType, BezierCurveType } from '../../types/enums';
 import WorldPoint from '../canvas/drawables/utils/WorldPoint';
+import * as conversions from '../../utils/conversions';
 
 export async function getUIBars(track: TrackModel): Promise<UIBarType[]> {
   const { bars, segments } = await track.getAudioAnalysis();
@@ -41,7 +42,7 @@ function getUIBeats(
   const barOrder = bar.order;
   const beats = bar.beats;
 
-  return beats.map(({ order, timbre: beatTimbre, maxLoudness: beatMaxLoudness, durationMs }) => {
+  return beats.map(({ order, timbre: beatTimbre, maxLoudness: beatMaxLoudness, startMs, durationMs }) => {
     const timbreNormalized = math.normalizeNumber(beatTimbre, minTimbre, maxTimbre);
     const loudnessNormalized = math.normalizeNumber(beatMaxLoudness, minLoudness, maxLoudness);
 
@@ -50,6 +51,7 @@ function getUIBeats(
       barOrder,
       timbreNormalized,
       loudnessNormalized,
+      startMs,
       durationMs,
     };
   });
@@ -100,11 +102,16 @@ function getTrimmedDataset(numbers: number[], trimDecimal: number) {
  *
  * Updates after the next requestAnimationFrame call
  *
- * @param scrollPercentage Percentage scrolled in a list, 0 to 100
+ * @param percentage Percentage scrolled in a list, 0 to 100
  */
-export function setSongCircleRotation(scrollPercentage: number) {
+export function setSongCircleRotation(percentage: number) {
   CanvasService.getInstance()
-               .setSongCircleRotation(NeedleType.BRANCH_NAV, scrollPercentage);
+               .setSongCircleRotation(percentage);
+}
+
+export function setNeedleRotation(percentage: number | null) {
+  CanvasService.getInstance()
+               .updateNeedle(NeedleType.BRANCH_NAV, percentage);
 }
 
 /**
@@ -131,7 +138,8 @@ export function previewBeatsWithOrders(
  * exists
  */
 export function stopPlaying() {
-  WebAudioService.getInstance().stop();
+  WebAudioService.getInstance()
+                 .stop(0);
 }
 
 /**
@@ -140,9 +148,13 @@ export function stopPlaying() {
  *
  * If a percentage is 0, it will be anchored to the bottom of the SongCircle
  */
-export function previewBezierCurve(originPercentage: number, destinationPercentage: number | null) {
+export function previewBezierCurve(
+  type: BezierCurveType,
+  originPercentage: number,
+  destinationPercentage: number | null,
+) {
   CanvasService.getInstance()
-               .previewBezierCurve(originPercentage, destinationPercentage);
+               .previewBezierCurve(type, originPercentage, destinationPercentage);
 }
 
 export function removePreviewBezierCurve() {
@@ -158,4 +170,15 @@ export function removePreviewBezierCurve() {
  */
 export function getPlaythroughPercent() {
   return WorldPoint.rotationOffsetPercentage;
+}
+
+export function getUIBeatPercents(firstUIBeat: UIBeatType, secondUIBeat: UIBeatType): [number, number] {
+  const track = WebAudioService.getInstance()
+                               .getPlayingTrack();
+  const trackDurationMs = track.duration.ms;
+
+  const firstDecimal = firstUIBeat.startMs / trackDurationMs;
+  const secondDecimal = secondUIBeat.startMs / trackDurationMs;
+
+  return [firstDecimal, secondDecimal].map(conversions.decimalToPercentage) as [number, number];
 }
