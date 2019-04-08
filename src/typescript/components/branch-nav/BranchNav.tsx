@@ -60,10 +60,11 @@ class BranchNav extends React.Component<BranchNavProps, BranchNavState> {
         [TOP]: defaultBeatListInfo(),
         [BOTTOM]: defaultBeatListInfo(),
       },
-      beatPreviewTimer: null,
       lastFocusedBeatList: null,
       scrollLeftTarget: -1,
       mouseOverBeatList: TOP,
+      beatPreviewTimer: null,
+      beatPathTimer: null,
     };
   }
 
@@ -106,6 +107,11 @@ class BranchNav extends React.Component<BranchNavProps, BranchNavState> {
         this.handleOnClose();
       }
     }
+  }
+
+  componentWillUnmount() {
+    clearTimeout(this.state.beatPreviewTimer);
+    clearTimeout(this.state.beatPathTimer);
   }
 
   render() {
@@ -639,10 +645,11 @@ class BranchNav extends React.Component<BranchNavProps, BranchNavState> {
       ...beatsAfterDestination,
     ];
 
-    setTimeout(() => {
+    const beatPathTimer = setTimeout(() => {
       this.updatePlayingBeats(beatPath);
       this.updateQueuedBeats(beatPath);
     }, conversions.secondsToMilliseconds(config.audio.schedulingDelaySecs));
+    this.setState({ beatPathTimer });
 
     // Play the opposite branch
     const callbackFn = () => {

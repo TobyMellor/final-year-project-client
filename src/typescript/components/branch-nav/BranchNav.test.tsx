@@ -47,10 +47,11 @@ describe('BranchNav Component', () => {
           disabled: [defaultProps.UIBars[0].beats[1]],
         },
       },
-      beatPreviewTimer: null,
       lastFocusedBeatList: null,
       scrollLeftTarget: -1,
       mouseOverBeatList: BeatListOrientation.TOP,
+      beatPreviewTimer: null,
+      beatPathTimer: null,
     };
 
     clock = sinon.useFakeTimers();

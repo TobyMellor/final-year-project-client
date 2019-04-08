@@ -13,6 +13,7 @@ interface ButtonProps {
 
 interface ButtonState {
   hasFadeFinished: boolean;
+  fadeTimer: NodeJS.Timeout;
 }
 
 class Button extends React.Component<ButtonProps, ButtonState> {
@@ -21,17 +22,23 @@ class Button extends React.Component<ButtonProps, ButtonState> {
 
     this.state = {
       hasFadeFinished: false,
+      fadeTimer: null,
     };
   }
 
   componentDidMount() {
     // After the fade animation has completed,
     // update the state
-    setTimeout(() => {
+    const fadeTimer = setTimeout(() => {
       this.setState({
         hasFadeFinished: true,
       });
     }, ui.button.fadeAnimationDurationMs);
+    this.setState({ fadeTimer });
+  }
+
+  componentWillUnmount() {
+    clearTimeout(this.state.fadeTimer);
   }
 
   handleClick() {

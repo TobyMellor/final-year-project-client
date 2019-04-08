@@ -52,9 +52,9 @@ class WebAudioService {
         this.setPlayingTrack(tracks[0]);
       });
 
-    // Once we've loaded the track, analyzed it, and rendered the visuals
+    // Once we've loaded the track and analyzed it
     Dispatcher.getInstance()
-              .on(FYPEvent.PlayingTrackRendered, () => this.loadPlayingTrack());
+              .on(FYPEvent.PlayingTrackBranchesAnalyzed, () => this.loadPlayingTrack());
 
     // When the Branch Service has given us new beats
     Dispatcher.getInstance()

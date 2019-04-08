@@ -57,10 +57,11 @@ export interface BranchNavState {
   beatLists: {
     [key: string]: BeatListInfo;
   };
-  beatPreviewTimer: NodeJS.Timeout;
   lastFocusedBeatList: BeatListOrientation | null;
   scrollLeftTarget: number;
   mouseOverBeatList: BeatListOrientation | null;
+  beatPreviewTimer: NodeJS.Timeout;
+  beatPathTimer: NodeJS.Timeout;
 }
 
 export interface BranchNavFooterProps {
