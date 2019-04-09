@@ -1,26 +1,35 @@
 import TrackModel from '../../../models/audio-analysis/Track';
 import config from '../../../config';
 import * as branchAnalysis from './branch-analysis';
-import { ForwardAndBackwardBranches, ForwardAndBackwardBranch } from '../../../types/general';
+import { ForwardAndBackwardBranches } from '../../../types/general';
 import BranchModel from '../../../models/branches/Branch';
 import ForwardBranchModel from '../../../models/branches/ForwardBranch';
 import BackwardBranchModel from '../../../models/branches/BackwardBranch';
 import * as branchFactory from '../../../factories/branch';
 
 export class BranchManager {
-  private static _forwardAndBackwardBranches: ForwardAndBackwardBranches = [[], []];
-  private static _accessibleBranches: BranchModel[] = [];
+  private static _managers: { [trackID: string]: BranchManager } = {};
+  public forwardAndBackwardBranches: ForwardAndBackwardBranches;
+  public accessibleBranches: BranchModel[];
 
-  public static getBranches(): BranchModel[] {
-    return BranchManager._accessibleBranches;
+  constructor() {
+    this.forwardAndBackwardBranches = [[], []];
+    this.accessibleBranches = [];
   }
 
-  public static getForwardAndBackwardBranches(): ForwardAndBackwardBranches {
-    return BranchManager._forwardAndBackwardBranches;
+  private static createManager({ ID }: TrackModel): BranchManager {
+    const branchManager = new BranchManager();
+    BranchManager._managers[ID] = branchManager;
+
+    return branchManager;
   }
 
-  public static createBranches(...beatPairs: branchAnalysis.SimilarBeatPair[]) {
-    const [forwardBranches, backwardBranches] = this._forwardAndBackwardBranches;
+  public static getManager({ ID }: TrackModel): BranchManager {
+    return BranchManager._managers[ID];
+  }
+
+  public createBranches(...beatPairs: branchAnalysis.SimilarBeatPair[]) {
+    const [forwardBranches, backwardBranches] = this.forwardAndBackwardBranches;
 
     beatPairs.forEach(([firstBeat, secondBeat]) => {
       const [forwardBranch, backwardBranch] = branchFactory.createForwardAndBackwardBranch(firstBeat, secondBeat);
@@ -28,7 +37,7 @@ export class BranchManager {
       backwardBranches.push(backwardBranch);
     });
 
-    this._accessibleBranches = BranchManager.getAccessibleBranches(this._forwardAndBackwardBranches);
+    this.accessibleBranches = this.getAccessibleBranches(this.forwardAndBackwardBranches);
   }
 
   public static async generate(track: TrackModel): Promise<ForwardAndBackwardBranches> {
@@ -37,17 +46,17 @@ export class BranchManager {
                     ? branchAnalysis.getMockedSimilarBeats(audioAnalysis)
                     : branchAnalysis.getSimilarBeats(audioAnalysis);
 
-    this._forwardAndBackwardBranches = [[], []];
+    const branchManager = BranchManager.createManager(track);
 
     if (beatPairs.length) {
-      // Creates and stores branches in _forwardAndBackwardBranches, recalculates _accessibleBranches
-      this.createBranches(...beatPairs);
+      // Creates and stores branches in forwardAndBackwardBranches, recalculates accessibleBranches
+      branchManager.createBranches(...beatPairs);
     }
 
-    return this._forwardAndBackwardBranches;
+    return branchManager.forwardAndBackwardBranches;
   }
 
-  private static getAccessibleBranches([forwardBranches, backwardBranches]: ForwardAndBackwardBranches): BranchModel[] {
+  private getAccessibleBranches([forwardBranches, backwardBranches]: ForwardAndBackwardBranches): BranchModel[] {
     if (forwardBranches.length !== backwardBranches.length) {
       throw new Error('The forward and backwards branch counts must be the same!');
     }

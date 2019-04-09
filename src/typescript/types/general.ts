@@ -155,14 +155,14 @@ export type FYPEventPayload = {
   BeatBatchRequested: {
     track: TrackModel;
     beatBatchCount: number; // How many to schedule in advance
-    action: BranchModel | null; // Not present when previewing through BranchNav TODO: Add "Transition"
+    action: BranchModel | Transition | null; // Not present when previewing through BranchNav TODO: Add "Transition"
   };
   BeatBatchReady: {
     beatBatch: BeatBatch;
   };
   BeatBatchPlaying: {
     source: NeedleType;
-    action: BranchModel | null; // Not present when previewing through BranchNav TODO: Add "Transition"
+    action: BranchModel | Transition | null; // Not present when previewing through BranchNav TODO: Add "Transition"
     startPercentage: number;
     endPercentage: number;
     durationMs: number;
@@ -172,12 +172,12 @@ export type FYPEventPayload = {
   };
 };
 
-export type Transition = {
-  type: TransitionType,
-  track: TrackModel,
-  originBeat: BeatModel,
-  destinationBeat: BeatModel,
-};
+export interface Transition {
+  type: TransitionType;
+  track: TrackModel;
+  originBeat: BeatModel;
+  destinationBeat: BeatModel;
+}
 
 export type BeatBatch = {
   track: TrackModel,
