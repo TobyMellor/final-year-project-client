@@ -136,33 +136,36 @@ export interface SettingsPanelProps {
 }
 
 export type FYPEventPayload = {
-  PlayingTrackChanged: {
-    playingTrack: TrackModel;
-    childTracks: TrackModel[];
+  TrackChangeRequested: {
+    track: TrackModel;
   };
-  PlayingTrackBranchesAnalyzed: {
-    playingTrack: TrackModel | null;
-    childTracks: TrackModel[] | null;
+  BranchesAnalyzed: {
+    track: TrackModel;
+    branches: BranchModel[];
   };
   PlayingTrackBranchAdded: {
-    branchesAdded: BranchModel[];
+    branch: BranchModel;
   };
-  NextBeatsRequested: {
-    playingTrack: TrackModel;
-    beatBatchCount: number;
-    nextBranch: BranchModel | null; // Not present when previewing through BranchNav
+  TrackChanged: {
+    track: TrackModel;
   };
-  BeatsReadyForQueueing: {
+  TrackChangeReady: {};
+  BeatBatchRequested: {
+    track: TrackModel;
+    beatBatchCount: number; // How many to schedule in advance
+    action: BranchModel | null; // Not present when previewing through BranchNav TODO: Add "Transition"
+  };
+  BeatBatchReady: {
     beatBatch: BeatBatch;
   };
-  PlayingBeatBatch: {
+  BeatBatchPlaying: {
     source: NeedleType;
-    nextBranch: BranchModel;
+    action: BranchModel | null; // Not present when previewing through BranchNav TODO: Add "Transition"
     startPercentage: number;
     endPercentage: number;
     durationMs: number;
   };
-  PlayingBeatBatchStopped: {
+  BeatBatchStopped: {
     resetPercentage: number | null; // Where to move NeedleType.PLAYING after stopping
   };
 };
