@@ -22,7 +22,6 @@ class Scene {
   private _scene: THREE.Scene = null;
   private _camera: THREE.Camera = null;
   private _renderer: THREE.WebGLRenderer = null;
-  private _light: THREE.SpotLight = null;
 
   private _updatables: Set<Updatable> = new Set();
 
@@ -50,15 +49,9 @@ class Scene {
     renderer.setClearColor(config.drawables.background.colour.background);
     renderer.setSize(window.innerWidth, window.innerHeight);
 
-    // const light = new THREE.SpotLight(0xFFFFFF, 0.05, 50);
-    // // light.position.set(0, 0, 500);
-    // light.castShadow = true;
-    // scene.add(light);
-
     this._scene = scene;
     this._camera = camera;
     this._renderer = renderer;
-    // this._light = light;
 
     document.addEventListener('mousemove', (e: MouseEvent) => this.onMouseMove(e), false);
 
@@ -116,9 +109,6 @@ class Scene {
     this._camera.position.x = -this._panActualX * config.scene.panAmount;
     this._camera.position.y = this._panActualY * config.scene.panAmount;
     this._camera.lookAt(WorldPoint.getPoint(0, 0, Scene.Z_BASE_DISTANCE).toVector3());
-
-    // this._light.position.x = -this._panActualX * 10;
-    // this._light.position.y = this._panActualY * 10;
 
     // Re-render everything on the scene through THREE.js
     this._renderer.render(this._scene, this._camera);

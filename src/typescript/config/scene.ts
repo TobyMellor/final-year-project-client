@@ -1,4 +1,4 @@
 export default {
-  panCatchupSpeed: 0.01,
-  panAmount: 2.75,
+  panCatchupSpeed: 0.025,
+  panAmount: 0.6,
 };
