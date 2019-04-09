@@ -6,6 +6,7 @@ export function getMockUIBeat(order: number = 0, barOrder: number = 0): UIBeatTy
     barOrder,
     timbreNormalized: 0.5,
     loudnessNormalized: 0.5,
+    startMs: 5,
     durationMs: 10,
   };
 }

@@ -45,32 +45,25 @@ export function forwardAndBackwardBranches(
   return [forwardBranches, backwardBranches];
 }
 
-export async function dispatchPlayingTrackBranchesAnalyzed(branchQuantity: number = 2) {
+export function dispatchPlayingTrackChanged() {
   const playingTrack = track();
-  const audioAnalysis = await playingTrack.getAudioAnalysis();
-  const branches = forwardAndBackwardBranches(audioAnalysis, branchQuantity);
 
   Dispatcher.getInstance()
-            .dispatch(FYPEvent.PlayingTrackBranchesAnalyzed, {
+            .dispatch(FYPEvent.PlayingTrackChanged, {
               playingTrack,
-              forwardAndBackwardBranches: branches,
               childTracks: [],
             });
 }
 
-/**
- * Listens to FYPEvent.PlayingTrackRendered, and returns
- * the callback to be executed when the event is fired.
- *
- * Use this jest.fn() callback to assert it is called when expected.
- */
-export function listenPlayingTrackRendered(): () => void {
-  const callbackFn = jest.fn();
+export async function dispatchPlayingTrackBranchAdded(branchCount: number) {
+  const playingTrack = track();
+  const audioAnalysis = await playingTrack.getAudioAnalysis();
+  const [_, backwardBranches] = forwardAndBackwardBranches(audioAnalysis, branchCount);
 
   Dispatcher.getInstance()
-            .on(FYPEvent.PlayingTrackRendered, this, callbackFn);
-
-  return callbackFn;
+            .dispatch(FYPEvent.PlayingTrackBranchAdded, {
+              branchesAdded: backwardBranches,
+            });
 }
 
 export function timeout(ms: number) {

@@ -1,61 +1,81 @@
 import TrackModel from '../../../models/audio-analysis/Track';
 import config from '../../../config';
-import AudioAnalysisModel from '../../../models/audio-analysis/AudioAnalysis';
-import * as branchFactory from '../../../factories/branch';
 import * as branchAnalysis from './branch-analysis';
 import { ForwardAndBackwardBranches, ForwardAndBackwardBranch } from '../../../types/general';
-import { getTimeIdentifierFromMilliseconds } from '../../../utils/conversions';
+import BranchModel from '../../../models/branches/Branch';
+import ForwardBranchModel from '../../../models/branches/ForwardBranch';
+import BackwardBranchModel from '../../../models/branches/BackwardBranch';
+import * as branchFactory from '../../../factories/branch';
 
-export async function generateBranches(track: TrackModel): Promise<ForwardAndBackwardBranches> {
-  const audioAnalysis = await track.getAudioAnalysis();
+export class BranchManager {
+  private static _forwardAndBackwardBranches: ForwardAndBackwardBranches = [[], []];
+  private static _accessibleBranches: BranchModel[] = [];
 
-  if (config.mock.shouldMockBranchCreation) {
-    return getMockForTrack(audioAnalysis);
+  public static getBranches(): BranchModel[] {
+    return BranchManager._accessibleBranches;
   }
 
-  const similarBeats = branchAnalysis.getSimilarBeats(audioAnalysis.beats);
-
-  return similarBeats.reduce((acc, [firstBeat, secondBeat]) => {
-    pushBranch(acc, branchFactory.createForwardAndBackwardBranch(firstBeat, secondBeat));
-    return acc;
-  }, [[], []] as ForwardAndBackwardBranches);
-}
-
-export function getMockForTrack(
-  { trackID, beats }: AudioAnalysisModel,
-): ForwardAndBackwardBranches {
-  const branches: ForwardAndBackwardBranches = [[], []];
-
-  if (trackID === '4RVbK6cV0VqWdpCDcx3hiT') { // Reborn
-    pushBranch(branches, branchFactory.createForwardAndBackwardBranch(beats[52], beats[100]));
-    pushBranch(branches, branchFactory.createForwardAndBackwardBranch(beats[53], beats[325]));
-  } else if (trackID === '3aUFrxO1B8EW63QchEl3wX') { // Feel The Love
-    // TODO: Implement Mock
-  } else if (trackID === '2hmHlBM0kPBm17Y7nVIW9f') { // My Propeller
-    // TODO: Implement
-  } else if (trackID === '6wVWJl64yoTzU27EI8ep20') { // Crying Lightning
-    pushBranch(branches, branchFactory.createForwardAndBackwardBranch(beats[43], beats[230]));
-    pushBranch(branches, branchFactory.createForwardAndBackwardBranch(beats[253], beats[354]));
-    pushBranch(branches, branchFactory.createForwardAndBackwardBranch(beats[100], beats[120]));
-    pushBranch(branches, branchFactory.createForwardAndBackwardBranch(beats[120], beats[164]));
-    pushBranch(branches, branchFactory.createForwardAndBackwardBranch(beats[10], beats[205]));
-    pushBranch(branches, branchFactory.createForwardAndBackwardBranch(beats[10], beats[205]));
-    pushBranch(branches, branchFactory.createForwardAndBackwardBranch(beats[25], beats[75]));
-  } else if (trackID === '3O8NlPh2LByMU9lSRSHedm') { // Controlla
-    pushBranch(branches, branchFactory.createForwardAndBackwardBranch(beats[65], beats[100]));
-    pushBranch(branches, branchFactory.createForwardAndBackwardBranch(beats[4], beats[200]));
-    pushBranch(branches, branchFactory.createForwardAndBackwardBranch(beats[150], beats[183]));
-  } else {
-    // TODO: Implement Mock
+  public static getForwardAndBackwardBranches(): ForwardAndBackwardBranches {
+    return BranchManager._forwardAndBackwardBranches;
   }
 
-  return branches;
-}
+  public static createBranches(...beatPairs: branchAnalysis.SimilarBeatPair[]) {
+    const [forwardBranches, backwardBranches] = this._forwardAndBackwardBranches;
 
-function pushBranch(
-  [forwardBranches, backwardBranches]: ForwardAndBackwardBranches,
-  [forwardBranch, backwardBranch]: ForwardAndBackwardBranch,
-) {
-  forwardBranches.push(forwardBranch);
-  backwardBranches.push(backwardBranch);
+    beatPairs.forEach(([firstBeat, secondBeat]) => {
+      const [forwardBranch, backwardBranch] = branchFactory.createForwardAndBackwardBranch(firstBeat, secondBeat);
+      forwardBranches.push(forwardBranch);
+      backwardBranches.push(backwardBranch);
+    });
+
+    this._accessibleBranches = BranchManager.getAccessibleBranches(this._forwardAndBackwardBranches);
+  }
+
+  public static async generate(track: TrackModel): Promise<ForwardAndBackwardBranches> {
+    const audioAnalysis = await track.getAudioAnalysis();
+    const beatPairs = config.mock.shouldMockBranchCreation
+                    ? branchAnalysis.getMockedSimilarBeats(audioAnalysis)
+                    : branchAnalysis.getSimilarBeats(audioAnalysis);
+
+    this._forwardAndBackwardBranches = [[], []];
+
+    if (beatPairs.length) {
+      // Creates and stores branches in _forwardAndBackwardBranches, recalculates _accessibleBranches
+      this.createBranches(...beatPairs);
+    }
+
+    return this._forwardAndBackwardBranches;
+  }
+
+  private static getAccessibleBranches([forwardBranches, backwardBranches]: ForwardAndBackwardBranches): BranchModel[] {
+    if (forwardBranches.length !== backwardBranches.length) {
+      throw new Error('The forward and backwards branch counts must be the same!');
+    }
+
+    function sortBranches(
+      branches: ForwardBranchModel[] | BackwardBranchModel[],
+    ): ForwardBranchModel[] | BackwardBranchModel[] {
+      return branches.sort((a: BranchModel, b: BranchModel) => b.latestBeat.order - a.latestBeat.order);
+    }
+
+    // Removes all forwardbranches leading to the last beat
+    function removeInaccessibleBranches(sortedForward: ForwardBranchModel[]): ForwardBranchModel[] {
+      let i = sortedForward.length - 1;
+      const highestBeatOrder = sortedForward[i].latestBeat.order;
+
+      do {
+        sortedForward.pop();
+        i -= 1;
+      } while (i >= 0 && sortedForward[i].latestBeat.order === highestBeatOrder);
+
+      return sortedForward;
+    }
+
+    const forwardCopy = [...forwardBranches];
+    const backwardCopy = [...backwardBranches];
+    return [
+      ...removeInaccessibleBranches(sortBranches(forwardCopy) as ForwardBranchModel[]),
+      ...sortBranches(backwardCopy),
+    ];
+  }
 }

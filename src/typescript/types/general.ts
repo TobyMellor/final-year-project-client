@@ -1,7 +1,7 @@
 import SegmentModel from '../models/audio-analysis/Segment';
 import BeatModel from '../models/audio-analysis/Beat';
 import BarModel from '../models/audio-analysis/Bar';
-import { BeatListOrientation, BranchNavStatus } from './enums';
+import { BeatListOrientation, BranchNavStatus, NeedleType } from './enums';
 import TrackModel from '../models/audio-analysis/Track';
 import BranchModel from '../models/branches/Branch';
 import ForwardBranchModel from '../models/branches/ForwardBranch';
@@ -33,6 +33,7 @@ export interface UIBeatType {
   barOrder: number;
   timbreNormalized: number;
   loudnessNormalized: number;
+  startMs: number;
   durationMs: number;
 }
 
@@ -48,8 +49,7 @@ export interface QueuedUIBeat extends UIBeatType {
 export interface BranchNavProps {
   UIBars: UIBarType[];
   isHidden?: boolean;
-  playthroughPercent?: number;
-  onClose: () => void;
+  onRequestClose: (status: BranchNavStatus) => void;
 }
 
 export interface BranchNavState {
@@ -57,10 +57,11 @@ export interface BranchNavState {
   beatLists: {
     [key: string]: BeatListInfo;
   };
-  beatPreviewTimer: NodeJS.Timeout;
   lastFocusedBeatList: BeatListOrientation | null;
   scrollLeftTarget: number;
   mouseOverBeatList: BeatListOrientation | null;
+  beatPreviewTimer: NodeJS.Timeout;
+  beatPathTimer: NodeJS.Timeout;
 }
 
 export interface BranchNavFooterProps {
@@ -131,6 +132,7 @@ export interface BarState {
 export interface SettingsPanelProps {
   onToggleBranchNavClick: () => void;
   isBranchNavHidden: boolean;
+  isBranchNavDisabled: boolean;
 }
 
 export type FYPEventPayload = {
@@ -139,25 +141,29 @@ export type FYPEventPayload = {
     childTracks: TrackModel[];
   };
   PlayingTrackBranchesAnalyzed: {
-    playingTrack: TrackModel;
-    childTracks: TrackModel[];
-    forwardAndBackwardBranches: ForwardAndBackwardBranches;
+    playingTrack: TrackModel | null;
+    childTracks: TrackModel[] | null;
   };
-  PlayingTrackRendered: {};
+  PlayingTrackBranchAdded: {
+    branchesAdded: BranchModel[];
+  };
   NextBeatsRequested: {
     playingTrack: TrackModel;
     beatBatchCount: number;
-    nextBranch: BranchModel | null;
+    nextBranch: BranchModel | null; // Not present when previewing through BranchNav
   };
   BeatsReadyForQueueing: {
-    beats: BeatModel[];
     beatBatch: BeatBatch;
   };
   PlayingBeatBatch: {
+    source: NeedleType;
     nextBranch: BranchModel;
-    startPercentage: number,
-    endPercentage: number,
-    durationMs: number,
+    startPercentage: number;
+    endPercentage: number;
+    durationMs: number;
+  };
+  PlayingBeatBatchStopped: {
+    resetPercentage: number | null; // Where to move NeedleType.PLAYING after stopping
   };
 };
 

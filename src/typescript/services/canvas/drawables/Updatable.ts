@@ -22,7 +22,7 @@ abstract class Updatable {
 
   protected addMesh({
     mesh,
-    position = WorldPoint.getPoint(0, 0, 0),
+    position = WorldPoint.getOrigin(),
     drawMode = THREE.TrianglesDrawMode,
     rotation = Rotation.getZero(),
     renderOrder,

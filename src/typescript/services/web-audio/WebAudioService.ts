@@ -10,20 +10,20 @@
 import TrackModel from '../../models/audio-analysis/Track';
 import Dispatcher from '../../events/Dispatcher';
 import * as trackFactory from '../../factories/track';
-import { FYPEvent } from '../../types/enums';
+import { FYPEvent, NeedleType, BranchType } from '../../types/enums';
 import BeatQueueManager from './BeatQueueManager';
-import config from '../../config';
-import { FYPEventPayload } from '../../types/general';
-import QueuedBeatModel from '../../models/web-audio/QueuedBeat';
+import { FYPEventPayload, BeatBatch, QueuedBeatBatch } from '../../types/general';
 import * as utils from '../../utils/conversions';
 import BranchModel from '../../models/branches/Branch';
+import fyp from '../../config/fyp';
+import * as branchFactory from '../../factories/branch';
 
 class WebAudioService {
   private static _instance: WebAudioService;
 
   private _audioContext: AudioContext;
   private _audioBuffer: AudioBuffer;
-  private _audioBufferSourceNodes: AudioBufferSourceNode[] = [];
+  private _audioBufferSourceNodes: Set<AudioBufferSourceNode> = new Set();
 
   private _tracks: TrackModel[] = [];
   private _playingTrack: TrackModel = null;
@@ -40,7 +40,7 @@ class WebAudioService {
       '6wVWJl64yoTzU27EI8ep20', // Crying Lightning
       '3aUFrxO1B8EW63QchEl3wX',
       '2hmHlBM0kPBm17Y7nVIW9f',
-      // '0wwPcA6wtMf6HUMpIRdeP7',
+      '0wwPcA6wtMf6HUMpIRdeP7',
     ];
     const trackRequests: Promise<TrackModel>[] = trackIDs.map(ID => trackFactory.createTrack(ID));
 
@@ -52,15 +52,13 @@ class WebAudioService {
         this.setPlayingTrack(tracks[0]);
       });
 
-    // Once we've loaded the track, analyzed it, and rendered the visuals
+    // Once we've loaded the track and analyzed it
     Dispatcher.getInstance()
-              .on(FYPEvent.PlayingTrackRendered, this, this.loadPlayingTrack);
+              .on(FYPEvent.PlayingTrackBranchesAnalyzed, () => this.loadPlayingTrack());
 
-    if (config.fyp.shouldPlayMusic) {
-      // When the Branch Service has given us new beats
-      Dispatcher.getInstance()
-                .on(FYPEvent.BeatsReadyForQueueing, this, this.queueBeatsForPlaying);
-    }
+    // When the Branch Service has given us new beats
+    Dispatcher.getInstance()
+              .on(FYPEvent.BeatsReadyForQueueing, data => this.queueBeatsForPlaying(data));
   }
 
   public static getInstance(): WebAudioService {
@@ -126,6 +124,7 @@ class WebAudioService {
    */
   private async queueBeatsForPlaying(
     { beatBatch }: FYPEventPayload['BeatsReadyForQueueing'],
+    source: NeedleType = NeedleType.PLAYING,
     onEndedCallbackFn?: () => void,
   ) {
     if (!beatBatch || !beatBatch.beatsToBranchOrigin || beatBatch.beatsToBranchOrigin.length === 0) {
@@ -136,8 +135,7 @@ class WebAudioService {
     let lastBufferSource: AudioBufferSourceNode;
 
     // When the first beat has started, we want to dispatch the "PlayingBeatBatch" event
-    const onStartedFn = () => this.dispatchPlayingBeatBatch(queuedBeatBatch.queuedBeatsToBranchOrigin[0],
-                                                            queuedBeatBatch.branch);
+    const onStartedFn = () => this.dispatchPlayingBeatBatch(queuedBeatBatch, source);
 
     queuedBeatBatch.queuedBeatsToBranchOrigin.forEach((queuedBeat, i) => {
       const { startSecs, durationSecs } = queuedBeat.beat;
@@ -163,14 +161,44 @@ class WebAudioService {
     }
   }
 
-  public async previewBeatsWithOrders(beatOrders: number[], beatOnEndedCallbackFn: () => void) {
-    const previewingBeats = await this._playingTrack.getBeatsWithOrders(beatOrders);
+  public async previewBeatsWithOrders(
+    beforeOriginBeatOrders: number[],
+    originBeatOrder: number,
+    destinationBeatOrder: number,
+    afterDestinationBeatOrders: number[],
+    onEndedCallbackFn: () => void,
+  ) {
+    function createBeatBatch(beatOrders: number[], branch: BranchModel | null): BeatBatch {
+      const beatsToBranchOrigin = beatOrders.map(beatOrder => beats[beatOrder]);
 
-    this.stop();
+      return {
+        beatsToBranchOrigin,
+        branch,
+      };
+    }
 
-    return this.queueBeatsForPlaying(
-      { beats: previewingBeats, beatBatch: null },
-      beatOnEndedCallbackFn,
+    const branchType = originBeatOrder < destinationBeatOrder ? BranchType.FORWARD : BranchType.BACKWARD;
+    const beats = await this._playingTrack.getBeats();
+    const branch = branchFactory.createBranchFromType(branchType, beats[originBeatOrder], beats[destinationBeatOrder]);
+
+    // Stop the audio, move the playing Needle to where we will start from
+    const resetPercentage = beats[beforeOriginBeatOrders[0]].getPercentageInTrack(this._playingTrack.duration);
+    this.stop(resetPercentage);
+
+    // Preview everything up to, and including, the origin beat
+    const firstBeatBatch = createBeatBatch([...beforeOriginBeatOrders, originBeatOrder], branch);
+    this.queueBeatsForPlaying(
+      { beatBatch: firstBeatBatch },
+      NeedleType.BRANCH_NAV,
+      () => {},
+    );
+
+    // Preview everything after the destination beat
+    const secondBeatBatch = createBeatBatch(afterDestinationBeatOrders, null);
+    this.queueBeatsForPlaying(
+      { beatBatch: secondBeatBatch },
+      NeedleType.BRANCH_NAV,
+      onEndedCallbackFn,
     );
   }
 
@@ -184,25 +212,50 @@ class WebAudioService {
     const source = this._audioContext.createBufferSource();
 
     source.buffer = audioBuffer;
-    source.connect(this._audioContext.destination);
+
+    if (fyp.shouldPlayMusic) {
+      source.connect(this._audioContext.destination);
+    } else {
+      const gainNode = this._audioContext.createGain();
+      gainNode.gain.setValueAtTime(0, 0);
+
+      source.connect(gainNode);
+      gainNode.connect(this._audioContext.destination);
+    }
+
     source.start(when, offset, duration);
 
     if (onStartedFn) {
-      setTimeout(onStartedFn,
-                 utils.secondsToMilliseconds(when - this._audioContext.currentTime));
+      setTimeout(() => {
+        // If we've called this.stop(), don't request more beats.
+        if (!this._audioBufferSourceNodes.has(source)) {
+          return;
+        }
+
+        onStartedFn();
+      }, utils.secondsToMilliseconds(when - this._audioContext.currentTime));
     }
 
-    this._audioBufferSourceNodes.push(source);
+    this._audioBufferSourceNodes.add(source);
 
     return source;
   }
 
-  public stop() {
+  /**
+   * @param resetPercentage Where to move the NeedleType.PLAYING after the audio is stopped
+   *                        Leaving this value as null will not change the position
+   */
+  public stop(resetPercentage: number = null) {
     // Stop all queued samples, then clear them from memory
-    this._audioBufferSourceNodes.forEach(source => source.stop());
-    this._audioBufferSourceNodes = [];
+    this._audioBufferSourceNodes.forEach((source) => {
+      source.onended = null;
+      source.stop();
+    });
+    this._audioBufferSourceNodes.clear();
 
     BeatQueueManager.clear();
+
+    this.dispatchPlayingBeatBatchStopped(resetPercentage);
   }
 
   // Signal that we're ready to receive beats to play
@@ -226,16 +279,18 @@ class WebAudioService {
    *
    * @param startQueuedBeat The start beat of the batch
    * @param endQueuedBeat The origin beat of a branch
+   * @param source Who made the request
    */
   private dispatchPlayingBeatBatch(
-    { beat: startBeat }: QueuedBeatModel,
-    nextBranch: BranchModel,
+    { branch: nextBranch, queuedBeatsToBranchOrigin: beats }: QueuedBeatBatch,
+    source: NeedleType,
   ) {
-    const endBeat = nextBranch.originBeat;
+    const startBeat = beats[0].beat;
+    const endBeat = beats[beats.length - 1].beat;
     const songDuration = this._playingTrack.duration;
     const startPercentage = startBeat.getPercentageInTrack(songDuration);
     const endPercentage = endBeat.getPercentageInTrack(songDuration);
-    const durationMs = endBeat.startMs - startBeat.endMs; // TODO: Check endMs and startMs usage
+    const durationMs = endBeat.endMs - startBeat.startMs;
 
     Dispatcher.getInstance()
               .dispatch(FYPEvent.PlayingBeatBatch, {
@@ -243,6 +298,14 @@ class WebAudioService {
                 startPercentage,
                 endPercentage,
                 durationMs,
+                source,
+              });
+  }
+
+  private dispatchPlayingBeatBatchStopped(resetPercentage: number | null) {
+    Dispatcher.getInstance()
+              .dispatch(FYPEvent.PlayingBeatBatchStopped, {
+                resetPercentage,
               });
   }
 }

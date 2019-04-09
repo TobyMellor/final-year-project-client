@@ -6,6 +6,7 @@ import Updatable from './Updatable';
 import * as THREE from 'three';
 import WorldPoint from './utils/WorldPoint';
 import Rotation from './utils/Rotation';
+import { BezierCurveType } from '../../../types/enums';
 const MeshLine = require('three.meshline');
 
 type MeshLineOptions = {
@@ -19,38 +20,20 @@ type MeshLineOptions = {
  * the circle
  */
 class BezierCurve extends Updatable {
-  private static LINE_WIDTH: number = 13;
-  private static COLOUR: number = 0xD9D9D9;
-  private static RENDER_ORDER: number = 0;
-
   private _curve: THREE.CubicBezierCurve3 = null;
   private _positionNeedsUpdate: boolean = false;
-
-  // The next bezier curve is the one that will be taken next in the song.
-  // It should be highlighted in some way to convey that.
-  private _isNext: boolean = false;
-  private static NEXT_COLOUR: number = SongCircle.EDGE_COLOUR;
-  private static NEXT_RENDER_ORDER: number = BezierCurve.RENDER_ORDER + 1;
-
-  private _isPreviewing: boolean = false;
-  private static PREVIEWING_COLOUR: number = 0xF1C40F;
-  private static PREVIEWING_DASH_SIZE: number = 0.05;
-  private static PREVIEWING_DASH_SPACING: number = 0.3;
 
   constructor(
     scene: Scene,
     private _songCircle: SongCircle,
+    private _type: BezierCurveType,
     private _fromPercentage: number,
     private _toPercentage: number,
     public branch: BranchModel | null, // Not present if it's a previewing Branch
   ) {
     super();
 
-    if (!branch) {
-      this._isPreviewing = this._isNext = true;
-    }
-
-    const meshLineOptions = this.getMeshLineOptions();
+    const meshLineOptions = this.getMeshLineOptions(_type, _fromPercentage, _toPercentage);
     this.addBezierCurve(_songCircle, _fromPercentage, _toPercentage, meshLineOptions);
 
     super.addAll(scene);
@@ -69,7 +52,7 @@ class BezierCurve extends Updatable {
     line.setGeometry(geometry);
 
     const material = new MeshLine.MeshLineMaterial({
-      resolution: new THREE.Vector2(window.innerWidth, window.innerHeight),
+      resolution: new THREE.Vector3(window.innerWidth, window.innerHeight, 10),
       sizeAttenuation: 0,
       near: Scene.CAMERA_Z_CLIP_NEAR,
       far: Scene.CAMERA_Z_CLIP_FAR,
@@ -115,9 +98,9 @@ class BezierCurve extends Updatable {
     return curve.getPoints(config.canvas.bezierCurve.points);
   }
 
-  public set isNext(isNext: boolean) {
-    if (isNext !== this._isNext) {
-      this._isNext = isNext;
+  public set type(type: BezierCurveType) {
+    if (type !== this._type) {
+      this._type = type;
 
       // Trigger a re-render of this element to make it appear ontop of other bezier curves
       super.refreshChildren();
@@ -132,28 +115,16 @@ class BezierCurve extends Updatable {
     }
   }
 
-  private getMeshLineOptions(): MeshLineOptions {
-    const getColour = () => {
-      if (this._isPreviewing) {
-        return BezierCurve.PREVIEWING_COLOUR;
-      }
-
-      if (this._isNext) {
-        return BezierCurve.NEXT_COLOUR;
-      }
-
-      return BezierCurve.COLOUR;
-    };
-
+  private getMeshLineOptions(type: BezierCurveType, fromPercentage: number, toPercentage: number): MeshLineOptions {
     const getDashOptions = () => {
-      if (this._isPreviewing && this._fromPercentage !== this._toPercentage) {
-        const dashOffset = (this._fromPercentage + this._toPercentage) / 100;
+      if (type === BezierCurveType.SCAFFOLD && fromPercentage !== toPercentage) {
+        const dashOffset = (fromPercentage + toPercentage) / 100;
 
         return {
           dashOffset,
           transparent: true,
-          dashArray: BezierCurve.PREVIEWING_DASH_SIZE,
-          dashRatio: BezierCurve.PREVIEWING_DASH_SPACING,
+          dashArray: config.drawables.bezierCurve.dashSize,
+          dashRatio: config.drawables.bezierCurve.dashSpacing,
         };
       }
 
@@ -162,8 +133,8 @@ class BezierCurve extends Updatable {
 
     return {
       ...getDashOptions(),
-      color: getColour(),
-      lineWidth: BezierCurve.LINE_WIDTH,
+      color: config.drawables.bezierCurve.colour[type],
+      lineWidth: config.drawables.bezierCurve.lineWidth,
     };
   }
 
@@ -176,7 +147,19 @@ class BezierCurve extends Updatable {
   }
 
   protected getRenderOrder() {
-    return this._isNext ? BezierCurve.NEXT_RENDER_ORDER : BezierCurve.RENDER_ORDER;
+    let renderOrder = 0;
+
+    // Order of precedence: PREVIEW -> SCAFFOLD -> NEXT -> NORMAL
+    switch (this._type) {
+      case BezierCurveType.PREVIEW:
+        renderOrder += 1;
+      case BezierCurveType.SCAFFOLD:
+        renderOrder += 1;
+      case BezierCurveType.NEXT:
+        renderOrder += 1;
+    }
+
+    return renderOrder;
   }
 
   public update() {
@@ -184,17 +167,17 @@ class BezierCurve extends Updatable {
     const [bezierCurveMesh] = group.children as THREE.Mesh[];
     const material = bezierCurveMesh.material as THREE.MeshBasicMaterial;
     const geometry = bezierCurveMesh.geometry as THREE.Geometry;
-    const { color } = this.getMeshLineOptions();
+    const meshLineOptions = this.getMeshLineOptions(this._type, this._fromPercentage, this._toPercentage);
 
     // Update the bezier curve colours (next branch being highlighted)
-    if (material.color.getHex() !== color) {
-      material.color.setHex(color);
+    if (material.color.getHex() !== meshLineOptions.color) {
+      material.color.setHex(meshLineOptions.color);
       geometry.colorsNeedUpdate = true;
     }
 
     if (this._positionNeedsUpdate) {
       this._positionNeedsUpdate = false;
-      this.addBezierCurve(this._songCircle, this._fromPercentage, this._toPercentage, this.getMeshLineOptions());
+      this.addBezierCurve(this._songCircle, this._fromPercentage, this._toPercentage, meshLineOptions);
       group.remove(bezierCurveMesh);
     }
 

@@ -8,7 +8,7 @@ class SettingsPanel extends React.Component<SettingsPanelProps> {
   }
 
   render() {
-    const { onToggleBranchNavClick, isBranchNavHidden } = this.props;
+    const { onToggleBranchNavClick, isBranchNavHidden, isBranchNavDisabled } = this.props;
     const toggleBranchNavLabel = isBranchNavHidden ? 'Add Branch' : 'Hide Branch Creator';
 
     return (
@@ -19,7 +19,9 @@ class SettingsPanel extends React.Component<SettingsPanelProps> {
         <div className="modal-dialog settings-panel" role="document">
           <div className="modal-content">
             <div className="modal-body p-0">
-              <SuccessButton label={toggleBranchNavLabel} onButtonClick={() => onToggleBranchNavClick()} />
+              <SuccessButton label={toggleBranchNavLabel}
+                             onButtonClick={() => onToggleBranchNavClick()}
+                             disabled={isBranchNavDisabled} />
             </div>
           </div>
         </div>

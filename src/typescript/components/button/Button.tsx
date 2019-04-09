@@ -8,10 +8,12 @@ interface ButtonProps {
   label: string;
   shouldFadeIn?: boolean;
   shouldHide?: boolean;
+  disabled?: boolean;
 }
 
 interface ButtonState {
   hasFadeFinished: boolean;
+  fadeTimer: NodeJS.Timeout;
 }
 
 class Button extends React.Component<ButtonProps, ButtonState> {
@@ -20,30 +22,39 @@ class Button extends React.Component<ButtonProps, ButtonState> {
 
     this.state = {
       hasFadeFinished: false,
+      fadeTimer: null,
     };
   }
 
   componentDidMount() {
     // After the fade animation has completed,
     // update the state
-    setTimeout(() => {
+    const fadeTimer = setTimeout(() => {
       this.setState({
         hasFadeFinished: true,
       });
     }, ui.button.fadeAnimationDurationMs);
+    this.setState({ fadeTimer });
+  }
+
+  componentWillUnmount() {
+    clearTimeout(this.state.fadeTimer);
   }
 
   handleClick() {
-    this.props.onButtonClick();
+    if (!this.props.disabled) {
+      this.props.onButtonClick();
+    }
   }
 
   render() {
-    const { colourClassName, label, shouldFadeIn, shouldHide } = this.props;
+    const { colourClassName, label, shouldFadeIn, shouldHide, disabled } = this.props;
     const { hasFadeFinished } = this.state;
     const classNames = cx(
       'btn',
       colourClassName,
       {
+        disabled,
         'start-fade': shouldFadeIn && !hasFadeFinished,
         'end-fade': shouldFadeIn && hasFadeFinished,
         'd-none': shouldHide,

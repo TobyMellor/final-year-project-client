@@ -5,21 +5,14 @@ import * as conversions from '../../../utils/conversions';
 import Updatable from './Updatable';
 import Circle from './utils/Circle';
 import * as THREE from 'three';
+import config from '../../../config';
 
 class SongCircle extends Updatable {
-  private static BACKGROUND_COLOUR: number = 0xFFFFFF;
-  private static TEXT_COLOUR: number = 0xFFFFFF;
-  public static EDGE_COLOUR: number = 0x000000;
-  private static HIGHLIGHT_COLOUR: number = 0xE74C3C;
-  private static DARK_OVERLAY_OPACITY: number = 0.6;
-  private static CIRCLE_RESOLUTION = 1;
-  private static DEGREES_IN_CIRCLE = 360;
-
   constructor(
     scene: Scene,
     public track: Track,
     public radius: number,
-    private _lineWidth: number,
+    public lineWidth: number,
     private _parentSongCircle: SongCircle = null,
     private _percentage: number = -1,
     backgroundColour: number = null, // If present, this overrides the album art
@@ -27,32 +20,32 @@ class SongCircle extends Updatable {
     super();
 
     this.addCircle(track, radius, backgroundColour);
-    this.addCircleOutline(radius, _lineWidth);
+    this.addCircleOutline(radius, lineWidth);
 
     if (_parentSongCircle) {
-      this.addText(track, radius, _lineWidth);
-    } else {
-      this.addNeedle(_lineWidth);
+      this.addText(track, radius, lineWidth);
     }
 
     super.addAll(scene);
   }
 
   private addCircle(track: Track, radius: number, backgroundColour: number) {
-    const geometry = new THREE.CircleGeometry(radius, SongCircle.DEGREES_IN_CIRCLE);
+    const geometry = new THREE.CircleGeometry(radius, config.drawables.songCircle.degreesInCircle);
     let material;
 
     if (backgroundColour === null) {
       const texture = new THREE.TextureLoader().load(track.bestImageURL);
 
       material = new THREE.MeshPhongMaterial({
-        emissive: SongCircle.BACKGROUND_COLOUR,
+        emissive: 0xFFFFFF,
         emissiveMap: texture,
-        emissiveIntensity: 1 - SongCircle.DARK_OVERLAY_OPACITY,
+        emissiveIntensity: 1 - config.drawables.songCircle.opacity.darkOverlay,
       });
     } else {
       material = new THREE.MeshBasicMaterial({ color: backgroundColour });
     }
+
+    material.depthTest = false;
 
     super.createAndAddMesh({
       geometry,
@@ -65,7 +58,7 @@ class SongCircle extends Updatable {
   private addCircleOutline(radius: number, lineWidth: number) {
     const geometry = new THREE.Geometry();
 
-    for (let i = 0; i <= SongCircle.DEGREES_IN_CIRCLE; i += SongCircle.CIRCLE_RESOLUTION) {
+    for (let i = 0; i <= config.drawables.songCircle.degreesInCircle; i += config.drawables.songCircle.resolution) {
       const NUMBER_OF_VERTICES = 4;
       const nextVertexCount = i * NUMBER_OF_VERTICES;
       const angleRadians = conversions.degreesToRadians(nextVertexCount);
@@ -92,7 +85,7 @@ class SongCircle extends Updatable {
       );
     }
 
-    const material = new THREE.MeshBasicMaterial({ color: SongCircle.EDGE_COLOUR });
+    const material = new THREE.MeshBasicMaterial({ color: config.drawables.songCircle.colour.edge });
 
     super.createAndAddMesh({
       geometry,
@@ -119,7 +112,7 @@ class SongCircle extends Updatable {
         const geometry = new THREE.TextGeometry(text, {
           font,
           size: fontSize,
-          height: 0,
+          height: 0.01,
           curveSegments: 4,
         });
 
@@ -137,7 +130,7 @@ class SongCircle extends Updatable {
         // (instead of the LEFT of the text)
         centerX(geometry);
 
-        const material = new THREE.MeshBasicMaterial({ color: SongCircle.TEXT_COLOUR });
+        const material = new THREE.MeshBasicMaterial({ color: config.drawables.songCircle.colour.text });
         const textMesh = new THREE.Mesh(geometry, material);
 
         return textMesh;
@@ -215,19 +208,6 @@ class SongCircle extends Updatable {
     });
   }
 
-  private addNeedle(lineWidth: number) {
-    const geometry = new THREE.PlaneGeometry(lineWidth * 4, lineWidth / 4);
-    const material = new THREE.MeshBasicMaterial({ color: SongCircle.HIGHLIGHT_COLOUR });
-    const position = WorldPoint.getPointOnCircleFromPercentage(this, 0);
-
-    super.createAndAddMesh({
-      geometry,
-      material,
-      position,
-      renderOrder: 2,
-    });
-  }
-
   public get center(): WorldPoint {
     if (!this._parentSongCircle) {
       return WorldPoint.getPoint(0, 0, Scene.Z_BASE_DISTANCE);
@@ -236,11 +216,9 @@ class SongCircle extends Updatable {
     const centerWorldPoint = WorldPoint.getCenterPointOfCircleFromPercentage(this._parentSongCircle,
                                                                              this._percentage,
                                                                              this.radius,
-                                                                             this._lineWidth);
+                                                                             this.lineWidth);
 
-    centerWorldPoint.z = Scene.Z_BASE_DISTANCE;
-
-    return centerWorldPoint;
+    return centerWorldPoint.alignToSceneBase();
   }
 
   protected getRenderOrder(): number {

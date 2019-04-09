@@ -1,5 +1,6 @@
 import { TimeIdentifier } from '../types/general';
 import Scene from '../services/canvas/drawables/Scene';
+import * as math from './math';
 
 export function degreesToRadians(degrees: number) {
   const radians = degrees * (Math.PI / 180);
@@ -27,20 +28,18 @@ export function percentageToRadians(percentage: number) {
   return radians;
 }
 
-export function worldWidthToAbsoluteWidth(
-  maxWidth: number,
-  gl: WebGLRenderingContext,
-) {
-  // Width of the entire canvas in world coordinates
-  const worldCanvasWidth = -Scene.CAMERA_POSITION[2];
+export function canvasPointToNDC(pointX: number, pointY: number): [number, number] {
+  function getNormalizedPoint(point: number, windowSize: number): number {
+    const newPoint = point - (windowSize / 2);
+    const normalizedPoint = math.normalizeNumber(newPoint, -windowSize, windowSize, -1, 1);
 
-  // Width of the circle in world coordinates
-  const worldCircleWidth = maxWidth / worldCanvasWidth;
+    return normalizedPoint;
+  }
 
-  // Width of the circle in pixels
-  const absoluteCircleWidth = worldCircleWidth * gl.canvas.width / window.devicePixelRatio;
-
-  return absoluteCircleWidth;
+  return [
+    getNormalizedPoint(pointX, window.innerWidth),
+    getNormalizedPoint(pointY, window.innerHeight),
+  ];
 }
 
 export function decimalToPercentage(decimal: number): number {

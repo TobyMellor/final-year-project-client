@@ -5,7 +5,12 @@ import cx from 'classnames';
 import * as uiService from '../../services/ui/ui';
 import * as utils from '../../utils/misc';
 import * as conversions from '../../utils/conversions';
-import { BeatListOrientation, BranchNavStatus } from '../../types/enums';
+import {
+  BeatListOrientation as Orientation,
+  BranchNavStatus as Status,
+  BezierCurveType,
+  BranchNavStatus,
+} from '../../types/enums';
 import {
   BeatListInfo,
   QueuedUIBeat,
@@ -15,9 +20,10 @@ import {
   BranchNavState,
 } from '../../types/general';
 import BranchNavFooter from './BranchNavFooter';
+import config from '../../config';
 
-const TOP = BeatListOrientation.TOP;
-const BOTTOM = BeatListOrientation.BOTTOM;
+const TOP = Orientation.TOP;
+const BOTTOM = Orientation.BOTTOM;
 
 class BranchNav extends React.Component<BranchNavProps, BranchNavState> {
   private scrollTrackerContainerElement: React.RefObject<HTMLDivElement>;
@@ -49,15 +55,16 @@ class BranchNav extends React.Component<BranchNavProps, BranchNavState> {
     }
 
     return {
-      status: BranchNavStatus.NOT_YET_SHOWN,
+      status: Status.NOT_YET_SHOWN,
       beatLists: {
         [TOP]: defaultBeatListInfo(),
         [BOTTOM]: defaultBeatListInfo(),
       },
-      beatPreviewTimer: null,
       lastFocusedBeatList: null,
       scrollLeftTarget: -1,
       mouseOverBeatList: TOP,
+      beatPreviewTimer: null,
+      beatPathTimer: null,
     };
   }
 
@@ -90,31 +97,25 @@ class BranchNav extends React.Component<BranchNavProps, BranchNavState> {
     return false;
   }
 
-  componentWillUpdate({ isHidden, playthroughPercent }: BranchNavProps, { status }: BranchNavState) {
+  componentWillUpdate({ isHidden }: BranchNavProps, { status }: BranchNavState) {
     if (this.props.isHidden !== isHidden) {
-      let scrollLeft: number;
+      const playthroughPercent = uiService.getPlaythroughPercent();
 
       if (!isHidden) {
-        if (status === BranchNavStatus.NOT_YET_SHOWN) {
-          this.setState({ status: BranchNavStatus.CHOOSE_FIRST_BEAT });
-        }
-
-        const scrollTrackerContainerElement = this.scrollTrackerContainerElement.current;
-        scrollLeft = this.getLastFocusedScrollLeft();
-
-        // Snap the scrollTracker to wherever they are in the song
-        scrollTrackerContainerElement.scrollLeft = playthroughPercent;
+        this.handleOnShow(playthroughPercent, status);
       } else {
-        const scrollPercent = playthroughPercent;
-        scrollLeft = this.getScrollLeftFromScrollPercent(scrollPercent);
+        this.handleOnClose();
       }
-
-      this.smoothlyCatchUpScrollTracker(scrollLeft);
     }
   }
 
+  componentWillUnmount() {
+    clearTimeout(this.state.beatPreviewTimer);
+    clearTimeout(this.state.beatPathTimer);
+  }
+
   render() {
-    const { UIBars, isHidden } = this.props;
+    const { UIBars, isHidden, onRequestClose } = this.props;
     const { status, beatLists } = this.state;
     const helperTextForStatus = this.getHelperTextForStatus(status);
     const branchNavClassNames = cx(
@@ -126,16 +127,16 @@ class BranchNav extends React.Component<BranchNavProps, BranchNavState> {
     const branchNavBodyClassNames = cx(
       'bottom-branch-nav-body',
       {
-        previewable: status === BranchNavStatus.PREVIEWABLE,
-        previewing: status === BranchNavStatus.PREVIEWING,
+        previewable: status === Status.PREVIEWABLE,
+        previewing: status === Status.PREVIEWING,
       },
     );
 
-    const getBeatListElement = (orientation: BeatListOrientation) => {
+    const getBeatListElement = (orientation: Orientation) => {
       const { initiallyCentered, queued, playing, disabled } = beatLists[orientation];
       const ref = this.getBeatListElement(orientation);
       const isHidden = orientation === BOTTOM &&
-                       status === BranchNavStatus.CHOOSE_FIRST_BEAT;
+                       status === Status.CHOOSE_FIRST_BEAT;
 
       return (
         <BeatList
@@ -170,7 +171,7 @@ class BranchNav extends React.Component<BranchNavProps, BranchNavState> {
             <div className="modal-header">
               <h5 className="modal-title">Create a Branch</h5>
               <h3 className="modal-title-feedback">{helperTextForStatus}</h3>
-              <button type="button" className="close" data-dismiss="modal" onClick={() => this.handleOnClose()}>
+              <button type="button" className="close" data-dismiss="modal" onClick={() => onRequestClose(status)}>
                 <span>&times;</span>
               </button>
             </div>
@@ -197,19 +198,33 @@ class BranchNav extends React.Component<BranchNavProps, BranchNavState> {
     );
   }
 
+  private handleOnShow(playthroughPercent: number, status: Status) {
+    if (status === Status.NOT_YET_SHOWN) {
+      this.setState({ status: Status.CHOOSE_FIRST_BEAT });
+    }
+
+    const startScrollLeft = this.getScrollLeftFromScrollPercent(playthroughPercent);
+    const targetScrollLeft = this.getLastFocusedScrollLeft();
+    const scrollTrackerContainerElement = this.scrollTrackerContainerElement.current;
+
+    // Snap the scrollTracker to wherever they are in the song
+    scrollTrackerContainerElement.scrollLeft = startScrollLeft;
+
+    this.smoothlyCatchUpScrollTracker(targetScrollLeft);
+  }
+
+  private handleOnClose() {
+    uiService.removePreviewBezierCurve();
+  }
+
   /**
    * Retrieve the instruction text in the modal header depending
    * on the current status.
    *
    * @param status The status of the beatList
    */
-  private getHelperTextForStatus(status: BranchNavStatus): string {
+  private getHelperTextForStatus(status: Status): string {
     return Translator.react.bottom_branch_nav[status];
-  }
-
-  private handleOnClose() {
-    uiService.removePreviewBezierCurve();
-    this.props.onClose();
   }
 
   /**
@@ -222,27 +237,27 @@ class BranchNav extends React.Component<BranchNavProps, BranchNavState> {
    *   - CHOOSE_SECOND_BEAT:
    *       - Update status to PREVIEWABLE
    *
-   * @param beatListOrientation The orientation of the beat list (TOP or BOTTOM)
+   * @param orientation The orientation of the beat list (TOP or BOTTOM)
    * @param selectedUIBeat The beat that's just beens elected
    */
-  private handleBeatClick(beatListOrientation: BeatListOrientation, selectedUIBeat: UIBeatType) {
-    function getNextStatus(currentStatus: BranchNavStatus): BranchNavStatus {
+  private handleBeatClick(orientation: Orientation, selectedUIBeat: UIBeatType) {
+    function getNextStatus(currentStatus: Status): Status {
       switch (currentStatus) {
-        case BranchNavStatus.PREVIEWABLE:
-          return BranchNavStatus.PREVIEWABLE;
-        case BranchNavStatus.CHOOSE_SECOND_BEAT:
+        case Status.PREVIEWABLE:
+          return Status.PREVIEWABLE;
+        case Status.CHOOSE_SECOND_BEAT:
           // Ensure they don't proceed if they just chose another from the top
-          if (beatListOrientation === BOTTOM) {
-            return BranchNavStatus.PREVIEWABLE;
+          if (orientation === BOTTOM) {
+            return Status.PREVIEWABLE;
           }
-        case BranchNavStatus.CHOOSE_FIRST_BEAT:
-          return BranchNavStatus.CHOOSE_SECOND_BEAT;
+        case Status.CHOOSE_FIRST_BEAT:
+          return Status.CHOOSE_SECOND_BEAT;
       }
     }
 
     this.setState(({ beatLists, status }) => {
       const nextStatus = getNextStatus(status);
-      const isOrientationTop = beatListOrientation === TOP;
+      const isOrientationTop = orientation === TOP;
 
       if (isOrientationTop) {
         beatLists[TOP].selected = selectedUIBeat;
@@ -258,7 +273,7 @@ class BranchNav extends React.Component<BranchNavProps, BranchNavState> {
       };
     });
 
-    if (this.state.status === BranchNavStatus.CHOOSE_FIRST_BEAT) {
+    if (this.state.status === Status.CHOOSE_FIRST_BEAT) {
       this.setState(({ beatLists }) => {
         const beatListsCopy = utils.deepCopy(beatLists);
         beatListsCopy[BOTTOM].initiallyCentered = beatListsCopy[TOP].selected;
@@ -280,7 +295,7 @@ class BranchNav extends React.Component<BranchNavProps, BranchNavState> {
       clearTimeout(beatPreviewTimer);
 
       return {
-        status: BranchNavStatus.PREVIEWING,
+        status: Status.PREVIEWING,
         beatPreviewTimer: null,
       };
     });
@@ -299,6 +314,23 @@ class BranchNav extends React.Component<BranchNavProps, BranchNavState> {
                        bottomSelectedBeat,
                        TOP,
                        BOTTOM);
+
+    // When we start playing, change the previewBezierCurve
+    setTimeout(() => {
+      if (this.state.status !== Status.PREVIEWING) {
+        return;
+      }
+
+      const [topPercent, bottomPercent] = uiService.getUIBeatPercents(topSelectedBeat, bottomSelectedBeat);
+      uiService.previewBezierCurve(
+        BezierCurveType.PREVIEW,
+        topPercent,
+        bottomPercent,
+      );
+
+      const needlePercent = this.state.lastFocusedBeatList === TOP ? topPercent : bottomPercent;
+      uiService.setNeedleRotation(needlePercent);
+    }, conversions.secondsToMilliseconds(config.audio.schedulingDelaySecs));
   }
 
   /**
@@ -317,7 +349,7 @@ class BranchNav extends React.Component<BranchNavProps, BranchNavState> {
       }
 
       return {
-        status: BranchNavStatus.PREVIEWABLE,
+        status: Status.PREVIEWABLE,
         beatPreviewTimer: null,
         beatLists: beatListsCopy,
       };
@@ -326,8 +358,19 @@ class BranchNav extends React.Component<BranchNavProps, BranchNavState> {
     uiService.stopPlaying();
   }
 
-  private handleCreateBranchClick() {
-    console.log('Our work here is done!');
+  private async handleCreateBranchClick() {
+    const { status, beatLists } = this.state;
+    const { onRequestClose } = this.props;
+
+    if (status === Status.PREVIEWING) {
+      uiService.stopPlaying();
+    }
+
+    const firstBeatOrder = beatLists[TOP].selected.order;
+    const secondBeatOrder = beatLists[BOTTOM].selected.order;
+    await uiService.createBranch(firstBeatOrder, secondBeatOrder);
+
+    this.setState({ status: BranchNavStatus.FINISHED }, () => onRequestClose(Status.FINISHED));
   }
 
   /**
@@ -341,7 +384,7 @@ class BranchNav extends React.Component<BranchNavProps, BranchNavState> {
     const status = this.state.status;
 
     // If only one BeatList is shown, don't bother calculating
-    if (status === BranchNavStatus.CHOOSE_FIRST_BEAT) {
+    if (status === Status.NOT_YET_SHOWN || status === Status.CHOOSE_FIRST_BEAT) {
       return;
     }
 
@@ -358,11 +401,11 @@ class BranchNav extends React.Component<BranchNavProps, BranchNavState> {
   /**
    * Attempts to keep the canvas rotation in sync when scrolling through a beat list
    *
-   * @param beatListOrientation The orientation of the beat list that was scrolled
+   * @param orientation The orientation of the beat list that was scrolled
    * @param element The beat list element that was scrolled
    */
   private handleBeatListScroll(
-    beatListOrientation: BeatListOrientation,
+    orientation: Orientation,
     { scrollLeft: newScrollLeftTarget, scrollWidth }: Element,
   ) {
     const {
@@ -372,18 +415,19 @@ class BranchNav extends React.Component<BranchNavProps, BranchNavState> {
     } = this.state;
 
     // Don't scroll the beat list if the user's mouse is not hovering over it
-    if (mouseOverBeatList && mouseOverBeatList !== beatListOrientation) {
+    if (mouseOverBeatList && mouseOverBeatList !== orientation) {
+      console.debug('Mouse over blocking scrolling', mouseOverBeatList, orientation);
       return;
     }
 
     // Update the lastKnownScrollLeft and lastFocusedBeatList
     this.setState(({ beatLists }) => {
       const beatListsCopy = utils.deepCopy(beatLists);
-      beatListsCopy[beatListOrientation].lastKnownScrollLeft = newScrollLeftTarget;
+      beatListsCopy[orientation].lastKnownScrollLeft = newScrollLeftTarget;
 
       return {
         beatLists: beatListsCopy,
-        lastFocusedBeatList: beatListOrientation,
+        lastFocusedBeatList: orientation,
       };
     });
 
@@ -395,7 +439,7 @@ class BranchNav extends React.Component<BranchNavProps, BranchNavState> {
     }
 
     if (scrollLeftTarget === -1) {
-      if (!lastFocusedBeatList || lastFocusedBeatList === beatListOrientation) {
+      if (!lastFocusedBeatList || lastFocusedBeatList === orientation) {
         // Keep the scroll tracker in sync with the beat list
         const scrollTrackerContainerElement = this.scrollTrackerContainerElement.current;
         scrollTrackerContainerElement.scrollLeft = newScrollLeftTarget;
@@ -442,7 +486,13 @@ class BranchNav extends React.Component<BranchNavProps, BranchNavState> {
   private handleScrollTracker() {
     // The scrollTracker can be moved during initialization, don't allow animations to take place
     const { scrollLeftTarget, beatLists, lastFocusedBeatList, status } = this.state;
-    if (status === BranchNavStatus.NOT_YET_SHOWN) {
+    if (status === Status.NOT_YET_SHOWN) {
+      console.debug('NOT_YET_SHOWN blocking scroll');
+      return;
+    }
+
+    if (status === Status.PREVIEWING) {
+      this.handlePreviewingBackClick();
       return;
     }
 
@@ -464,14 +514,14 @@ class BranchNav extends React.Component<BranchNavProps, BranchNavState> {
       });
     }
 
-    if (status === BranchNavStatus.CHOOSE_FIRST_BEAT) {
+    if (status === Status.CHOOSE_FIRST_BEAT) {
       beatLists[BOTTOM].lastKnownScrollLeft = beatLists[TOP].lastKnownScrollLeft;
     }
 
     const scrollTrackerScrollPercent = this.getScrollPercentFromScrollLeft(scrollLeft, scrollWidth, clientWidth);
-    const getExactBeatListScrollPercent = (orientation: BeatListOrientation): number => {
+    const getExactBeatListScrollPercent = (orientation: Orientation): number => {
       // If it's the first stage, use the scroll tracker as we know it's in sync
-      if (status === BranchNavStatus.CHOOSE_FIRST_BEAT) {
+      if (status === Status.CHOOSE_FIRST_BEAT) {
         return scrollTrackerScrollPercent;
       }
 
@@ -489,12 +539,13 @@ class BranchNav extends React.Component<BranchNavProps, BranchNavState> {
     const topBeatListExactScrollPercent = getExactBeatListScrollPercent(TOP);
     const bottomBeatListExactScrollPercent = getExactBeatListScrollPercent(BOTTOM);
 
-    uiService.setSongCircleRotation(scrollTrackerScrollPercent);
-    // Preview before setSongCircleRotation
     uiService.previewBezierCurve(
+      BezierCurveType.SCAFFOLD,
       topBeatListExactScrollPercent,
       bottomBeatListExactScrollPercent,
     );
+    uiService.setSongCircleRotation(scrollTrackerScrollPercent);
+    uiService.setNeedleRotation(scrollTrackerScrollPercent);
   }
 
   /**
@@ -573,34 +624,39 @@ class BranchNav extends React.Component<BranchNavProps, BranchNavState> {
     destinationBar: UIBarType,
     originBeat: UIBeatType,
     destinationBeat: UIBeatType,
-    startOrientation: BeatListOrientation,
-    endOrientation: BeatListOrientation,
+    startOrientation: Orientation,
+    endOrientation: Orientation,
   ) {
-    const queuedUIBeats = [
-      ...this.getAdjacentBeats(originBar,
-                               originBeat,
-                               true,
-                               true,
-                               startOrientation),
-      ...this.getAdjacentBeats(destinationBar,
-                               destinationBeat,
-                               false,
-                               false,
-                               endOrientation),
+    const beatsBeforeOrigin = this.getAdjacentBeats(
+      originBar,
+      originBeat,
+      true,
+      startOrientation,
+    );
+    const beatsAfterDestination = this.getAdjacentBeats(
+      destinationBar,
+      destinationBeat,
+      false,
+      endOrientation,
+    );
+    const beatPath = [
+      ...beatsBeforeOrigin,
+      { ...originBeat, orientation: startOrientation }, // originBeat: QueuedUIBeat
+      ...beatsAfterDestination,
     ];
-    const queuedUIBeatOrders = queuedUIBeats.map(beat => beat.order);
 
-    setTimeout(() => {
-      this.updatePlayingBeats(queuedUIBeats);
-      this.updateQueuedBeats(queuedUIBeats);
-    }, queuedUIBeats[0].durationMs);
+    const beatPathTimer = setTimeout(() => {
+      this.updatePlayingBeats(beatPath);
+      this.updateQueuedBeats(beatPath);
+    }, conversions.secondsToMilliseconds(config.audio.schedulingDelaySecs));
+    this.setState({ beatPathTimer });
 
     // Play the opposite branch
     const callbackFn = () => {
       const status = this.state.status;
 
       // If we're still previewing when the beats have finished
-      if (status === BranchNavStatus.PREVIEWING) {
+      if (status === Status.PREVIEWING) {
         // Reverse the originBeat and destinationBeat
         this.playBeatPaths(destinationBar,
                            originBar,
@@ -611,7 +667,11 @@ class BranchNav extends React.Component<BranchNavProps, BranchNavState> {
       }
     };
 
-    uiService.previewBeatsWithOrders(queuedUIBeatOrders, callbackFn);
+    uiService.previewBeatsWithOrders(beatsBeforeOrigin.map(b => b.order),
+                                     originBeat.order,
+                                     destinationBeat.order,
+                                     beatsAfterDestination.map(b => b.order),
+                                     callbackFn);
   }
 
   /**
@@ -628,7 +688,6 @@ class BranchNav extends React.Component<BranchNavProps, BranchNavState> {
     anchorBar: UIBarType,
     anchorBeat: UIBeatType,
     shouldReturnBeatsBefore: boolean,
-    shouldIncludeInputBeat: boolean,
     orientation: string,
   ): QueuedUIBeat[] {
     const { beats: anchorBarBeats, order: anchorBarOrder } = anchorBar;
@@ -653,12 +712,6 @@ class BranchNav extends React.Component<BranchNavProps, BranchNavState> {
       ...adjacentBarBeats,
       ...adjacentBeatsInBar,
     ];
-
-    // Whether or not to include the anchorBeat. This function is called twice; for the originBeat
-    // and the destBeat. When playing, only the originBeat OR the destinationBeat can be played
-    if (shouldIncludeInputBeat) {
-      adjacentBeats.push(anchorBeat);
-    }
 
     const queuedUIBeats = adjacentBeats.map((beat) => {
       return {
@@ -744,7 +797,7 @@ class BranchNav extends React.Component<BranchNavProps, BranchNavState> {
     return this.props.UIBars[barOrder];
   }
 
-  private getBeatListElement(orientation: BeatListOrientation): React.RefObject<BeatList> {
+  private getBeatListElement(orientation: Orientation): React.RefObject<BeatList> {
     if (orientation === TOP) {
       return this.topBeatListElement;
     }
@@ -752,7 +805,7 @@ class BranchNav extends React.Component<BranchNavProps, BranchNavState> {
     return this.bottomBeatListElement;
   }
 
-  private getScrollableBeatListElement(orientation: BeatListOrientation): HTMLDivElement {
+  private getScrollableBeatListElement(orientation: Orientation): HTMLDivElement {
     const beatListElement = this.getBeatListElement(orientation).current;
     const beatsElement = beatListElement.getBeatsElement();
 

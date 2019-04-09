@@ -2,6 +2,7 @@ import Primitive from './Primitive';
 import SongCircle from '../SongCircle';
 import Circle from './Circle';
 import * as conversions from '../../../../utils/conversions';
+import * as THREE from 'three';
 
 /**
  * World Point
@@ -79,6 +80,14 @@ class WorldPoint extends Primitive {
     const circle = new Circle(parentCircleCenter, parentCircleRadius);
 
     return circle.getPointOnCircle(angleRadians);
+  }
+
+  public toVector3(): THREE.Vector3 {
+    return new THREE.Vector3(
+      this.x,
+      this.y,
+      this.z,
+    );
   }
 }
 

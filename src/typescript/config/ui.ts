@@ -52,4 +52,7 @@ export default {
   // If the BranchNav has been hidden for some amount of time, reset it
   // NOTE: This value must be at least greater than the fade-out animation
   resetBranchNavAfterHiddenMs: 5000,
+
+  // The time taken for a 'smooth' scrollTo to complete
+  scrollToDurationMs: 1000,
 };
