@@ -7,6 +7,10 @@ export enum FYPEvent {
   // Triggers the Transition Analysis, the BranchNav initialization, and hidden rendering of branches
   BranchesAnalyzed = 'branches_analyzed',
 
+  // Fired when similar tracks and the best transitions have been identified
+  // Triggers the rendering of child song circles, and signaling to the ActionDecider that transitions can now be made
+  TransitionsAnalyzed = 'transitions_analyzed',
+
   // Fired when a branch is manually created, e.g. through the BranchNav
   // Triggers the immediate rendering of the branch
   PlayingTrackBranchAdded = 'playing_track_branch_added',
@@ -91,4 +95,9 @@ export enum BezierCurveType {
 
   // The user is previewing this branch in the BranchNav
   PREVIEW = 'preview',
+}
+
+// TODO: Implement more!
+export enum TransitionType {
+  FADE = 'fade',
 }

@@ -1,7 +1,7 @@
 import SegmentModel from '../models/audio-analysis/Segment';
 import BeatModel from '../models/audio-analysis/Beat';
 import BarModel from '../models/audio-analysis/Bar';
-import { BeatListOrientation, BranchNavStatus, NeedleType } from './enums';
+import { BeatListOrientation, BranchNavStatus, NeedleType, TransitionType } from './enums';
 import TrackModel from '../models/audio-analysis/Track';
 import BranchModel from '../models/branches/Branch';
 import ForwardBranchModel from '../models/branches/ForwardBranch';
@@ -140,8 +140,10 @@ export type FYPEventPayload = {
     track: TrackModel;
   };
   BranchesAnalyzed: {
-    track: TrackModel;
     branches: BranchModel[];
+  };
+  TransitionsAnalyzed: {
+    transitions: Transition[],
   };
   PlayingTrackBranchAdded: {
     branch: BranchModel;
@@ -170,7 +172,15 @@ export type FYPEventPayload = {
   };
 };
 
+export type Transition = {
+  type: TransitionType,
+  track: TrackModel,
+  originBeat: BeatModel,
+  destinationBeat: BeatModel,
+};
+
 export type BeatBatch = {
+  track: TrackModel,
   beatsToBranchOrigin: BeatModel[], // Beats up to, but not including, the originBeat of the branch
   branch: BranchModel,
 };
