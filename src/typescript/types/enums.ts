@@ -10,9 +10,6 @@ export enum FYPEvent {
   // Either FYPEvent.PlayingTrackBranchesAnalyzed, or a branch was added manually
   PlayingTrackBranchAdded = 'playing_track_branch_added',
 
-  // The Playing Track has completed the first render since it was changed
-  PlayingTrackRendered = 'playing_track_rendered',
-
   // The Music Service is requesting the next segment of beats to be queued for future play
   NextBeatsRequested = 'next_beats_requested',
 

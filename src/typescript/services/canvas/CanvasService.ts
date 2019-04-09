@@ -63,8 +63,6 @@ class CanvasService {
    * Renders the parent circle for the playing track, and
    * renders the child tracks around the parent circle.
    *
-   * Dispatches FYPEvent.PlayingTrackRendered when finished
-   *
    * @param eventContents The track that's playing, and the loaded child tracks
    */
   public async renderSongCircles(
@@ -89,7 +87,6 @@ class CanvasService {
   public async renderBezierCurves(
     { branchesAdded }: FYPEventPayload['PlayingTrackBranchAdded'],
   ) {
-
     this._bezierCurves = drawableFactory.renderBezierCurves(this.scene,
                                                             this._parentSongCircle,
                                                             branchesAdded);

@@ -147,7 +147,6 @@ export type FYPEventPayload = {
   PlayingTrackBranchAdded: {
     branchesAdded: BranchModel[];
   };
-  PlayingTrackRendered: {};
   NextBeatsRequested: {
     playingTrack: TrackModel;
     beatBatchCount: number;

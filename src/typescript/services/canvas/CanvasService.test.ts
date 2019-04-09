@@ -4,36 +4,31 @@ import * as fixture from '../../test/fixture';
 import Scene from './drawables/Scene';
 
 describe('Canvas Service', () => {
-  let canvasService: CanvasService;
-  let dispatcher: Dispatcher;
   let addUpdatableFn: any;
 
   beforeEach(() => {
-    canvasService = CanvasService.getInstance();
-    dispatcher = Dispatcher.getInstance();
-
+    CanvasService.getInstance();
     addUpdatableFn = Scene.prototype.add = jest.fn(() => Scene.prototype.add);
   });
 
-  it('renders bezier curves on PlayingTrackBranchAdded', async () => {
+  it('renders bezier curves on PlayingTrackBranchesAnalyzed', async () => {
     const parentSongCircleCount = 1;
     const bezierCurveCount = 2;
     const playingNeedleCount = 1;
     const childSongCircleCount = 0;
 
-    const playingTrackRenderedCallbackFn = fixture.listenPlayingTrackRendered();
-
-    // FYPEvent.PlayingTrackRendered should not be dispatched before rendering and
     // nothing should be added to the scene yet
-    expect(playingTrackRenderedCallbackFn).toBeCalledTimes(0);
     expect(addUpdatableFn).toBeCalledTimes(0);
 
-    // Simulate an analysis, requiring 2 branches to be rendered
-    await fixture.dispatchPlayingTrackBranchAdded(bezierCurveCount);
-
-    // FYPEvent.PlayingTrackRendered should be dispatched after rendering
+    // Simulate an analysis, triggering the songCircles to be rendered
     // There should be 1 song sircle, and 2 bezier curves on the scene
-    expect(playingTrackRenderedCallbackFn).toBeCalledTimes(1);
+    await fixture.dispatchPlayingTrackChanged();
+    expect(addUpdatableFn).toBeCalledTimes(
+      parentSongCircleCount + playingNeedleCount + childSongCircleCount,
+    );
+
+    // Dispatch a FYPEvent.PlayingTrackBranchAdded, render the 2 bezier curves
+    await fixture.dispatchPlayingTrackBranchAdded(bezierCurveCount);
     expect(addUpdatableFn).toBeCalledTimes(
       parentSongCircleCount + bezierCurveCount + playingNeedleCount + childSongCircleCount,
     );
