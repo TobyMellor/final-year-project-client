@@ -7,6 +7,7 @@ import BranchModel from '../models/branches/Branch';
 import ForwardBranchModel from '../models/branches/ForwardBranch';
 import BackwardBranchModel from '../models/branches/BackwardBranch';
 import QueuedBeatModel from '../models/web-audio/QueuedBeat';
+import SongTransition from '../models/SongTransition';
 
 export type TimeIdentifier = {
   ms: number;
@@ -140,10 +141,12 @@ export type FYPEventPayload = {
     track: TrackModel;
   };
   BranchesAnalyzed: {
+    track: TrackModel;
     branches: BranchModel[];
   };
   TransitionsAnalyzed: {
-    transitions: Transition[],
+    track: TrackModel;
+    transitions: SongTransition[],
   };
   PlayingTrackBranchAdded: {
     branch: BranchModel;
@@ -155,14 +158,15 @@ export type FYPEventPayload = {
   BeatBatchRequested: {
     track: TrackModel;
     beatBatchCount: number; // How many to schedule in advance
-    action: BranchModel | Transition | null; // Not present when previewing through BranchNav TODO: Add "Transition"
+    action: BranchModel | SongTransition | null; // Not present when previewing through BranchNav
   };
   BeatBatchReady: {
     beatBatch: BeatBatch;
   };
   BeatBatchPlaying: {
+    track: TrackModel;
     source: NeedleType;
-    action: BranchModel | Transition | null; // Not present when previewing through BranchNav TODO: Add "Transition"
+    action: BranchModel | SongTransition | null; // Not present when previewing through BranchNav
     startPercentage: number;
     endPercentage: number;
     durationMs: number;
@@ -171,13 +175,6 @@ export type FYPEventPayload = {
     resetPercentage: number | null; // Where to move NeedleType.PLAYING after stopping
   };
 };
-
-export interface Transition {
-  type: TransitionType;
-  track: TrackModel;
-  originBeat: BeatModel;
-  destinationBeat: BeatModel;
-}
 
 export type BeatBatch = {
   track: TrackModel,

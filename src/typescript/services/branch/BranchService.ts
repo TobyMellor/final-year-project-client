@@ -26,6 +26,12 @@ class BranchService {
     return this._instance || (this._instance = new this());
   }
 
+  private async generateBranches({ track }: FYPEventPayload['TrackChangeRequested']) {
+    const [_, backwardBranches] = await BranchManager.generate(track);
+
+    this.dispatchBranchesAnalyzed(backwardBranches);
+  }
+
   public createBranch(track: TrackModel, firstBeat: BeatModel, secondBeat: BeatModel) {
     const [earliestBeat, latestBeat] = firstBeat.order < secondBeat.order
                                      ? [firstBeat, secondBeat]
@@ -40,12 +46,6 @@ class BranchService {
         latestBeat,
       }),
     ]);
-  }
-
-  private async generateBranches({ track }: FYPEventPayload['TrackChangeRequested']) {
-    const [_, backwardBranches] = await BranchManager.generate(track);
-
-    this.dispatchBranchesAnalyzed(backwardBranches);
   }
 
   private async dispatchBeatBatches(

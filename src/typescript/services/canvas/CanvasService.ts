@@ -1,11 +1,3 @@
-/**
- * Canvas Service
- *
- * Handles everything to do with the canvas,
- * including animations, ThreeJS, circles,
- * branches, etc.
- */
-
 import Dispatcher from '../../events/Dispatcher';
 import Scene from '../canvas/drawables/Scene';
 import * as drawableFactory from '../../factories/drawable';
@@ -16,13 +8,16 @@ import BranchModel from '../../models/branches/Branch';
 import SongCircle from './drawables/SongCircle';
 import Needle from './drawables/Needle';
 import * as math from '../../utils/math';
+import TrackModel from '../../models/audio-analysis/Track';
+import SongTransition from '../../models/SongTransition';
 
 class CanvasService {
   private static _instance: CanvasService = null;
 
   public scene: Scene = null;
-  private _parentSongCircle: SongCircle | null = null;
-  private _bezierCurves: BezierCurve[] = [];
+  private _playingTrackID: string;
+  private _songCircles: { [trackID: string]: SongCircle } = {};
+  private _bezierCurves: { [trackID: string]: BezierCurve[] } = {};
   private _playingNeedle: Needle | null = null;
   private _branchNavNeedle: Needle | null = null;
   private _branchNavBezierCurve: BezierCurve | null = null;
@@ -31,24 +26,37 @@ class CanvasService {
   private constructor(canvas: HTMLCanvasElement) {
     this.scene = Scene.getInstance(canvas);
 
-    // When the currently playing track has changed or it's loaded for the first time, render the circles
     Dispatcher.getInstance()
-              .on(FYPEvent.PlayingTrackChanged, data => this.renderSongCircles(data));
-
-    // When the branch analysis has finished, or a user has manually added a song
-    Dispatcher.getInstance()
-              .on(FYPEvent.PlayingTrackBranchAdded, data => this.renderBezierCurves(data));
-
-    // When a beat batch has started, highlight the next branch to be taken
-    Dispatcher.getInstance()
-              .on(FYPEvent.PlayingBeatBatch, data => this.updateNextBezierCurve(data));
-
-    // When a beat batch has started, start the animation
-    Dispatcher.getInstance()
-              .on(FYPEvent.PlayingBeatBatch, data => this.startSongCircleRotation(data));
+              .on(FYPEvent.TrackChangeRequested, (data) => {
+                // Only listen to this event once
+                if (!this._playingTrackID) {
+                  this.renderParentSongCircle(data);
+                }
+              });
 
     Dispatcher.getInstance()
-              .on(FYPEvent.PlayingBeatBatchStopped, data => this.stopSongCircleRotation(data));
+              .on(FYPEvent.BranchesAnalyzed, data => this.renderBezierCurves(data));
+
+    Dispatcher.getInstance()
+              .on(FYPEvent.TransitionsAnalyzed, data => this.renderChildSongCircles(data));
+
+    Dispatcher.getInstance()
+              .on(FYPEvent.BeatBatchPlaying, (data) => {
+                if (data.action instanceof SongTransition) {
+                  this.transitionChildToParent(data);
+                } else {
+                  this.startSongCircleRotation(data);
+                }
+              });
+
+    Dispatcher.getInstance()
+              .on(FYPEvent.BeatBatchPlaying, (data) => {
+                this.updateNextBezierCurve(data);
+                this.startSongCircleRotation(data);
+              });
+
+    Dispatcher.getInstance()
+              .on(FYPEvent.BeatBatchStopped, data => this.stopSongCircleRotation(data));
   }
 
   public static getInstance(canvas?: HTMLCanvasElement): CanvasService {
@@ -59,37 +67,39 @@ class CanvasService {
     return this._instance = new this(canvas);
   }
 
-  /**
-   * Renders the parent circle for the playing track, and
-   * renders the child tracks around the parent circle.
-   *
-   * @param eventContents The track that's playing, and the loaded child tracks
-   */
-  public async renderSongCircles(
-    {
-      playingTrack,
-      childTracks,
-    }: FYPEventPayload['PlayingTrackChanged'],
-  ) {
-    this._parentSongCircle = drawableFactory.renderParentSongCircle(this.scene, playingTrack);
-    this._playingNeedle = drawableFactory.renderNeedle(this.scene, this._parentSongCircle, NeedleType.PLAYING, 0);
-
-    childTracks.forEach((childTrack) => {
-      const percentage = math.getRandomInteger(); // TODO: Replace random position with an analysis of best entry
-
-      drawableFactory.renderChildSongCircle(this.scene,
-                                            this._parentSongCircle,
-                                            childTrack,
-                                            percentage);
-    });
+  private transitionChildToParent({ track }: FYPEventPayload['TrackChanged']) {
+    // TODO: Implement
   }
 
-  public async renderBezierCurves(
-    { branchesAdded }: FYPEventPayload['PlayingTrackBranchAdded'],
-  ) {
-    this._bezierCurves = drawableFactory.renderBezierCurves(this.scene,
-                                                            this._parentSongCircle,
-                                                            branchesAdded);
+  private renderParentSongCircle({ track }: FYPEventPayload['TrackChangeRequested']) {
+    const songCircle = drawableFactory.renderParentSongCircle(this.scene, track);
+    const playingNeedle = drawableFactory.renderNeedle(this.scene, songCircle, NeedleType.PLAYING, 0);
+
+    const trackID = track.ID;
+    this._playingTrackID = trackID;
+    this._songCircles[trackID] = songCircle;
+    this._playingNeedle = playingNeedle;
+  }
+
+  public renderBezierCurves({ track, branches }: FYPEventPayload['BranchesAnalyzed']) {
+    const songCircle = this.getSongCircle(track);
+    const bezierCurves = drawableFactory.renderBezierCurves(this.scene, songCircle, branches);
+
+    this._bezierCurves[track.ID] = bezierCurves;
+  }
+
+  private renderChildSongCircles({ track, transitions }: FYPEventPayload['TransitionsAnalyzed']) {
+    const parentSongCircle = this.getSongCircle(track);
+
+    transitions.forEach(({ destinationTrack }) => {
+      const percentage = math.getRandomInteger(); // TODO: Replace random position with an analysis of best entry
+      const childSongCircle = drawableFactory.renderChildSongCircle(this.scene,
+                                                                    parentSongCircle,
+                                                                    destinationTrack,
+                                                                    percentage);
+
+      this._songCircles[track.ID] = childSongCircle;
+    });
   }
 
   /**
@@ -98,21 +108,22 @@ class CanvasService {
    *
    * @param eventPayload The next branch to be taken
    */
-  public async updateNextBezierCurve({ nextBranch }: FYPEventPayload['PlayingBeatBatch']) {
+  public updateNextBezierCurve({ track, action: nextBranch }: FYPEventPayload['BeatBatchPlaying']) {
+    const bezierCurves = this.getBezierCurves(track);
+
     if (!nextBranch) {
-      drawableFactory.updateNextBezierCurve(this._bezierCurves, null);
+      drawableFactory.updateNextBezierCurve(bezierCurves, null);
       return;
     }
 
-    const bezierCurves = this._bezierCurves;
     const nextBezierCurve = bezierCurves.find(({ branch }) => {
-      return BranchModel.isSameBranch(branch, nextBranch);
+      return BranchModel.isSameBranch(branch, nextBranch as BranchModel);
     }) || null;
 
-    drawableFactory.updateNextBezierCurve(this._bezierCurves, nextBezierCurve);
+    drawableFactory.updateNextBezierCurve(bezierCurves, nextBezierCurve);
   }
 
-  public setSongCircleRotation(percentage: number) {
+  private setSongCircleRotation(percentage: number) {
     this.scene.setRotationPercentage(percentage);
   }
 
@@ -121,7 +132,7 @@ class CanvasService {
     startPercentage,
     endPercentage,
     durationMs,
-  }: FYPEventPayload['PlayingBeatBatch']) {
+  }: FYPEventPayload['BeatBatchPlaying']) {
     this._isAnimating = true;
 
     const isBranchNavPreviewing = source === NeedleType.BRANCH_NAV;
@@ -146,7 +157,7 @@ class CanvasService {
     );
   }
 
-  public stopSongCircleRotation({ resetPercentage }: FYPEventPayload['PlayingBeatBatchStopped']) {
+  public stopSongCircleRotation({ resetPercentage }: FYPEventPayload['BeatBatchStopped']) {
     this._isAnimating = false;
 
     if (resetPercentage !== null) {
@@ -165,9 +176,10 @@ class CanvasService {
       return;
     }
 
-    this._branchNavNeedle = drawableFactory.renderNeedle(this.scene, this._parentSongCircle, NeedleType.BRANCH_NAV, 0);
+    const parentSongCircle = this.getParentSongCircle();
+    this._branchNavNeedle = drawableFactory.renderNeedle(this.scene, parentSongCircle, NeedleType.BRANCH_NAV, 0);
     this._branchNavBezierCurve = drawableFactory.renderBezierCurveFromPercentages(this.scene,
-                                                                                  this._parentSongCircle,
+                                                                                  parentSongCircle,
                                                                                   BezierCurveType.SCAFFOLD,
                                                                                   earliestPercentage,
                                                                                   latestPercentage);
@@ -182,7 +194,7 @@ class CanvasService {
     this._branchNavBezierCurve = this._branchNavBezierCurve = null;
   }
 
-  public updateNeedle(needleType: NeedleType, percentage: number) {
+  private updateNeedle(needleType: NeedleType, percentage: number) {
     const needle = needleType === NeedleType.PLAYING ? this._playingNeedle : this._branchNavNeedle;
 
     if (!needle) {
@@ -194,6 +206,18 @@ class CanvasService {
 
   private isBranchNavOpen(): boolean {
     return this._branchNavBezierCurve !== null;
+  }
+
+  private getSongCircle({ ID }: TrackModel): SongCircle {
+    return this._songCircles[ID];
+  }
+
+  private getParentSongCircle(): SongCircle {
+    return this._songCircles[this._playingTrackID];
+  }
+
+  private getBezierCurves({ ID }: TrackModel): BezierCurve[] {
+    return this._bezierCurves[ID];
   }
 }
 
