@@ -29,11 +29,13 @@ export class BranchManager {
     return this._managers[ID];
   }
 
-  public createBranches(...beatPairs: branchAnalysis.SimilarBeatPair[]) {
+  public createBranches(track: TrackModel, ...beatPairs: branchAnalysis.SimilarBeatPair[]) {
     const [forwardBranches, backwardBranches] = this.forwardAndBackwardBranches;
 
     beatPairs.forEach(([firstBeat, secondBeat]) => {
-      const [forwardBranch, backwardBranch] = branchFactory.createForwardAndBackwardBranch(firstBeat, secondBeat);
+      const [forwardBranch, backwardBranch] = branchFactory.createForwardAndBackwardBranch(track,
+                                                                                           firstBeat,
+                                                                                           secondBeat);
       forwardBranches.push(forwardBranch);
       backwardBranches.push(backwardBranch);
     });
@@ -50,7 +52,7 @@ export class BranchManager {
 
     if (beatPairs.length) {
       // Creates and stores branches in forwardAndBackwardBranches, recalculates accessibleBranches
-      branchManager.createBranches(...beatPairs);
+      branchManager.createBranches(track, ...beatPairs);
     }
 
     return branchManager.forwardAndBackwardBranches;
@@ -64,7 +66,7 @@ export class BranchManager {
     function sortBranches(
       branches: ForwardBranchModel[] | BackwardBranchModel[],
     ): ForwardBranchModel[] | BackwardBranchModel[] {
-      return branches.sort((a: BranchModel, b: BranchModel) => b.latestBeat.order - a.latestBeat.order);
+      return branches.sort((a: BranchModel, b: BranchModel) => a.latestBeat.order - b.latestBeat.order);
     }
 
     // Removes all forwardbranches leading to the last beat
