@@ -1,27 +1,44 @@
 export enum FYPEvent {
+  // First event when the page loads, and also fired when a transition has been requested
+  // Triggers the loading of the first track and the Branch Analysis
+  TrackChangeRequested = 'track_change_requested',
 
-  // The Playing Track has been switched to another song
-  // Signals that the branches should be analyzed for the new song
-  PlayingTrackChanged = 'playing_track_changed',
+  // Fired when all branches for this song have been generated
+  // Triggers the Transition Analysis, the BranchNav initialization, and hidden rendering of branches
+  BranchesAnalyzed = 'branches_analyzed',
 
-  // The branches been created behind the scenes
-  PlayingTrackBranchesAnalyzed = 'playing_track_branches_analyzed',
+  // Fired when similar tracks and the best transitions have been identified
+  // Triggers the rendering of child song circles, and signaling to the ActionDecider that transitions can now be made
+  TransitionsAnalyzed = 'transitions_analyzed',
 
-  // Either FYPEvent.PlayingTrackBranchesAnalyzed, or a branch was added manually
+  // Fired when a branch is manually created, e.g. through the BranchNav
+  // Triggers the immediate rendering of the branch
   PlayingTrackBranchAdded = 'playing_track_branch_added',
 
-  // The Music Service is requesting the next segment of beats to be queued for future play
-  NextBeatsRequested = 'next_beats_requested',
+  // Fired as soon as the first .mp3 has loaded, or when a transition is queued
+  // Triggers the rendering of the SongCircle or transitions, and requests the next beats to be queued
+  TrackChanged = 'track_changed',
 
-  // The next beats have been chosen and can be queued for future play
-  BeatsReadyForQueueing = 'beats_ready_for_queueing',
+  // Fired when any child track .mp3s are loaded
+  // Lets the ActionDecider know that the selected transition can now be taken in the next pass
+  TrackChangeReady = 'track_change_ready',
 
-  // A beat batch has started playing. This event may be fired with some precision loss
-  // (setTimeout), so don't use it for audio
-  PlayingBeatBatch = 'playing_beat_batch',
+  // Fired when the PlayingTrackChanged, or when a BeatBatch has finished
+  // Triggers the decision of which Branch will come next, or which transition should come next
+  BeatBatchRequested = 'next_beats_requested',
 
-  // The audio has stopped, and any animations should stop
-  PlayingBeatBatchStopped = 'playing_beat_batch_stopped',
+  // Fired when either the next branch has been identified or the next transition has been identified
+  // Triggers the queueing of these beats and any transitions
+  BeatBatchReady = 'beat_batch_ready',
+
+  // Fired when the first beat in the beat batch has started playing
+  // Triggers the animation of the playing needle
+  // NOTE: This uses setTimeout, which is inaccurate. Don't use it for anything audio related
+  BeatBatchPlaying = 'beat_batch_playing',
+
+  // Fired when the audio needs to be stopped, e.g. when the user starts previewing in the BranchNav
+  // Triggers the stopping of the needle animation and audio
+  BeatBatchStopped = 'beat_batch_stopped',
 }
 
 export enum BranchNavStatus {
@@ -78,4 +95,9 @@ export enum BezierCurveType {
 
   // The user is previewing this branch in the BranchNav
   PREVIEW = 'preview',
+}
+
+// TODO: Implement more!
+export enum TransitionType {
+  FADE = 'fade',
 }

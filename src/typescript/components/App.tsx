@@ -33,7 +33,7 @@ class App extends React.Component<AppProps, AppState> {
 
     // When a new song has been loaded and analyzed
     Dispatcher.getInstance()
-              .on(FYPEvent.PlayingTrackBranchesAnalyzed, data => this.updateBars(data));
+              .on(FYPEvent.TrackChanged, data => this.updateBars(data));
   }
 
   render() {
@@ -71,9 +71,7 @@ class App extends React.Component<AppProps, AppState> {
         const clearMs = status !== BranchNavStatus.FINISHED ? config.ui.resetBranchNavAfterHiddenMs : 0;
         const branchNavClearTimer = setTimeout(() => {
           if (this.state.isBranchNavHidden) {
-            this.setState(({ branchNavKey }) => ({
-              branchNavKey: branchNavKey + 1,
-            }));
+            this.resetBranchNav();
           }
         }, clearMs);
 
@@ -88,12 +86,19 @@ class App extends React.Component<AppProps, AppState> {
     );
   }
 
-  private async updateBars({ playingTrack }: FYPEventPayload['PlayingTrackBranchesAnalyzed']) {
-    const UIBars = await getUIBars(playingTrack);
+  private updateBars({ track }: FYPEventPayload['TrackChanged']) {
+    const UIBars = getUIBars(track);
 
     this.setState({
       UIBars,
     });
+    this.resetBranchNav();
+  }
+
+  private resetBranchNav() {
+    this.setState(({ branchNavKey }) => ({
+      branchNavKey: branchNavKey + 1,
+    }));
   }
 }
 

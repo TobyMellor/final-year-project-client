@@ -77,13 +77,6 @@ class AudioAnalysisModel {
     this._segments = segments;
   }
 
-  public get track(): TrackModel | null {
-    const webAudioService = WebAudioService.getInstance();
-    const track = webAudioService.getTrack(this._trackID);
-
-    return track;
-  }
-
   public get trackID(): string {
     return this._trackID;
   }

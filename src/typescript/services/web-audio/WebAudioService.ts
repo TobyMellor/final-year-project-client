@@ -17,97 +17,105 @@ import * as utils from '../../utils/conversions';
 import BranchModel from '../../models/branches/Branch';
 import fyp from '../../config/fyp';
 import * as branchFactory from '../../factories/branch';
+import ActionModel from '../../models/Action';
+import SongTransitionModel from '../../models/SongTransition';
 
 class WebAudioService {
   private static _instance: WebAudioService;
 
   private _audioContext: AudioContext;
-  private _audioBuffer: AudioBuffer;
+  private _audioBuffers: { [trackID: string]: AudioBuffer } = {};
+  private _nextTrackAudioBufferPromise: Promise<AudioBuffer>;
   private _audioBufferSourceNodes: Set<AudioBufferSourceNode> = new Set();
 
-  private _tracks: TrackModel[] = [];
   private _playingTrack: TrackModel = null;
-  private _childTracks: Set<TrackModel> = new Set<TrackModel>();
+  private _nextTrack: TrackModel = null;
 
   private constructor() {
     const AudioContext = (<any> window).AudioContext || (<any> window).webkitAudioContext;
 
     this._audioContext = new AudioContext();
 
-    const trackIDs: string[] = [
-      '4RVbK6cV0VqWdpCDcx3hiT', // Reborn
-      '3O8NlPh2LByMU9lSRSHedm', // Controlla
-      '6wVWJl64yoTzU27EI8ep20', // Crying Lightning
-      '3aUFrxO1B8EW63QchEl3wX',
-      '2hmHlBM0kPBm17Y7nVIW9f',
-      '0wwPcA6wtMf6HUMpIRdeP7',
-    ];
-    const trackRequests: Promise<TrackModel>[] = trackIDs.map(ID => trackFactory.createTrack(ID));
+    //   '4RVbK6cV0VqWdpCDcx3hiT', // Reborn
+    //   '3O8NlPh2LByMU9lSRSHedm', // Controlla
+    //   '6wVWJl64yoTzU27EI8ep20', // Crying Lightning
+    //   '3aUFrxO1B8EW63QchEl3wX',
+    //   '2hmHlBM0kPBm17Y7nVIW9f',
+    //   '0wwPcA6wtMf6HUMpIRdeP7',
 
-    Promise
-      .all(trackRequests)
-      .then((tracks) => {
-        this._tracks = tracks;
-        this.addChildTracks(...tracks);
-        this.setPlayingTrack(tracks[0]);
-      });
+    Dispatcher.getInstance()
+              .on(FYPEvent.TrackChangeRequested, data => this.startLoadingNextTrack(data));
 
     // Once we've loaded the track and analyzed it
     Dispatcher.getInstance()
-              .on(FYPEvent.PlayingTrackBranchesAnalyzed, () => this.loadPlayingTrack());
+              .on(FYPEvent.BranchesAnalyzed, () => this.finishLoadingNextTrack());
 
     // When the Branch Service has given us new beats
     Dispatcher.getInstance()
-              .on(FYPEvent.BeatsReadyForQueueing, data => this.queueBeatsForPlaying(data));
+              .on(FYPEvent.BeatBatchReady, data => this.queueBeatsForPlaying(data));
+
+    const initialTrackID = '4RVbK6cV0VqWdpCDcx3hiT'; // TODO: Replace dynamically
+    trackFactory.createTrack(initialTrackID)
+                .then((initialTrack: TrackModel) => {
+                  Dispatcher.getInstance()
+                            .dispatch(FYPEvent.TrackChangeRequested, {
+                              track: initialTrack,
+                            });
+                });
   }
 
   public static getInstance(): WebAudioService {
     return this._instance || (this._instance = new this());
   }
 
-  public addChildTracks(...tracks: TrackModel[]) {
-    tracks.forEach(track => this._childTracks.add(track));
+  private startLoadingNextTrack({ track }: FYPEventPayload['TrackChangeRequested']) {
+    this._nextTrack = track;
+
+    async function getAudioBuffer(audioContext: AudioContext, trackID: string) {
+      // Get the Audio Buffer for the corresponding mp3 file
+      const response = await fetch(`tracks/${trackID}.mp3`);
+      const arrayBuffer = await response.arrayBuffer();
+      const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+
+      return audioBuffer;
+    }
+
+    this._nextTrackAudioBufferPromise = getAudioBuffer(this._audioContext, track.ID);
   }
 
-  public getTrack(ID: string): TrackModel | null {
-    const tracks = this._tracks;
+  private async finishLoadingNextTrack() {
+    if (!this._nextTrack || !this._nextTrackAudioBufferPromise) {
+      throw new Error('You must start loading the next track through startLoadingNextTrack!');
+    }
 
-    return tracks.find(track => track.ID === ID) || null;
+    const nextTrackID = this._nextTrack.ID;
+    this._audioBuffers[nextTrackID] = await this._nextTrackAudioBufferPromise;
+    this._nextTrackAudioBufferPromise = null;
+
+    // If we've not played anything yet, we can transition immediately
+    if (!this._playingTrack) {
+      this.changePlayingTrack();
+
+      // Schedule two BeatBatches in advance
+      const SCHEDULE_BUFFER_COUNT = 2;
+      this.dispatchBeatBatchRequested(this._playingTrack, null, SCHEDULE_BUFFER_COUNT);
+
+      return;
+    }
+
+    // Signal to the ActionDecider that we can now take the transition
+    this.dispatchTrackChangeReady();
+  }
+
+  private changePlayingTrack() {
+    this._playingTrack = this._nextTrack;
+    this._nextTrack = null;
+
+    this.dispatchTrackChanged(this._playingTrack);
   }
 
   public getPlayingTrack(): TrackModel | null {
     return this._playingTrack;
-  }
-
-  public async setPlayingTrack(track: TrackModel) {
-    const previousPlayingTrack: TrackModel | null = this._playingTrack;
-
-    if (previousPlayingTrack) {
-      this._childTracks.add(previousPlayingTrack);
-    }
-
-    this._childTracks.delete(track);
-    this._playingTrack = track;
-
-    Dispatcher.getInstance()
-              .dispatch(FYPEvent.PlayingTrackChanged, {
-                playingTrack: this._playingTrack,
-                childTracks: this._childTracks,
-              });
-  }
-
-  private async loadPlayingTrack() {
-    const trackID = this._playingTrack.ID;
-
-    // Get the Audio Buffer for the corresponding mp3 file
-    const response = await fetch(`tracks/${trackID}.mp3`);
-    const arrayBuffer = await response.arrayBuffer();
-    const audioBuffer = await this._audioContext.decodeAudioData(arrayBuffer);
-
-    this._audioBuffer = audioBuffer;
-
-    const SCHEDULE_BUFFER_COUNT = 2;
-    this.dispatchNextBeatsRequest(null, SCHEDULE_BUFFER_COUNT);
   }
 
   /**
@@ -123,24 +131,24 @@ class WebAudioService {
    *                          has finished playing (e.g. used for UI branch previewing)
    */
   private async queueBeatsForPlaying(
-    { beatBatch }: FYPEventPayload['BeatsReadyForQueueing'],
+    { beatBatch }: FYPEventPayload['BeatBatchReady'],
     source: NeedleType = NeedleType.PLAYING,
     onEndedCallbackFn?: () => void,
   ) {
-    if (!beatBatch || !beatBatch.beatsToBranchOrigin || beatBatch.beatsToBranchOrigin.length === 0) {
+    if (!beatBatch || !beatBatch.beatsToOriginBeat || beatBatch.beatsToOriginBeat.length === 0) {
       throw new Error('Attempted to request no beats!');
     }
 
     const queuedBeatBatch = BeatQueueManager.add(this._audioContext, beatBatch);
     let lastBufferSource: AudioBufferSourceNode;
 
-    // When the first beat has started, we want to dispatch the "PlayingBeatBatch" event
-    const onStartedFn = () => this.dispatchPlayingBeatBatch(queuedBeatBatch, source);
+    // When the first beat has started, we want to dispatch the "BeatBatchPlaying" event
+    const onStartedFn = () => this.dispatchBeatBatchPlaying(queuedBeatBatch, source);
 
-    queuedBeatBatch.queuedBeatsToBranchOrigin.forEach((queuedBeat, i) => {
+    queuedBeatBatch.queuedBeatsToOriginBeat.forEach((queuedBeat, i) => {
       const { startSecs, durationSecs } = queuedBeat.beat;
 
-      lastBufferSource = this.playSample(this._audioBuffer,
+      lastBufferSource = this.playSample(beatBatch.track,
                                          queuedBeat.submittedCurrentTime,
                                          startSecs,
                                          durationSecs,
@@ -154,39 +162,43 @@ class WebAudioService {
       // Default onended: Request next batch of beats
       lastBufferSource.onended = () => {
         // The next branch that we need to queue beats from
-        const nextBranch = BeatQueueManager.lastBranch();
+        const nextAction = BeatQueueManager.lastAction();
 
-        this.dispatchNextBeatsRequest(nextBranch);
+        this.dispatchBeatBatchRequested(this._playingTrack, nextAction);
       };
     }
   }
 
-  public async previewBeatsWithOrders(
+  public previewBeatsWithOrders(
     beforeOriginBeatOrders: number[],
     originBeatOrder: number,
     destinationBeatOrder: number,
     afterDestinationBeatOrders: number[],
     onEndedCallbackFn: () => void,
   ) {
-    function createBeatBatch(beatOrders: number[], branch: BranchModel | null): BeatBatch {
-      const beatsToBranchOrigin = beatOrders.map(beatOrder => beats[beatOrder]);
+    function createBeatBatch(track: TrackModel, beatOrders: number[], branch: BranchModel | null): BeatBatch {
+      const beatsToOriginBeat = beatOrders.map(beatOrder => beats[beatOrder]);
 
       return {
-        beatsToBranchOrigin,
-        branch,
+        track,
+        beatsToOriginBeat,
+        action: branch,
       };
     }
 
     const branchType = originBeatOrder < destinationBeatOrder ? BranchType.FORWARD : BranchType.BACKWARD;
-    const beats = await this._playingTrack.getBeats();
-    const branch = branchFactory.createBranchFromType(branchType, beats[originBeatOrder], beats[destinationBeatOrder]);
+    const beats = this._playingTrack.beats;
+    const branch = branchFactory.createBranchFromType(this._playingTrack,
+                                                      branchType,
+                                                      beats[originBeatOrder],
+                                                      beats[destinationBeatOrder]);
 
     // Stop the audio, move the playing Needle to where we will start from
     const resetPercentage = beats[beforeOriginBeatOrders[0]].getPercentageInTrack(this._playingTrack.duration);
     this.stop(resetPercentage);
 
     // Preview everything up to, and including, the origin beat
-    const firstBeatBatch = createBeatBatch([...beforeOriginBeatOrders, originBeatOrder], branch);
+    const firstBeatBatch = createBeatBatch(this._playingTrack, [...beforeOriginBeatOrders, originBeatOrder], branch);
     this.queueBeatsForPlaying(
       { beatBatch: firstBeatBatch },
       NeedleType.BRANCH_NAV,
@@ -194,7 +206,7 @@ class WebAudioService {
     );
 
     // Preview everything after the destination beat
-    const secondBeatBatch = createBeatBatch(afterDestinationBeatOrders, null);
+    const secondBeatBatch = createBeatBatch(this._playingTrack, afterDestinationBeatOrders, null);
     this.queueBeatsForPlaying(
       { beatBatch: secondBeatBatch },
       NeedleType.BRANCH_NAV,
@@ -203,12 +215,13 @@ class WebAudioService {
   }
 
   private playSample(
-    audioBuffer: AudioBuffer,
+    track: TrackModel,
     when?: number,
     offset?: number,
     duration?: number,
     onStartedFn?: (() => void) | null,
   ): AudioBufferSourceNode {
+    const audioBuffer = this.getAudioBuffer(track);
     const source = this._audioContext.createBufferSource();
 
     source.buffer = audioBuffer;
@@ -241,6 +254,10 @@ class WebAudioService {
     return source;
   }
 
+  private getAudioBuffer({ ID }: TrackModel): AudioBuffer {
+    return this._audioBuffers[ID];
+  }
+
   /**
    * @param resetPercentage Where to move the NeedleType.PLAYING after the audio is stopped
    *                        Leaving this value as null will not change the position
@@ -255,24 +272,36 @@ class WebAudioService {
 
     BeatQueueManager.clear();
 
-    this.dispatchPlayingBeatBatchStopped(resetPercentage);
+    this.dispatchBeatBatchStopped(resetPercentage);
   }
 
-  // Signal that we're ready to receive beats to play
-  private dispatchNextBeatsRequest(
-    branch: BranchModel | null, // null if start of song
+  private dispatchTrackChangeReady() {
+    Dispatcher.getInstance()
+              .dispatch(FYPEvent.TrackChangeReady);
+  }
+
+  private dispatchTrackChanged(track: TrackModel) {
+    Dispatcher.getInstance()
+              .dispatch(FYPEvent.TrackChanged, {
+                track,
+              });
+  }
+
+  private dispatchBeatBatchRequested(
+    track: TrackModel,
+    action: ActionModel | null, // null if start of song
     beatBatchCount: number = 1,
   ) {
     Dispatcher.getInstance()
-              .dispatch(FYPEvent.NextBeatsRequested, {
+              .dispatch(FYPEvent.BeatBatchRequested, {
+                track,
+                action,
                 beatBatchCount,
-                branch,
-                playingTrack: this._playingTrack,
               });
   }
 
   /**
-   * Dispatch FYPEvent.PlayingBeatBatch, to let other services know that
+   * Dispatch FYPEvent.BeatBatchPlaying, to let other services know that
    * we're playing beats up to a branch origin.
    *
    * This is used in the CanvasService, to start the canvas rotation.
@@ -281,8 +310,8 @@ class WebAudioService {
    * @param endQueuedBeat The origin beat of a branch
    * @param source Who made the request
    */
-  private dispatchPlayingBeatBatch(
-    { branch: nextBranch, queuedBeatsToBranchOrigin: beats }: QueuedBeatBatch,
+  private dispatchBeatBatchPlaying(
+    { action: nextAction, queuedBeatsToOriginBeat: beats }: QueuedBeatBatch,
     source: NeedleType,
   ) {
     const startBeat = beats[0].beat;
@@ -292,9 +321,13 @@ class WebAudioService {
     const endPercentage = endBeat.getPercentageInTrack(songDuration);
     const durationMs = endBeat.endMs - startBeat.startMs;
 
+    if (nextAction instanceof SongTransitionModel) {
+      this.changePlayingTrack();
+    }
+
     Dispatcher.getInstance()
-              .dispatch(FYPEvent.PlayingBeatBatch, {
-                nextBranch,
+              .dispatch(FYPEvent.BeatBatchPlaying, {
+                nextAction,
                 startPercentage,
                 endPercentage,
                 durationMs,
@@ -302,9 +335,9 @@ class WebAudioService {
               });
   }
 
-  private dispatchPlayingBeatBatchStopped(resetPercentage: number | null) {
+  private dispatchBeatBatchStopped(resetPercentage: number | null) {
     Dispatcher.getInstance()
-              .dispatch(FYPEvent.PlayingBeatBatchStopped, {
+              .dispatch(FYPEvent.BeatBatchStopped, {
                 resetPercentage,
               });
   }

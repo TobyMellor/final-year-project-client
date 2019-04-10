@@ -8,8 +8,8 @@ import BeatModel from './Beat';
 
 export type Input = {
   album: AlbumModel | AlbumInput;
-  audioFeatures?: AudioFeaturesModel;
-  audioAnalysis?: AudioAnalysisModel;
+  audioFeatures: AudioFeaturesModel;
+  audioAnalysis: AudioAnalysisModel;
   duration_ms: number;
   explicit: boolean;
   id: string;
@@ -21,8 +21,8 @@ class TrackModel {
   private _album: AlbumModel;
 
   // Loaded in when it becomes parent song
-  private _audioFeatures: AudioFeaturesModel | null;
-  private _audioAnalysis: AudioAnalysisModel | null;
+  public audioFeatures: AudioFeaturesModel;
+  public audioAnalysis: AudioAnalysisModel;
 
   private _duration: TimeIdentifier;
   private _isExplicit: boolean;
@@ -41,8 +41,8 @@ class TrackModel {
     uri,
   }: Input) {
     this._album = album instanceof AlbumModel ? album : new AlbumModel(album);
-    this._audioFeatures = audioFeatures || null;
-    this._audioAnalysis = audioAnalysis || null;
+    this.audioFeatures = audioFeatures;
+    this.audioAnalysis = audioAnalysis;
     this._duration = conversions.getTimeIdentifierFromMilliseconds(duration_ms);
     this._isExplicit = explicit;
     this._ID = id;
@@ -52,26 +52,6 @@ class TrackModel {
 
   public get album() {
     return this._album;
-  }
-
-  public get audioFeatures(): Promise<AudioFeaturesModel> {
-    return this._audioFeatures
-      ? Promise.resolve(this._audioFeatures)
-      : trackFactory.addAudioFeatures(this);
-  }
-
-  public setAudioFeatures(audioFeatures: AudioFeaturesModel) {
-    this._audioFeatures = audioFeatures;
-  }
-
-  public async getAudioAnalysis(): Promise<AudioAnalysisModel> {
-    return this._audioAnalysis
-      ? Promise.resolve(this._audioAnalysis)
-      : trackFactory.addAudioAnalysis(this);
-  }
-
-  public setAudioAnalysis(audioAnalysis: AudioAnalysisModel) {
-    this._audioAnalysis = audioAnalysis;
   }
 
   public get duration() {
@@ -104,9 +84,8 @@ class TrackModel {
     return this._URI;
   }
 
-  public async getBeats(): Promise<BeatModel[]> {
-    const { beats } = await this.getAudioAnalysis();
-    return beats;
+  public get beats(): BeatModel[] {
+    return this.audioAnalysis.beats;
   }
 }
 

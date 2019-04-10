@@ -1,5 +1,4 @@
 import CanvasService from './CanvasService';
-import Dispatcher from '../../events/Dispatcher';
 import * as fixture from '../../test/fixture';
 import Scene from './drawables/Scene';
 
@@ -11,7 +10,7 @@ describe('Canvas Service', () => {
     addUpdatableFn = Scene.prototype.add = jest.fn(() => Scene.prototype.add);
   });
 
-  it('renders bezier curves on PlayingTrackBranchesAnalyzed', async () => {
+  it.skip('renders bezier curves on PlayingTrackBranchesAnalyzed', async () => {
     const parentSongCircleCount = 1;
     const bezierCurveCount = 2;
     const playingNeedleCount = 1;
@@ -22,13 +21,13 @@ describe('Canvas Service', () => {
 
     // Simulate an analysis, triggering the songCircles to be rendered
     // There should be 1 song sircle, and 2 bezier curves on the scene
-    await fixture.dispatchPlayingTrackChanged();
+    fixture.dispatchTrackChanged();
     expect(addUpdatableFn).toBeCalledTimes(
       parentSongCircleCount + playingNeedleCount + childSongCircleCount,
     );
 
     // Dispatch a FYPEvent.PlayingTrackBranchAdded, render the 2 bezier curves
-    await fixture.dispatchPlayingTrackBranchAdded(bezierCurveCount);
+    fixture.dispatchPlayingTrackBranchAdded(bezierCurveCount);
     expect(addUpdatableFn).toBeCalledTimes(
       parentSongCircleCount + bezierCurveCount + playingNeedleCount + childSongCircleCount,
     );

@@ -368,7 +368,7 @@ class BranchNav extends React.Component<BranchNavProps, BranchNavState> {
 
     const firstBeatOrder = beatLists[TOP].selected.order;
     const secondBeatOrder = beatLists[BOTTOM].selected.order;
-    await uiService.createBranch(firstBeatOrder, secondBeatOrder);
+    uiService.createBranch(firstBeatOrder, secondBeatOrder);
 
     this.setState({ status: BranchNavStatus.FINISHED }, () => onRequestClose(Status.FINISHED));
   }

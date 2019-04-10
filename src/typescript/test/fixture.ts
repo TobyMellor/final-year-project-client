@@ -12,10 +12,6 @@ export function track(options: AddTrackOptions = {}): TrackModel {
   return new TrackModel({ ...trackMock, ...options });
 }
 
-export async function trackAudioAnalysis(): Promise<AudioAnalysisModel> {
-  return track().getAudioAnalysis();
-}
-
 /**
  * Generates a desired number of branches from an audio analysis
  *
@@ -23,9 +19,11 @@ export async function trackAudioAnalysis(): Promise<AudioAnalysisModel> {
  * @param quantity The desired quantity of (forward) branches
  */
 export function forwardAndBackwardBranches(
-  { beats }: AudioAnalysisModel,
+  track: TrackModel,
   quantity: number,
 ): ForwardAndBackwardBranches {
+  const beats = track.beats;
+
   if (quantity > beats.length / 2) {
     throw new Error('Not enough beats for desired quantity');
   }
@@ -34,6 +32,7 @@ export function forwardAndBackwardBranches(
 
   for (let i = 0; i < quantity * 2; i += 2) {
     const [forwardBranch, backwardBranch] = branchFactory.createForwardAndBackwardBranch(
+      track,
       beats[i],
       beats[i + 1],
     );
@@ -45,20 +44,18 @@ export function forwardAndBackwardBranches(
   return [forwardBranches, backwardBranches];
 }
 
-export function dispatchPlayingTrackChanged() {
+export function dispatchTrackChanged() {
   const playingTrack = track();
 
   Dispatcher.getInstance()
-            .dispatch(FYPEvent.PlayingTrackChanged, {
-              playingTrack,
-              childTracks: [],
+            .dispatch(FYPEvent.TrackChanged, {
+              track: playingTrack,
             });
 }
 
-export async function dispatchPlayingTrackBranchAdded(branchCount: number) {
+export function dispatchPlayingTrackBranchAdded(branchCount: number) {
   const playingTrack = track();
-  const audioAnalysis = await playingTrack.getAudioAnalysis();
-  const [_, backwardBranches] = forwardAndBackwardBranches(audioAnalysis, branchCount);
+  const [_, backwardBranches] = forwardAndBackwardBranches(playingTrack, branchCount);
 
   Dispatcher.getInstance()
             .dispatch(FYPEvent.PlayingTrackBranchAdded, {

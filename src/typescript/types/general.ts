@@ -1,12 +1,14 @@
 import SegmentModel from '../models/audio-analysis/Segment';
 import BeatModel from '../models/audio-analysis/Beat';
 import BarModel from '../models/audio-analysis/Bar';
-import { BeatListOrientation, BranchNavStatus, NeedleType } from './enums';
+import { BeatListOrientation, BranchNavStatus, NeedleType, TransitionType } from './enums';
 import TrackModel from '../models/audio-analysis/Track';
 import BranchModel from '../models/branches/Branch';
 import ForwardBranchModel from '../models/branches/ForwardBranch';
 import BackwardBranchModel from '../models/branches/BackwardBranch';
 import QueuedBeatModel from '../models/web-audio/QueuedBeat';
+import SongTransitionModel from '../models/SongTransition';
+import ActionModel from '../models/Action';
 
 export type TimeIdentifier = {
   ms: number;
@@ -136,45 +138,53 @@ export interface SettingsPanelProps {
 }
 
 export type FYPEventPayload = {
-  PlayingTrackChanged: {
-    playingTrack: TrackModel;
-    childTracks: TrackModel[];
+  TrackChangeRequested: {
+    track: TrackModel;
   };
-  PlayingTrackBranchesAnalyzed: {
-    playingTrack: TrackModel | null;
-    childTracks: TrackModel[] | null;
+  BranchesAnalyzed: {
+    track: TrackModel;
+    branches: BranchModel[];
+  };
+  TransitionsAnalyzed: {
+    track: TrackModel;
+    transitions: SongTransitionModel[],
   };
   PlayingTrackBranchAdded: {
-    branchesAdded: BranchModel[];
+    branch: BranchModel;
   };
-  NextBeatsRequested: {
-    playingTrack: TrackModel;
+  TrackChanged: {
+    track: TrackModel;
+  };
+  TrackChangeReady: {};
+  BeatBatchRequested: {
+    track: TrackModel;
+    action: ActionModel; // Not present when previewing through BranchNav
     beatBatchCount: number;
-    nextBranch: BranchModel | null; // Not present when previewing through BranchNav
   };
-  BeatsReadyForQueueing: {
+  BeatBatchReady: {
     beatBatch: BeatBatch;
   };
-  PlayingBeatBatch: {
+  BeatBatchPlaying: {
     source: NeedleType;
-    nextBranch: BranchModel;
+    nextAction: ActionModel; // Not present when previewing through BranchNav
     startPercentage: number;
     endPercentage: number;
     durationMs: number;
   };
-  PlayingBeatBatchStopped: {
+  BeatBatchStopped: {
     resetPercentage: number | null; // Where to move NeedleType.PLAYING after stopping
   };
 };
 
 export type BeatBatch = {
-  beatsToBranchOrigin: BeatModel[], // Beats up to, but not including, the originBeat of the branch
-  branch: BranchModel,
+  track: TrackModel,
+  beatsToOriginBeat: BeatModel[], // Beats up to, but not including, the originBeat of the branch or transition
+  action: ActionModel,
 };
 
 export type QueuedBeatBatch = {
-  queuedBeatsToBranchOrigin: QueuedBeatModel[],
-  branch: BranchModel,
+  queuedBeatsToOriginBeat: QueuedBeatModel[],
+  action: ActionModel,
 };
 
 export type ForwardAndBackwardBranch = [ForwardBranchModel, BackwardBranchModel];

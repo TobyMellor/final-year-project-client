@@ -1,7 +1,7 @@
 import QueuedBeatModel from '../../models/web-audio/QueuedBeat';
 import { BeatBatch, QueuedBeatBatch } from '../../types/general';
-import BranchModel from '../../models/branches/Branch';
 import config from '../../config';
+import ActionModel from '../../models/Action';
 
 class BeatQueueManager {
   private static queuedBeatBatches: QueuedBeatBatch[] = [];
@@ -12,12 +12,12 @@ class BeatQueueManager {
 
   public static add(
     audioContext: AudioContext,
-    { beatsToBranchOrigin, branch }: BeatBatch,
+    { beatsToOriginBeat, action }: BeatBatch,
   ): QueuedBeatBatch {
     const firstSubmittedCurrentTimeInBatch = this.getNextSubmittedCurrentTime(audioContext);
     let secondsSinceFirstBeatInBatch = 0;
 
-    const queuedBeats = beatsToBranchOrigin.map((beat) => {
+    const queuedBeats = beatsToOriginBeat.map((beat) => {
       const submittedCurrentTime = firstSubmittedCurrentTimeInBatch + secondsSinceFirstBeatInBatch;
 
       secondsSinceFirstBeatInBatch += beat.durationSecs;
@@ -29,8 +29,8 @@ class BeatQueueManager {
     });
 
     this.queuedBeatBatches.push({
-      branch,
-      queuedBeatsToBranchOrigin: queuedBeats,
+      action,
+      queuedBeatsToOriginBeat: queuedBeats,
     });
 
     return this.last();
@@ -57,15 +57,15 @@ class BeatQueueManager {
       return null;
     }
 
-    const { queuedBeatsToBranchOrigin } = lastBeatBatch;
-    return queuedBeatsToBranchOrigin[queuedBeatsToBranchOrigin.length - 1];
+    const { queuedBeatsToOriginBeat } = lastBeatBatch;
+    return queuedBeatsToOriginBeat[queuedBeatsToOriginBeat.length - 1];
   }
 
   /**
-   * Returns the next branch to be taken
+   * Returns the next branch or transition to be taken
    */
-  public static lastBranch(): BranchModel | null {
-    return this.last() && this.last().branch;
+  public static lastAction(): ActionModel | null {
+    return this.last() && this.last().action;
   }
 
   private static getNextSubmittedCurrentTime(audioContext: AudioContext): number {
