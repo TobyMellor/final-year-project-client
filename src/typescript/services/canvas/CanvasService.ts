@@ -35,7 +35,7 @@ class CanvasService {
               });
 
     Dispatcher.getInstance()
-              .on(FYPEvent.BranchesAnalyzed, data => this.renderBezierCurves(data));
+              .on(FYPEvent.BranchesAnalyzed, ({ track, branches }) => this.renderBezierCurves(track, ...branches));
 
     Dispatcher.getInstance()
               .on(FYPEvent.TransitionsAnalyzed, data => this.renderChildSongCircles(data));
@@ -52,6 +52,9 @@ class CanvasService {
 
     Dispatcher.getInstance()
               .on(FYPEvent.BeatBatchStopped, data => this.stopSongCircleRotation(data));
+
+    Dispatcher.getInstance()
+              .on(FYPEvent.PlayingTrackBranchAdded, ({ branch }) => this.renderBezierCurves(branch.track, branch));
   }
 
   public static getInstance(canvas?: HTMLCanvasElement): CanvasService {
@@ -76,7 +79,7 @@ class CanvasService {
     this._playingNeedle = playingNeedle;
   }
 
-  public renderBezierCurves({ track, branches }: FYPEventPayload['BranchesAnalyzed']) {
+  public renderBezierCurves(track: TrackModel, ...branches: BranchModel[]) {
     const songCircle = this.getSongCircle(track);
     const bezierCurves = drawableFactory.renderBezierCurves(this.scene, songCircle, branches);
 

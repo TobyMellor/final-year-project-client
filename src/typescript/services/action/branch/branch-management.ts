@@ -13,14 +13,14 @@ export class BranchManager {
   public forwardAndBackwardBranches: ForwardAndBackwardBranches;
   public accessibleBranches: BranchModel[];
 
-  constructor() {
+  constructor(private _track: TrackModel) {
     this.forwardAndBackwardBranches = [[], []];
     this.accessibleBranches = [];
   }
 
-  protected static createManager({ ID }: TrackModel): BranchManager {
-    const branchManager = new BranchManager();
-    this._managers[ID] = branchManager;
+  protected static createManager(track: TrackModel): BranchManager {
+    const branchManager = new BranchManager(track);
+    this._managers[track.ID] = branchManager;
 
     return branchManager;
   }
@@ -29,11 +29,11 @@ export class BranchManager {
     return this._managers[ID];
   }
 
-  public createBranches(track: TrackModel, ...beatPairs: branchAnalysis.SimilarBeatPair[]) {
+  public createBranches(...beatPairs: branchAnalysis.SimilarBeatPair[]) {
     const [forwardBranches, backwardBranches] = this.forwardAndBackwardBranches;
 
     beatPairs.forEach(([firstBeat, secondBeat]) => {
-      const [forwardBranch, backwardBranch] = branchFactory.createForwardAndBackwardBranch(track,
+      const [forwardBranch, backwardBranch] = branchFactory.createForwardAndBackwardBranch(this._track,
                                                                                            firstBeat,
                                                                                            secondBeat);
       forwardBranches.push(forwardBranch);
@@ -52,7 +52,7 @@ export class BranchManager {
 
     if (beatPairs.length) {
       // Creates and stores branches in forwardAndBackwardBranches, recalculates accessibleBranches
-      branchManager.createBranches(track, ...beatPairs);
+      branchManager.createBranches(...beatPairs);
     }
 
     return branchManager.forwardAndBackwardBranches;
