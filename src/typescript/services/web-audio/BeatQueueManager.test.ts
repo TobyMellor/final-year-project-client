@@ -24,10 +24,12 @@ describe('Beat Queue Manager', () => {
 
     branches = [
       new ForwardBranchModel({
+        track,
         earliestBeat: beats[3],
         latestBeat: beats[50],
       }),
       new BackwardBranchModel({
+        track,
         earliestBeat: beats[0],
         latestBeat: beats[53],
       }),

@@ -158,16 +158,15 @@ export type FYPEventPayload = {
   TrackChangeReady: {};
   BeatBatchRequested: {
     track: TrackModel;
+    action: ActionModel; // Not present when previewing through BranchNav
     beatBatchCount: number;
-    nextAction: ActionModel; // Not present when previewing through BranchNav
   };
   BeatBatchReady: {
     beatBatch: BeatBatch;
   };
   BeatBatchPlaying: {
-    track: TrackModel;
     source: NeedleType;
-    action: ActionModel; // Not present when previewing through BranchNav
+    nextAction: ActionModel; // Not present when previewing through BranchNav
     startPercentage: number;
     endPercentage: number;
     durationMs: number;

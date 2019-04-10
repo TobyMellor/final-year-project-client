@@ -27,9 +27,10 @@ class TransitionService extends ActionService {
     return null; // TODO: Implement
   }
 
-  protected dispatchActions(transitions: SongTransitionModel[]) {
+  protected dispatchActions(track: TrackModel, transitions: SongTransitionModel[]) {
     Dispatcher.getInstance()
               .dispatch(FYPEvent.TransitionsAnalyzed, {
+                track,
                 transitions,
               });
   }

@@ -42,24 +42,28 @@ class BranchService extends ActionService {
                                      : [secondBeat, firstBeat];
 
     BranchManager.getManager(track)
-                 .createBranches([earliestBeat, latestBeat]);
+                 .createBranches(track, [earliestBeat, latestBeat]);
 
-    this.dispatchBranchAdded([
-      new BackwardBranchModel({
-        earliestBeat,
-        latestBeat,
-      }),
-    ]);
+    this.dispatchPlayingTrackBranchAdded(
+      [
+        new BackwardBranchModel({
+          track,
+          earliestBeat,
+          latestBeat,
+        }),
+      ],
+    );
   }
 
-  protected dispatchActions(branches: BranchModel[]) {
+  protected dispatchActions(track: TrackModel, branches: BranchModel[]) {
     Dispatcher.getInstance()
               .dispatch(FYPEvent.BranchesAnalyzed, {
+                track,
                 branches,
               });
   }
 
-  private dispatchBranchAdded(branchesAdded: BranchModel[]) {
+  private dispatchPlayingTrackBranchAdded(branchesAdded: BranchModel[]) {
     Dispatcher.getInstance()
               .dispatch(FYPEvent.PlayingTrackBranchAdded, {
                 branchesAdded,

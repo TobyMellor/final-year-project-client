@@ -1,7 +1,9 @@
 import BeatModel from '../audio-analysis/Beat';
 import ActionModel, { Input as ActionInput } from '../Action';
+import TrackModel from '../audio-analysis/Track';
 
 export type BranchInput = {
+  track: TrackModel,
   earliestBeat: BeatModel,
   latestBeat: BeatModel,
 };
@@ -10,8 +12,8 @@ abstract class BranchModel extends ActionModel {
   public earliestBeat: BeatModel;
   public latestBeat: BeatModel;
 
-  protected constructor({ originBeat, destinationBeat, earliestBeat, latestBeat }: ActionInput & BranchInput) {
-    super({ originBeat, destinationBeat });
+  protected constructor({ track, originBeat, destinationBeat, earliestBeat, latestBeat }: ActionInput & BranchInput) {
+    super({ track, originBeat, destinationBeat });
 
     const earliestBeatStartMs = earliestBeat.startMs;
     const latestBeatStartMs = latestBeat.startMs;

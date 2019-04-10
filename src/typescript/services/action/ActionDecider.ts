@@ -21,8 +21,8 @@ class ActionDecider {
 
   private constructor() {
     Dispatcher.getInstance()
-              .on(FYPEvent.BeatBatchRequested, ({ track, beatBatchCount, nextAction }) => {
-                return this.dispatchBeatBatches(track, beatBatchCount, nextAction);
+              .on(FYPEvent.BeatBatchRequested, ({ track, action, beatBatchCount }) => {
+                return this.dispatchBeatBatches(track, action, beatBatchCount);
               });
   }
 
@@ -30,8 +30,8 @@ class ActionDecider {
     return this._instance || (this._instance = new this());
   }
 
-  private async dispatchBeatBatches(track: TrackModel, beatBatchCount: number, nextAction: ActionModel) {
-    let fromBeat = nextAction && nextAction.destinationBeat || track.beats[0];
+  private async dispatchBeatBatches(track: TrackModel, action: ActionModel, beatBatchCount: number) {
+    let fromBeat = action && action.destinationBeat || track.beats[0];
 
     for (let i = 0; i < beatBatchCount; i += 1) {
       fromBeat = this.dispatchBeatBatchReady(track, fromBeat);

@@ -4,11 +4,11 @@ import ActionModel from '../../models/Action';
 abstract class ActionService {
   protected async generateAndDispatchActions(track: TrackModel) {
     const actions = await this.generateActions(track);
-    this.dispatchActions(actions);
+    this.dispatchActions(track, actions);
   }
 
   protected abstract async generateActions(track: TrackModel): Promise<ActionModel[]>;
-  protected abstract dispatchActions(actions: ActionModel[]): void;
+  protected abstract dispatchActions(track: TrackModel, actions: ActionModel[]): void;
   public abstract getNext(track: TrackModel, fromMs: number): ActionModel;
 }
 

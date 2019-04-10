@@ -12,9 +12,9 @@ export function createTransition(
 ): SongTransitionModel {
   return new SongTransitionModel({
     type,
-    originTrack,
     destinationTrack,
     originBeat,
     destinationBeat,
+    track: originTrack,
   });
 }

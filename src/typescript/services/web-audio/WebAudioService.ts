@@ -23,7 +23,7 @@ class WebAudioService {
   private static _instance: WebAudioService;
 
   private _audioContext: AudioContext;
-  private _audioBuffers: { [trackID: string]: AudioBuffer };
+  private _audioBuffers: { [trackID: string]: AudioBuffer } = {};
   private _nextTrackAudioBufferPromise: Promise<AudioBuffer>;
   private _audioBufferSourceNodes: Set<AudioBufferSourceNode> = new Set();
 
@@ -70,16 +70,16 @@ class WebAudioService {
   private startLoadingNextTrack({ track }: FYPEventPayload['TrackChangeRequested']) {
     this._nextTrack = track;
 
-    async function getAudioBuffer(trackID: string) {
+    async function getAudioBuffer(audioContext: AudioContext, trackID: string) {
       // Get the Audio Buffer for the corresponding mp3 file
       const response = await fetch(`tracks/${trackID}.mp3`);
       const arrayBuffer = await response.arrayBuffer();
-      const audioBuffer = await this._audioContext.decodeAudioData(arrayBuffer);
+      const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
 
       return audioBuffer;
     }
 
-    this._nextTrackAudioBufferPromise = getAudioBuffer(track.ID);
+    this._nextTrackAudioBufferPromise = getAudioBuffer(this._audioContext, track.ID);
   }
 
   private async finishLoadingNextTrack() {
@@ -106,7 +106,7 @@ class WebAudioService {
     this._nextTrack = null;
 
     const SCHEDULE_BUFFER_COUNT = 2;
-    this.dispatchBeatBatchRequested(null, SCHEDULE_BUFFER_COUNT);
+    this.dispatchBeatBatchRequested(this._playingTrack, null, SCHEDULE_BUFFER_COUNT);
   }
 
   public getPlayingTrack(): TrackModel | null {
@@ -159,7 +159,7 @@ class WebAudioService {
         // The next branch that we need to queue beats from
         const nextAction = BeatQueueManager.lastAction();
 
-        this.dispatchBeatBatchRequested(nextAction);
+        this.dispatchBeatBatchRequested(this._playingTrack, nextAction);
       };
     }
   }
@@ -183,7 +183,10 @@ class WebAudioService {
 
     const branchType = originBeatOrder < destinationBeatOrder ? BranchType.FORWARD : BranchType.BACKWARD;
     const beats = this._playingTrack.beats;
-    const branch = branchFactory.createBranchFromType(branchType, beats[originBeatOrder], beats[destinationBeatOrder]);
+    const branch = branchFactory.createBranchFromType(this._playingTrack,
+                                                      branchType,
+                                                      beats[originBeatOrder],
+                                                      beats[destinationBeatOrder]);
 
     // Stop the audio, move the playing Needle to where we will start from
     const resetPercentage = beats[beforeOriginBeatOrders[0]].getPercentageInTrack(this._playingTrack.duration);
@@ -278,14 +281,15 @@ class WebAudioService {
   }
 
   private dispatchBeatBatchRequested(
+    track: TrackModel,
     action: ActionModel | null, // null if start of song
     beatBatchCount: number = 1,
   ) {
     Dispatcher.getInstance()
               .dispatch(FYPEvent.BeatBatchRequested, {
+                track,
                 action,
                 beatBatchCount,
-                playingTrack: this._playingTrack,
               });
   }
 

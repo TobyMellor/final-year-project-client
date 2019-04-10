@@ -45,14 +45,9 @@ class CanvasService {
                 if (data.action instanceof SongTransitionModel) {
                   this.transitionChildToParent(data);
                 } else {
+                  this.updateNextBezierCurve(data);
                   this.startSongCircleRotation(data);
                 }
-              });
-
-    Dispatcher.getInstance()
-              .on(FYPEvent.BeatBatchPlaying, (data) => {
-                this.updateNextBezierCurve(data);
-                this.startSongCircleRotation(data);
               });
 
     Dispatcher.getInstance()
@@ -108,8 +103,8 @@ class CanvasService {
    *
    * @param eventPayload The next branch to be taken
    */
-  public updateNextBezierCurve({ track, action: nextBranch }: FYPEventPayload['BeatBatchPlaying']) {
-    const bezierCurves = this.getBezierCurves(track);
+  public updateNextBezierCurve({ nextAction: nextBranch }: FYPEventPayload['BeatBatchPlaying']) {
+    const bezierCurves = this.getBezierCurves(nextBranch.track);
 
     if (!nextBranch) {
       drawableFactory.updateNextBezierCurve(bezierCurves, null);

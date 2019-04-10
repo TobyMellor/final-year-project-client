@@ -8,10 +8,12 @@ import TrackModel from '../models/audio-analysis/Track';
 import ActionModel from '../models/Action';
 
 export function createForwardAndBackwardBranch(
+  track: TrackModel,
   earliestBeat: BeatModel,
   latestBeat: BeatModel,
 ): ForwardAndBackwardBranch {
   const options = {
+    track,
     earliestBeat,
     latestBeat,
   };
@@ -23,12 +25,14 @@ export function createForwardAndBackwardBranch(
 }
 
 export function createBranchFromType(
+  track: TrackModel,
   branchType: BranchType,
   earliestBeat: BeatModel,
   latestBeat: BeatModel,
 ): BranchModel {
   const BranchModel = branchType === BranchType.FORWARD ? ForwardBranchModel : BackwardBranchModel;
   return new BranchModel({
+    track,
     earliestBeat,
     latestBeat,
   });

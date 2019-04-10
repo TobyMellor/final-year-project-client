@@ -19,9 +19,11 @@ export function track(options: AddTrackOptions = {}): TrackModel {
  * @param quantity The desired quantity of (forward) branches
  */
 export function forwardAndBackwardBranches(
-  { beats }: AudioAnalysisModel,
+  track: TrackModel,
   quantity: number,
 ): ForwardAndBackwardBranches {
+  const beats = track.beats;
+
   if (quantity > beats.length / 2) {
     throw new Error('Not enough beats for desired quantity');
   }
@@ -30,6 +32,7 @@ export function forwardAndBackwardBranches(
 
   for (let i = 0; i < quantity * 2; i += 2) {
     const [forwardBranch, backwardBranch] = branchFactory.createForwardAndBackwardBranch(
+      track,
       beats[i],
       beats[i + 1],
     );
@@ -52,8 +55,7 @@ export function dispatchPlayingTrackChanged() {
 
 export function dispatchPlayingTrackBranchAdded(branchCount: number) {
   const playingTrack = track();
-  const audioAnalysis = playingTrack.audioAnalysis;
-  const [_, backwardBranches] = forwardAndBackwardBranches(audioAnalysis, branchCount);
+  const [_, backwardBranches] = forwardAndBackwardBranches(playingTrack, branchCount);
 
   Dispatcher.getInstance()
             .dispatch(FYPEvent.PlayingTrackBranchAdded, {

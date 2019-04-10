@@ -1,17 +1,21 @@
 import BeatModel from './audio-analysis/Beat';
+import TrackModel from './audio-analysis/Track';
 
 export type Input = {
+  track: TrackModel,
   originBeat: BeatModel,
   destinationBeat: BeatModel,
 };
 
 abstract class ActionModel {
+  public track: TrackModel;
   public originBeat: BeatModel;
   public destinationBeat: BeatModel;
 
   private _usedCount: number = 0;
 
-  protected constructor({ originBeat, destinationBeat }: Input) {
+  protected constructor({ track, originBeat, destinationBeat }: Input) {
+    this.track = track;
     this.originBeat = originBeat;
     this.destinationBeat = destinationBeat;
   }

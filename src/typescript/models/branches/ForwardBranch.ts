@@ -1,8 +1,9 @@
 import BranchModel, { BranchInput } from './Branch';
 
 class ForwardBranchModel extends BranchModel {
-  constructor({ earliestBeat, latestBeat }: BranchInput) {
+  constructor({ track, earliestBeat, latestBeat }: BranchInput) {
     super({
+      track,
       earliestBeat,
       latestBeat,
       originBeat: earliestBeat,
