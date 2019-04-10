@@ -3,18 +3,21 @@ import TrackModel from '../models/audio-analysis/Track';
 import BeatModel from '../models/audio-analysis/Beat';
 import { TransitionType } from '../types/enums';
 
-export function createTransition(
-  type: TransitionType,
-  originTrack: TrackModel,
+export function createImmediateTransition(
+  track: TrackModel,
   destinationTrack: TrackModel,
-  originBeat: BeatModel,
-  destinationBeat: BeatModel,
+  originTransitionBeat: BeatModel,
+  destinationTransitionBeat: BeatModel,
 ): SongTransitionModel {
+  const type = TransitionType.IMMEDIATE;
+
   return new SongTransitionModel({
     type,
+    track,
     destinationTrack,
-    originBeat,
-    destinationBeat,
-    track: originTrack,
+    transitionOutStartBeat: originTransitionBeat,
+    transitionOutEndBeat: originTransitionBeat,
+    transitionInStartBeat: destinationTransitionBeat,
+    transitionInEndBeat: destinationTransitionBeat,
   });
 }

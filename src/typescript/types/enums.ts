@@ -99,5 +99,6 @@ export enum BezierCurveType {
 
 // TODO: Implement more!
 export enum TransitionType {
+  IMMEDIATE = 'immediate',
   FADE = 'fade',
 }

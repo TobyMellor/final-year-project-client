@@ -29,8 +29,7 @@ export async function getMockedTransitions(originTrack: TrackModel): Promise<Son
 
   function push(destinationTrack: TrackModel, originBeatOrder: number, destinationBeatOrder: number) {
     transitions.push(
-      transitionFactory.createTransition(
-        TransitionType.FADE,
+      transitionFactory.createImmediateTransition(
         originTrack,
         destinationTrack,
         originTrack.beats[originBeatOrder],

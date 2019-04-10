@@ -1,3 +1,5 @@
+import BeatModel from '../models/audio-analysis/Beat';
+
 export function areArraysEqual<T>(arr1: T[], arr2: T[]): boolean {
   if (arr1.length !== arr2.length) {
     return false;
@@ -48,4 +50,8 @@ export function shouldUpdate(
   }
 
   return hasUpdated(currentState, nextState, importantStates);
+}
+
+export function getEarliestAndLatestBeat(firstBeat: BeatModel, secondBeat: BeatModel): [BeatModel, BeatModel] {
+  return firstBeat.order < secondBeat.order ? [firstBeat, secondBeat] : [secondBeat, firstBeat];
 }

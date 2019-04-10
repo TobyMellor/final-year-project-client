@@ -86,11 +86,12 @@ class CanvasService {
     this._bezierCurves[track.ID] = bezierCurves;
   }
 
-  private renderChildSongCircles({ track, transitions }: FYPEventPayload['TransitionsAnalyzed']) {
-    const parentSongCircle = this.getSongCircle(track);
+  private renderChildSongCircles({ track: originTrack, transitions }: FYPEventPayload['TransitionsAnalyzed']) {
+    const parentSongCircle = this.getSongCircle(originTrack);
 
-    transitions.forEach(({ destinationTrack }) => {
-      const percentage = math.getRandomInteger(); // TODO: Replace random position with an analysis of best entry
+    transitions.forEach(({ destinationTrack, transitionMiddleBeat }) => {
+      const percentage = transitionMiddleBeat.getPercentageInTrack(originTrack.duration);
+      console.log("percent", percentage, destinationTrack, transitionMiddleBeat);
       const childSongCircle = drawableFactory.renderChildSongCircle(this.scene,
                                                                     parentSongCircle,
                                                                     destinationTrack,

@@ -7,6 +7,7 @@ import BackwardBranchModel from '../../models/branches/BackwardBranch';
 import Dispatcher from '../../events/Dispatcher';
 import * as branchChooser from './branch/branch-choosing';
 import ActionService from './ActionService';
+import * as utils from '../../utils/misc';
 
 class BranchService extends ActionService {
   private static _instance: BranchService = null;
@@ -37,9 +38,7 @@ class BranchService extends ActionService {
   }
 
   public createBranch(track: TrackModel, firstBeat: BeatModel, secondBeat: BeatModel) {
-    const [earliestBeat, latestBeat] = firstBeat.order < secondBeat.order
-                                     ? [firstBeat, secondBeat]
-                                     : [secondBeat, firstBeat];
+    const [earliestBeat, latestBeat] = utils.getEarliestAndLatestBeat(firstBeat, secondBeat);
 
     BranchManager.getManager(track)
                  .createBranches([earliestBeat, latestBeat]);
