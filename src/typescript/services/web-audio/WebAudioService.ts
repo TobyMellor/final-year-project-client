@@ -18,6 +18,7 @@ import BranchModel from '../../models/branches/Branch';
 import fyp from '../../config/fyp';
 import * as branchFactory from '../../factories/branch';
 import ActionModel from '../../models/Action';
+import SongTransitionModel from '../../models/SongTransition';
 
 class WebAudioService {
   private static _instance: WebAudioService;
@@ -94,6 +95,11 @@ class WebAudioService {
     // If we've not played anything yet, we can transition immediately
     if (!this._playingTrack) {
       this.changePlayingTrack();
+
+      // Schedule two BeatBatches in advance
+      const SCHEDULE_BUFFER_COUNT = 2;
+      this.dispatchBeatBatchRequested(this._playingTrack, null, SCHEDULE_BUFFER_COUNT);
+
       return;
     }
 
@@ -105,8 +111,7 @@ class WebAudioService {
     this._playingTrack = this._nextTrack;
     this._nextTrack = null;
 
-    const SCHEDULE_BUFFER_COUNT = 2;
-    this.dispatchBeatBatchRequested(this._playingTrack, null, SCHEDULE_BUFFER_COUNT);
+    this.dispatchTrackChanged(this._playingTrack);
   }
 
   public getPlayingTrack(): TrackModel | null {
@@ -275,9 +280,11 @@ class WebAudioService {
               .dispatch(FYPEvent.TrackChangeReady);
   }
 
-  private dispatchTrackChanged() {
+  private dispatchTrackChanged(track: TrackModel) {
     Dispatcher.getInstance()
-              .dispatch(FYPEvent.TrackChanged);
+              .dispatch(FYPEvent.TrackChanged, {
+                track,
+              });
   }
 
   private dispatchBeatBatchRequested(
@@ -313,6 +320,10 @@ class WebAudioService {
     const startPercentage = startBeat.getPercentageInTrack(songDuration);
     const endPercentage = endBeat.getPercentageInTrack(songDuration);
     const durationMs = endBeat.endMs - startBeat.startMs;
+
+    if (nextAction instanceof SongTransitionModel) {
+      this.changePlayingTrack();
+    }
 
     Dispatcher.getInstance()
               .dispatch(FYPEvent.BeatBatchPlaying, {

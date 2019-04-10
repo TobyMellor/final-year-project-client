@@ -1,5 +1,4 @@
 import CanvasService from './CanvasService';
-import Dispatcher from '../../events/Dispatcher';
 import * as fixture from '../../test/fixture';
 import Scene from './drawables/Scene';
 
@@ -22,7 +21,7 @@ describe('Canvas Service', () => {
 
     // Simulate an analysis, triggering the songCircles to be rendered
     // There should be 1 song sircle, and 2 bezier curves on the scene
-    fixture.dispatchPlayingTrackChanged();
+    fixture.dispatchTrackChanged();
     expect(addUpdatableFn).toBeCalledTimes(
       parentSongCircleCount + playingNeedleCount + childSongCircleCount,
     );

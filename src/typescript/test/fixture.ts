@@ -44,12 +44,12 @@ export function forwardAndBackwardBranches(
   return [forwardBranches, backwardBranches];
 }
 
-export function dispatchPlayingTrackChanged() {
+export function dispatchTrackChanged() {
   const playingTrack = track();
 
   Dispatcher.getInstance()
             .dispatch(FYPEvent.TrackChanged, {
-              playingTrack,
+              track: playingTrack,
             });
 }
 
