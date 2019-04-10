@@ -104,13 +104,14 @@ class CanvasService {
    * @param eventPayload The next branch to be taken
    */
   public updateNextBezierCurve({ nextAction: nextBranch }: FYPEventPayload['BeatBatchPlaying']) {
-    const bezierCurves = this.getBezierCurves(nextBranch.track);
-
     if (!nextBranch) {
+      const bezierCurves = this.getParentBezierCurves();
+
       drawableFactory.updateNextBezierCurve(bezierCurves, null);
       return;
     }
 
+    const bezierCurves = this.getBezierCurves(nextBranch.track);
     const nextBezierCurve = bezierCurves.find(({ branch }) => {
       return BranchModel.isSameBranch(branch, nextBranch as BranchModel);
     }) || null;
@@ -211,7 +212,11 @@ class CanvasService {
     return this._songCircles[this._playingTrackID];
   }
 
-  private getBezierCurves({ ID }: TrackModel): BezierCurve[] {
+  private getParentBezierCurves(): BezierCurve[] {
+    return this._bezierCurves[this._playingTrackID];
+  }
+
+  private getBezierCurves({ ID }: TrackModel | null): BezierCurve[] {
     return this._bezierCurves[ID];
   }
 }

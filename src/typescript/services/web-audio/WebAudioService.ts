@@ -176,13 +176,13 @@ class WebAudioService {
     afterDestinationBeatOrders: number[],
     onEndedCallbackFn: () => void,
   ) {
-    function createBeatBatch(beatOrders: number[], branch: BranchModel | null): BeatBatch {
+    function createBeatBatch(track: TrackModel, beatOrders: number[], branch: BranchModel | null): BeatBatch {
       const beatsToOriginBeat = beatOrders.map(beatOrder => beats[beatOrder]);
 
       return {
+        track,
         beatsToOriginBeat,
         action: branch,
-        track: this._playingTrack,
       };
     }
 
@@ -198,7 +198,7 @@ class WebAudioService {
     this.stop(resetPercentage);
 
     // Preview everything up to, and including, the origin beat
-    const firstBeatBatch = createBeatBatch([...beforeOriginBeatOrders, originBeatOrder], branch);
+    const firstBeatBatch = createBeatBatch(this._playingTrack, [...beforeOriginBeatOrders, originBeatOrder], branch);
     this.queueBeatsForPlaying(
       { beatBatch: firstBeatBatch },
       NeedleType.BRANCH_NAV,
@@ -206,7 +206,7 @@ class WebAudioService {
     );
 
     // Preview everything after the destination beat
-    const secondBeatBatch = createBeatBatch(afterDestinationBeatOrders, null);
+    const secondBeatBatch = createBeatBatch(this._playingTrack, afterDestinationBeatOrders, null);
     this.queueBeatsForPlaying(
       { beatBatch: secondBeatBatch },
       NeedleType.BRANCH_NAV,
