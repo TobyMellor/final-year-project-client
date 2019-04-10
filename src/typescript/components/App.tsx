@@ -71,9 +71,7 @@ class App extends React.Component<AppProps, AppState> {
         const clearMs = status !== BranchNavStatus.FINISHED ? config.ui.resetBranchNavAfterHiddenMs : 0;
         const branchNavClearTimer = setTimeout(() => {
           if (this.state.isBranchNavHidden) {
-            this.setState(({ branchNavKey }) => ({
-              branchNavKey: branchNavKey + 1,
-            }));
+            this.resetBranchNav();
           }
         }, clearMs);
 
@@ -94,6 +92,13 @@ class App extends React.Component<AppProps, AppState> {
     this.setState({
       UIBars,
     });
+    this.resetBranchNav();
+  }
+
+  private resetBranchNav() {
+    this.setState(({ branchNavKey }) => ({
+      branchNavKey: branchNavKey + 1,
+    }));
   }
 }
 

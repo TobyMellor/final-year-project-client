@@ -93,7 +93,7 @@ class CanvasService {
                                                                     destinationTrack,
                                                                     percentage);
 
-      this._songCircles[track.ID] = childSongCircle;
+      this._songCircles[destinationTrack.ID] = childSongCircle;
     });
   }
 

@@ -72,10 +72,8 @@ function getTimbreAndLoudness(
     },
     { timbreDataset: [], loudnessDataset: [] });
 
-  const trimmedTimbre = getTrimmedDataset(timbreDataset,
-                                          trimTimbreDecimal);
-  const trimmedLoudness = getTrimmedDataset(loudnessDataset,
-                                            trimLoudnessDecimal);
+  const trimmedTimbre = getTrimmedDataset(timbreDataset, trimTimbreDecimal);
+  const trimmedLoudness = getTrimmedDataset(loudnessDataset, trimLoudnessDecimal);
 
   return {
     minTimbre: math.getMin(trimmedTimbre),
