@@ -1,15 +1,13 @@
-import BranchModel, { Input as BranchInput } from './Branch';
-import BeatModel from '../audio-analysis/Beat';
+import BranchModel, { BranchInput } from './Branch';
 
 class ForwardBranchModel extends BranchModel {
-  protected _originBeat: BeatModel;
-  protected _destinationBeat: BeatModel;
-
-  constructor(input: BranchInput) {
-    super(input);
-
-    this._originBeat = input.earliestBeat;
-    this._destinationBeat = input.latestBeat;
+  constructor({ earliestBeat, latestBeat }: BranchInput) {
+    super({
+      earliestBeat,
+      latestBeat,
+      originBeat: earliestBeat,
+      destinationBeat: latestBeat,
+    });
   }
 }
 

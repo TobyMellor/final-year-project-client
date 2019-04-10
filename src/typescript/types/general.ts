@@ -7,7 +7,8 @@ import BranchModel from '../models/branches/Branch';
 import ForwardBranchModel from '../models/branches/ForwardBranch';
 import BackwardBranchModel from '../models/branches/BackwardBranch';
 import QueuedBeatModel from '../models/web-audio/QueuedBeat';
-import SongTransition from '../models/SongTransition';
+import SongTransitionModel from '../models/SongTransition';
+import ActionModel from '../models/Action';
 
 export type TimeIdentifier = {
   ms: number;
@@ -146,7 +147,7 @@ export type FYPEventPayload = {
   };
   TransitionsAnalyzed: {
     track: TrackModel;
-    transitions: SongTransition[],
+    transitions: SongTransitionModel[],
   };
   PlayingTrackBranchAdded: {
     branch: BranchModel;
@@ -157,8 +158,8 @@ export type FYPEventPayload = {
   TrackChangeReady: {};
   BeatBatchRequested: {
     track: TrackModel;
-    beatBatchCount: number; // How many to schedule in advance
-    action: BranchModel | SongTransition | null; // Not present when previewing through BranchNav
+    beatBatchCount: number;
+    nextAction: ActionModel; // Not present when previewing through BranchNav
   };
   BeatBatchReady: {
     beatBatch: BeatBatch;
@@ -166,7 +167,7 @@ export type FYPEventPayload = {
   BeatBatchPlaying: {
     track: TrackModel;
     source: NeedleType;
-    action: BranchModel | SongTransition | null; // Not present when previewing through BranchNav
+    action: ActionModel; // Not present when previewing through BranchNav
     startPercentage: number;
     endPercentage: number;
     durationMs: number;
@@ -178,13 +179,13 @@ export type FYPEventPayload = {
 
 export type BeatBatch = {
   track: TrackModel,
-  beatsToBranchOrigin: BeatModel[], // Beats up to, but not including, the originBeat of the branch
-  branch: BranchModel,
+  beatsToOriginBeat: BeatModel[], // Beats up to, but not including, the originBeat of the branch or transition
+  action: ActionModel,
 };
 
 export type QueuedBeatBatch = {
-  queuedBeatsToBranchOrigin: QueuedBeatModel[],
-  branch: BranchModel,
+  queuedBeatsToActionOrigin: QueuedBeatModel[],
+  action: ActionModel,
 };
 
 export type ForwardAndBackwardBranch = [ForwardBranchModel, BackwardBranchModel];

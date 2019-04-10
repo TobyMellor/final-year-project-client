@@ -1,20 +1,18 @@
 import BeatModel from '../audio-analysis/Beat';
+import ActionModel, { Input as ActionInput } from '../Action';
 
-export type Input = {
+export type BranchInput = {
   earliestBeat: BeatModel,
   latestBeat: BeatModel,
 };
 
-abstract class BranchModel {
-  private _earliestBeat: BeatModel;
-  private _latestBeat: BeatModel;
+abstract class BranchModel extends ActionModel {
+  public earliestBeat: BeatModel;
+  public latestBeat: BeatModel;
 
-  protected abstract _originBeat: BeatModel;
-  protected abstract _destinationBeat: BeatModel;
+  protected constructor({ originBeat, destinationBeat, earliestBeat, latestBeat }: ActionInput & BranchInput) {
+    super({ originBeat, destinationBeat });
 
-  private _usedCount: number = 0;
-
-  protected constructor({ earliestBeat, latestBeat }: Input) {
     const earliestBeatStartMs = earliestBeat.startMs;
     const latestBeatStartMs = latestBeat.startMs;
 
@@ -22,32 +20,8 @@ abstract class BranchModel {
       throw new Error('Attempted to create a Branch leading to the same place!');
     }
 
-    this._earliestBeat = earliestBeat;
-    this._latestBeat = latestBeat;
-  }
-
-  public get earliestBeat(): BeatModel {
-    return this._earliestBeat;
-  }
-
-  public get latestBeat(): BeatModel {
-    return this._latestBeat;
-  }
-
-  public get originBeat(): BeatModel {
-    return this._originBeat;
-  }
-
-  public get destinationBeat(): BeatModel {
-    return this._destinationBeat;
-  }
-
-  public get usedCount(): number {
-    return this._usedCount;
-  }
-
-  public used() {
-    this._usedCount += 1;
+    this.earliestBeat = earliestBeat;
+    this.latestBeat = latestBeat;
   }
 
   public static isSameBranch(branch1: BranchModel, branch2: BranchModel) {

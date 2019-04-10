@@ -9,6 +9,7 @@ import * as branchFactory from '../../../factories/branch';
 
 export class BranchManager {
   private static _managers: { [trackID: string]: BranchManager } = {};
+
   public forwardAndBackwardBranches: ForwardAndBackwardBranches;
   public accessibleBranches: BranchModel[];
 
@@ -17,15 +18,15 @@ export class BranchManager {
     this.accessibleBranches = [];
   }
 
-  private static createManager({ ID }: TrackModel): BranchManager {
+  protected static createManager({ ID }: TrackModel): BranchManager {
     const branchManager = new BranchManager();
-    BranchManager._managers[ID] = branchManager;
+    this._managers[ID] = branchManager;
 
     return branchManager;
   }
 
   public static getManager({ ID }: TrackModel): BranchManager {
-    return BranchManager._managers[ID];
+    return this._managers[ID];
   }
 
   public createBranches(...beatPairs: branchAnalysis.SimilarBeatPair[]) {
@@ -40,11 +41,10 @@ export class BranchManager {
     this.accessibleBranches = this.getAccessibleBranches(this.forwardAndBackwardBranches);
   }
 
-  public static async generate(track: TrackModel): Promise<ForwardAndBackwardBranches> {
-    const audioAnalysis = await track.getAudioAnalysis();
+  public static generate(track: TrackModel): ForwardAndBackwardBranches {
     const beatPairs = config.mock.shouldMockBranchCreation
-                    ? branchAnalysis.getMockedSimilarBeats(audioAnalysis)
-                    : branchAnalysis.getSimilarBeats(audioAnalysis);
+                    ? branchAnalysis.getMockedSimilarBeats(track.audioAnalysis)
+                    : branchAnalysis.getSimilarBeats(track.audioAnalysis);
 
     const branchManager = BranchManager.createManager(track);
 

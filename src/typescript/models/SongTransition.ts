@@ -1,29 +1,29 @@
 import { TransitionType } from '../types/enums';
 import TrackModel from './audio-analysis/Track';
-import BeatModel from './audio-analysis/Beat';
+import ActionModel, { Input as ActionInput } from './Action';
 
-export type Input = {
+export type Input = ActionInput & {
   type: TransitionType,
   originTrack: TrackModel,
   destinationTrack: TrackModel,
-  originBeat: BeatModel,
-  destinationBeat: BeatModel,
 };
 
-class SongTransition {
+class SongTransitionModel extends ActionModel {
   public type: TransitionType;
   public originTrack: TrackModel;
   public destinationTrack: TrackModel;
-  public originBeat: BeatModel;
-  public destinationBeat: BeatModel;
 
   constructor({ type, originTrack, destinationTrack, originBeat, destinationBeat }: Input) {
+    super({ originBeat, destinationBeat });
+
+    if (originTrack.ID === destinationTrack.ID) {
+      throw new Error('The originTrack and destinationTrack must be different!');
+    }
+
     this.type = type;
     this.originTrack = originTrack;
     this.destinationTrack = destinationTrack;
-    this.originBeat = originBeat;
-    this.destinationBeat = destinationBeat;
   }
 }
 
-export default SongTransition;
+export default SongTransitionModel;

@@ -5,6 +5,7 @@ import { ForwardAndBackwardBranch, BeatBatch } from '../types/general';
 import { BranchType } from '../types/enums';
 import BranchModel from '../models/branches/Branch';
 import TrackModel from '../models/audio-analysis/Track';
+import ActionModel from '../models/Action';
 
 export function createForwardAndBackwardBranch(
   earliestBeat: BeatModel,
@@ -33,22 +34,25 @@ export function createBranchFromType(
   });
 }
 
-export function createBeatBatch(allBeats: BeatModel[], fromBeat: BeatModel, nextBranch: BranchModel): BeatBatch {
+export function createBeatBatch(track: TrackModel, fromBeat: BeatModel, nextAction: ActionModel): BeatBatch {
+  const beats = track.beats;
+
   // All beats between, but not including, the fromBeat and the next branch's originBeat
-  const beatsBetweenFromAndOrigin = getBeatsBetween(allBeats,
+  const beatsBetweenFromAndOrigin = getBeatsBetween(beats,
                                                     fromBeat,
-                                                    nextBranch ? nextBranch.originBeat : allBeats[allBeats.length - 1]);
+                                                    nextAction ? nextAction.originBeat : beats[beats.length - 1]);
 
   return {
-    beatsToBranchOrigin: [fromBeat, ...beatsBetweenFromAndOrigin],
-    branch: nextBranch,
+    track,
+    beatsToOriginBeat: [fromBeat, ...beatsBetweenFromAndOrigin],
+    action: nextAction,
   };
 }
 
 function getBeatsBetween(
-  allBeats: BeatModel[],
+  beats: BeatModel[],
   { order: fromBeatOrder }: BeatModel,
   { order: toBeatOrder }: BeatModel,
 ): BeatModel[] {
-  return allBeats.slice(fromBeatOrder + 1, toBeatOrder);
+  return beats.slice(fromBeatOrder + 1, toBeatOrder);
 }

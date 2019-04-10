@@ -18,22 +18,6 @@ export async function createTrack(ID: string): Promise<TrackModel> {
   return GetATrack.request(ID);
 }
 
-export async function addAudioAnalysis(track: TrackModel): Promise<AudioAnalysisModel> {
-  const audioAnalysis = await GetAnAudioAnalysis.request(track.ID);
-
-  track.setAudioAnalysis(audioAnalysis);
-
-  return audioAnalysis;
-}
-
-export async function addAudioFeatures(track: TrackModel): Promise<AudioFeaturesModel> {
-  const audioFeatures = await GetAudioFeatures.request(track.ID);
-
-  track.setAudioFeatures(audioFeatures);
-
-  return audioFeatures;
-}
-
 export function createBarsBeatsAndSegments(
   barsInput: GetAnAudioAnalysisResponseTimeInterval[],
   beatsInput: GetAnAudioAnalysisResponseTimeInterval[],

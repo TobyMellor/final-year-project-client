@@ -1,7 +1,7 @@
 import * as React from 'react';
 import CanvasService from '../services/canvas/CanvasService';
 import WebAudioService from '../services/web-audio/WebAudioService';
-import BranchService from '../services/branch/BranchService';
+import BranchService from '../services/action/BranchService';
 
 interface CircleCanvasProps {
 

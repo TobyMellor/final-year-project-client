@@ -8,8 +8,7 @@ import * as math from '../../utils/math';
 import { NeedleType, BezierCurveType } from '../../types/enums';
 import WorldPoint from '../canvas/drawables/utils/WorldPoint';
 import * as conversions from '../../utils/conversions';
-import * as branchFactory from '../../factories/branch';
-import BranchService from '../branch/BranchService';
+import BranchService from '../action/BranchService';
 
 export async function getUIBars(track: TrackModel): Promise<UIBarType[]> {
   const { bars, segments } = await track.getAudioAnalysis();
@@ -191,5 +190,5 @@ export async function createBranch(firstBeatOrder: number, secondBeatOrder: numb
   const beats = await playingTrack.getBeats();
 
   BranchService.getInstance()
-               .createBranch(beats[firstBeatOrder], beats[secondBeatOrder]);
+               .createBranch(playingTrack, beats[firstBeatOrder], beats[secondBeatOrder]);
 }

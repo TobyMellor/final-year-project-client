@@ -9,7 +9,7 @@ import SongCircle from './drawables/SongCircle';
 import Needle from './drawables/Needle';
 import * as math from '../../utils/math';
 import TrackModel from '../../models/audio-analysis/Track';
-import SongTransition from '../../models/SongTransition';
+import SongTransitionModel from '../../models/SongTransition';
 
 class CanvasService {
   private static _instance: CanvasService = null;
@@ -35,14 +35,17 @@ class CanvasService {
               });
 
     Dispatcher.getInstance()
-              .on(FYPEvent.BranchesAnalyzed, data => this.renderBezierCurves(data));
-
-    Dispatcher.getInstance()
-              .on(FYPEvent.TransitionsAnalyzed, data => this.renderChildSongCircles(data));
+              .on(FYPEvent.ActionsAnalyzed, (data) => {
+                if (data.action instanceof SongTransitionModel) {
+                  this.renderChildSongCircles(data);
+                } else {
+                  this.renderBezierCurves(data);
+                }
+              });
 
     Dispatcher.getInstance()
               .on(FYPEvent.BeatBatchPlaying, (data) => {
-                if (data.action instanceof SongTransition) {
+                if (data.action instanceof SongTransitionModel) {
                   this.transitionChildToParent(data);
                 } else {
                   this.startSongCircleRotation(data);
@@ -81,14 +84,16 @@ class CanvasService {
     this._playingNeedle = playingNeedle;
   }
 
-  public renderBezierCurves({ track, branches }: FYPEventPayload['BranchesAnalyzed']) {
+  public renderBezierCurves({ track, actions }: FYPEventPayload['ActionsAnalyzed']) {
+    const branches = actions as BranchModel[];
     const songCircle = this.getSongCircle(track);
     const bezierCurves = drawableFactory.renderBezierCurves(this.scene, songCircle, branches);
 
     this._bezierCurves[track.ID] = bezierCurves;
   }
 
-  private renderChildSongCircles({ track, transitions }: FYPEventPayload['TransitionsAnalyzed']) {
+  private renderChildSongCircles({ track, actions }: FYPEventPayload['ActionsAnalyzed']) {
+    const transitions = actions as SongTransitionModel[];
     const parentSongCircle = this.getSongCircle(track);
 
     transitions.forEach(({ destinationTrack }) => {
@@ -123,7 +128,7 @@ class CanvasService {
     drawableFactory.updateNextBezierCurve(bezierCurves, nextBezierCurve);
   }
 
-  private setSongCircleRotation(percentage: number) {
+  public setSongCircleRotation(percentage: number) {
     this.scene.setRotationPercentage(percentage);
   }
 
@@ -194,7 +199,7 @@ class CanvasService {
     this._branchNavBezierCurve = this._branchNavBezierCurve = null;
   }
 
-  private updateNeedle(needleType: NeedleType, percentage: number) {
+  public updateNeedle(needleType: NeedleType, percentage: number) {
     const needle = needleType === NeedleType.PLAYING ? this._playingNeedle : this._branchNavNeedle;
 
     if (!needle) {
