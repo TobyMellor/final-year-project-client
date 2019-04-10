@@ -22,13 +22,13 @@ describe('Canvas Service', () => {
 
     // Simulate an analysis, triggering the songCircles to be rendered
     // There should be 1 song sircle, and 2 bezier curves on the scene
-    await fixture.dispatchPlayingTrackChanged();
+    fixture.dispatchPlayingTrackChanged();
     expect(addUpdatableFn).toBeCalledTimes(
       parentSongCircleCount + playingNeedleCount + childSongCircleCount,
     );
 
     // Dispatch a FYPEvent.PlayingTrackBranchAdded, render the 2 bezier curves
-    await fixture.dispatchPlayingTrackBranchAdded(bezierCurveCount);
+    fixture.dispatchPlayingTrackBranchAdded(bezierCurveCount);
     expect(addUpdatableFn).toBeCalledTimes(
       parentSongCircleCount + bezierCurveCount + playingNeedleCount + childSongCircleCount,
     );

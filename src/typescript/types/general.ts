@@ -184,7 +184,7 @@ export type BeatBatch = {
 };
 
 export type QueuedBeatBatch = {
-  queuedBeatsToActionOrigin: QueuedBeatModel[],
+  queuedBeatsToOriginBeat: QueuedBeatModel[],
   action: ActionModel,
 };
 

@@ -35,13 +35,10 @@ class CanvasService {
               });
 
     Dispatcher.getInstance()
-              .on(FYPEvent.ActionsAnalyzed, (data) => {
-                if (data.action instanceof SongTransitionModel) {
-                  this.renderChildSongCircles(data);
-                } else {
-                  this.renderBezierCurves(data);
-                }
-              });
+              .on(FYPEvent.BranchesAnalyzed, data => this.renderBezierCurves(data));
+
+    Dispatcher.getInstance()
+              .on(FYPEvent.TransitionsAnalyzed, data => this.renderChildSongCircles(data));
 
     Dispatcher.getInstance()
               .on(FYPEvent.BeatBatchPlaying, (data) => {
@@ -84,16 +81,14 @@ class CanvasService {
     this._playingNeedle = playingNeedle;
   }
 
-  public renderBezierCurves({ track, actions }: FYPEventPayload['ActionsAnalyzed']) {
-    const branches = actions as BranchModel[];
+  public renderBezierCurves({ track, branches }: FYPEventPayload['BranchesAnalyzed']) {
     const songCircle = this.getSongCircle(track);
     const bezierCurves = drawableFactory.renderBezierCurves(this.scene, songCircle, branches);
 
     this._bezierCurves[track.ID] = bezierCurves;
   }
 
-  private renderChildSongCircles({ track, actions }: FYPEventPayload['ActionsAnalyzed']) {
-    const transitions = actions as SongTransitionModel[];
+  private renderChildSongCircles({ track, transitions }: FYPEventPayload['TransitionsAnalyzed']) {
     const parentSongCircle = this.getSongCircle(track);
 
     transitions.forEach(({ destinationTrack }) => {

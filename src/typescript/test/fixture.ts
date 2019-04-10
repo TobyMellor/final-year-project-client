@@ -12,10 +12,6 @@ export function track(options: AddTrackOptions = {}): TrackModel {
   return new TrackModel({ ...trackMock, ...options });
 }
 
-export async function trackAudioAnalysis(): Promise<AudioAnalysisModel> {
-  return track().getAudioAnalysis();
-}
-
 /**
  * Generates a desired number of branches from an audio analysis
  *
@@ -49,15 +45,14 @@ export function dispatchPlayingTrackChanged() {
   const playingTrack = track();
 
   Dispatcher.getInstance()
-            .dispatch(FYPEvent.PlayingTrackChanged, {
+            .dispatch(FYPEvent.TrackChanged, {
               playingTrack,
-              childTracks: [],
             });
 }
 
-export async function dispatchPlayingTrackBranchAdded(branchCount: number) {
+export function dispatchPlayingTrackBranchAdded(branchCount: number) {
   const playingTrack = track();
-  const audioAnalysis = await playingTrack.getAudioAnalysis();
+  const audioAnalysis = playingTrack.audioAnalysis;
   const [_, backwardBranches] = forwardAndBackwardBranches(audioAnalysis, branchCount);
 
   Dispatcher.getInstance()

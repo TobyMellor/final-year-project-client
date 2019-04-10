@@ -10,8 +10,8 @@ import WorldPoint from '../canvas/drawables/utils/WorldPoint';
 import * as conversions from '../../utils/conversions';
 import BranchService from '../action/BranchService';
 
-export async function getUIBars(track: TrackModel): Promise<UIBarType[]> {
-  const { bars, segments } = await track.getAudioAnalysis();
+export function getUIBars(track: TrackModel): UIBarType[] {
+  const { bars, segments } = track.audioAnalysis;
 
   const PERCENT_TO_TRIM_TIMBRE = 0.01;
   const PERCENT_TO_TRIM_LOUDNESS = 0.1;
@@ -184,10 +184,10 @@ export function getUIBeatPercents(firstUIBeat: UIBeatType, secondUIBeat: UIBeatT
   return [firstDecimal, secondDecimal].map(conversions.decimalToPercentage) as [number, number];
 }
 
-export async function createBranch(firstBeatOrder: number, secondBeatOrder: number) {
+export function createBranch(firstBeatOrder: number, secondBeatOrder: number) {
   const playingTrack = WebAudioService.getInstance()
                                       .getPlayingTrack();
-  const beats = await playingTrack.getBeats();
+  const beats = playingTrack.beats;
 
   BranchService.getInstance()
                .createBranch(playingTrack, beats[firstBeatOrder], beats[secondBeatOrder]);

@@ -9,16 +9,18 @@ import BranchModel from '../../models/branches/Branch';
 import BeatModel from '../../models/audio-analysis/Beat';
 import ForwardBranchModel from '../../models/branches/ForwardBranch';
 import BackwardBranchModel from '../../models/branches/BackwardBranch';
+import TrackModel from '../../models/audio-analysis/Track';
 
 describe('Beat Queue Manager', () => {
+  let track: TrackModel;
   let beats: BeatModel[];
   let branches: BranchModel[];
 
   beforeEach(async () => {
     BeatQueueManager.clear();
 
-    const track = await createTrack('4RVbK6cV0VqWdpCDcx3hiT');
-    beats = (await track.getAudioAnalysis()).beats;
+    track = await createTrack('4RVbK6cV0VqWdpCDcx3hiT');
+    beats = track.beats;
 
     branches = [
       new ForwardBranchModel({
@@ -35,12 +37,14 @@ describe('Beat Queue Manager', () => {
   it('can add beat batches to the BeatQueueManager', async () => {
     const audioContext = new AudioContext();
     const beatBatch1 = {
-      beatsToBranchOrigin: [beats[0], beats[1], beats[2]],
-      branch: branches[0],
+      track,
+      beatsToOriginBeat: [beats[0], beats[1], beats[2]],
+      action: branches[0],
     };
     const beatBatch2 = {
-      beatsToBranchOrigin: [beats[50], beats[51], beats[52]],
-      branch: branches[1],
+      track,
+      beatsToOriginBeat: [beats[50], beats[51], beats[52]],
+      action: branches[1],
     };
 
     // Queue the first beat batch, scheduled current time should be
@@ -57,7 +61,7 @@ describe('Beat Queue Manager', () => {
     // plus the duration of last beat in previous batch
     BeatQueueManager.add(audioContext, beatBatch2);
     expectedLastSubmittedCurrentTime += beats[2].durationSecs;
-    actualSubmittedCurrentTime = BeatQueueManager.last().queuedBeatsToBranchOrigin[0].submittedCurrentTime;
+    actualSubmittedCurrentTime = BeatQueueManager.last().queuedBeatsToOriginBeat[0].submittedCurrentTime;
     expect(actualSubmittedCurrentTime).toBe(expectedLastSubmittedCurrentTime);
   });
 });
