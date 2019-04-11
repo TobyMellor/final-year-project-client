@@ -1,5 +1,6 @@
 import * as conversions from '../../../../utils/conversions';
 import Scene from '../Scene';
+import WorldPoint from './WorldPoint';
 
 abstract class Primitive {
   public x: number;
@@ -37,9 +38,13 @@ abstract class Primitive {
   }
 
   public alignToSceneBase() {
-    this.z = Scene.Z_BASE_DISTANCE;
+    const newZ = Scene.Z_BASE_DISTANCE;
 
-    return this;
+    return WorldPoint.getPoint(this.x, this.y, newZ);
+  }
+
+  public alignToCameraBase() {
+    return WorldPoint.getPoint(this.x, this.y, 0);
   }
 }
 

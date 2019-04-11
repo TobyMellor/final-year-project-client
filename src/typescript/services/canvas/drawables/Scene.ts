@@ -106,9 +106,15 @@ class Scene {
 
     this._panActualX += (this._panTargetX - this._panActualX) * config.scene.panCatchupSpeed;
     this._panActualY += (this._panTargetY - this._panActualY) * config.scene.panCatchupSpeed;
-    this._camera.position.x = -this._panActualX * config.scene.panAmount;
-    this._camera.position.y = this._panActualY * config.scene.panAmount;
-    this._camera.lookAt(WorldPoint.getPoint(0, 0, Scene.Z_BASE_DISTANCE).toVector3());
+
+    const cameraFocusPoint = WorldPoint.getPoint(0, 0, Scene.Z_BASE_DISTANCE);
+    const cameraLocationPoint = WorldPoint.getPoint(
+      -this._panActualX * config.scene.panAmount,
+      this._panActualY * config.scene.panAmount,
+      this._camera.position.z,
+    );
+    // FIXME: Reintroduce
+    // this.moveCamera(cameraLocationPoint, cameraFocusPoint);
 
     // Re-render everything on the scene through THREE.js
     this._renderer.render(this._scene, this._camera);
@@ -173,15 +179,85 @@ class Scene {
     });
   }
 
+  public async animateCamera(
+    getStartCameraLocationPointFn: () => WorldPoint,
+    getStartCameraFocusPointFn: () => WorldPoint,
+    getEndCameraLocationPointFn: () => WorldPoint,
+    getEndCameraFocusPointFn: () => WorldPoint,
+    durationMs: number,
+  ): Promise<void> {
+    return new Promise((resolve) => {
+      let animationEndMs: number;
+
+      function getProgressToEndPoint(
+        { x: startX, y: startY, z: startZ }: WorldPoint,
+        { x: endX, y: endY, z: endZ }: WorldPoint,
+        animationDecimal: number,
+      ): WorldPoint {
+        return WorldPoint.getPoint(
+          startX + ((endX - startX) * animationDecimal),
+          startY + ((endY - startY) * animationDecimal),
+          startZ + ((endZ - startZ) * animationDecimal),
+        );
+      }
+
+      const renderFn = (nowMs: number) => {
+        const remainingMs = animationEndMs - nowMs;
+
+        // If the animation has ended
+        if (remainingMs < 0) {
+          this.moveCamera(getEndCameraLocationPointFn(), getEndCameraFocusPointFn());
+          resolve();
+          return;
+        }
+
+        // TODO: Here I can apply easing formulas for the animation
+        const animationDecimal = 1 - (remainingMs / durationMs);
+
+        // We're using functions here as the start and end points can change
+        // as the song rotates or circle sizes increase
+        const startCameraLocationPoint = getStartCameraLocationPointFn();
+        const startCameraFocusPoint = getStartCameraFocusPointFn();
+        const endCameraLocationPoint = getEndCameraLocationPointFn();
+        const endCameraFocusPoint = getEndCameraFocusPointFn();
+
+        const currentCameraLocationPoint = getProgressToEndPoint(startCameraLocationPoint,
+                                                                endCameraLocationPoint,
+                                                                animationDecimal);
+        const currentCameraFocusPoint = getProgressToEndPoint(startCameraFocusPoint,
+                                                              endCameraFocusPoint,
+                                                              animationDecimal);
+
+        this.moveCamera(currentCameraLocationPoint, currentCameraFocusPoint);
+
+        // Repeat until the animation has finished
+        requestAnimationFrame(renderFn);
+      };
+
+      requestAnimationFrame((startMs) => {
+        animationEndMs = startMs + durationMs;
+
+        renderFn(startMs);
+      });
+    });
+  }
+
   /**
    * Update the rotation of points on the canvas by a percentage
    *
    * @param percentage The percent of the way through the song
    *                   (0 being the start of the song, 100 being the end)
    */
-  public async setRotationPercentage(percentage: number) {
+  public setRotationPercentage(percentage: number) {
     WorldPoint.rotationOffsetPercentage = percentage;
     Rotation.rotationOffsetPercentage = percentage;
+  }
+
+  private moveCamera(cameraLocationPoint: WorldPoint, cameraFocusPoint: WorldPoint) {
+    this._camera.position.x = cameraLocationPoint.x;
+    this._camera.position.y = cameraLocationPoint.y;
+    this._camera.position.z = cameraLocationPoint.z;
+    this._camera.lookAt(cameraFocusPoint.toVector3());
   }
 }
 

@@ -43,7 +43,7 @@ class CanvasService {
     Dispatcher.getInstance()
               .on(FYPEvent.BeatBatchPlaying, (data) => {
                 if (data.action instanceof SongTransitionModel) {
-                  this.transitionChildToParent(data);
+                  // this.transitionChildToParent(data);
                 } else {
                   this.updateNextBezierCurve(data);
                   this.startSongCircleRotation(data);
@@ -55,6 +55,23 @@ class CanvasService {
 
     Dispatcher.getInstance()
               .on(FYPEvent.PlayingTrackBranchAdded, ({ branch }) => this.renderBezierCurves(branch.track, branch));
+
+    Dispatcher.getInstance()
+              .on(FYPEvent.TrackChanging, ({
+                destinationTrack,
+                transitionDurationMs,
+                transitionOutStartMs,
+                transitionOutDurationMs,
+                transitionInStartMs,
+                transitionInDurationMs,
+              }) => {
+                this.transitionChildToParent(destinationTrack,
+                                             transitionDurationMs,
+                                             transitionOutStartMs,
+                                             transitionOutDurationMs,
+                                             transitionInStartMs,
+                                             transitionInDurationMs);
+              });
   }
 
   public static getInstance(canvas?: HTMLCanvasElement): CanvasService {
@@ -65,8 +82,24 @@ class CanvasService {
     return this._instance = new this(canvas);
   }
 
-  private transitionChildToParent({ track }: FYPEventPayload['TrackChanged']) {
-    // TODO: Implement
+  private transitionChildToParent(
+    destinationTrack: TrackModel,
+    transitionDurationMs: number,
+    transitionOutStartMs: number,
+    transitionOutDurationMs: number,
+    transitionInStartMs: number,
+    transitionInDurationMs: number,
+  ) {
+    const getStartCameraLocationPointFn = () => this.getParentSongCircle().center.alignToCameraBase();
+    const getStartCameraFocusPointFn = () => this.getParentSongCircle().center;
+    const getEndCameraLocationPointFn = () => this.getSongCircle(destinationTrack).center.alignToCameraBase();
+    const getEndCameraFocusPointFn = () => this.getSongCircle(destinationTrack).center;
+
+    this.scene.animateCamera(getStartCameraLocationPointFn,
+                             getStartCameraFocusPointFn,
+                             getEndCameraLocationPointFn,
+                             getEndCameraFocusPointFn,
+                             transitionDurationMs);
   }
 
   private renderParentSongCircle({ track }: FYPEventPayload['TrackChangeRequested']) {

@@ -23,6 +23,10 @@ export enum FYPEvent {
   // Lets the ActionDecider know that the selected transition can now be taken in the next pass
   TrackChangeReady = 'track_change_ready',
 
+  // Fired when the transition has started
+  // Triggers the transition in the CanvasService
+  TrackChanging = 'track_changing',
+
   // Fired when the PlayingTrackChanged, or when a BeatBatch has finished
   // Triggers the decision of which Branch will come next, or which transition should come next
   BeatBatchRequested = 'next_beats_requested',

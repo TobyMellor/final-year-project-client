@@ -4,6 +4,8 @@ import WebAudioService from '../services/web-audio/WebAudioService';
 import BranchService from '../services/action/BranchService';
 import TransitionService from '../services/action/TransitionService';
 import ActionDecider from '../services/action/ActionDecider';
+import { TransitionManager } from '../services/action/transition/transition-management';
+import { BranchManager } from '../services/action/branch/branch-management';
 
 interface CircleCanvasProps {
 
@@ -31,6 +33,12 @@ class CircleCanvas extends React.Component<CircleCanvasProps> {
 
     // @ts-ignore window.TransitionService is for testing
     window.TransitionService = TransitionService.getInstance();
+
+    // @ts-ignore window.TransitionManager is for testing
+    window.TransitionManager = TransitionManager;
+
+    // @ts-ignore window.BranchManager is for testing
+    window.BranchManager = BranchManager;
   }
 
   render() {

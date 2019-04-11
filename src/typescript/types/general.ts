@@ -156,6 +156,14 @@ export type FYPEventPayload = {
     track: TrackModel;
   };
   TrackChangeReady: {};
+  TrackChanging: {
+    destinationTrack: TrackModel;
+    transitionDurationMs: number;
+    transitionOutStartMs: number;
+    transitionOutDurationMs: number;
+    transitionInStartMs: number;
+    transitionInDurationMs: number;
+  };
   BeatBatchRequested: {
     track: TrackModel;
     action: ActionModel; // Not present when previewing through BranchNav
