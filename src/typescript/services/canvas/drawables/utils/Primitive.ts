@@ -30,7 +30,7 @@ abstract class Primitive {
     percentage: number,
     offsetPercentage: number = 0,
   ): number {
-    const percentageWithOffset = percentage + offsetPercentage;
+    const percentageWithOffset = percentage - offsetPercentage;
     const angle: number = conversions.percentageToRadians(percentageWithOffset);
 
     return angle;

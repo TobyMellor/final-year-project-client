@@ -111,10 +111,7 @@ export function renderNeedle(scene: Scene, songCircle: SongCircle, needleType: N
 }
 
 export function updateNeedle(needle: Needle, percentage: number) {
-  // Offset whatever percentage we're given in order to fix it to the bottom
-  const inversePercentage = 100 - percentage;
-
-  needle.percentage = inversePercentage;
+  needle.percentage = percentage;
 }
 
 function getRadiusForSong(

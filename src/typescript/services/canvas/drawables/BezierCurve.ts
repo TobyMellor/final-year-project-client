@@ -61,9 +61,9 @@ class BezierCurve extends Updatable {
 
     super.createAndAddMesh({
       material,
-      rotation: Rotation.getRotationFromPercentage(0).rotateAndFlip(180),
       geometry: line.geometry,
       renderOrder: 0,
+      rotation: Rotation.getRotationFromPercentage(0).rotateAndFlip(180), // Fix the previewing bezier to position
     });
   }
 

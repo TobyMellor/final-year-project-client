@@ -27,14 +27,29 @@ abstract class Updatable {
     rotation = Rotation.getZero(),
     renderOrder,
     shouldKeepUpright = false,
+    shouldInversePercentage = false,
   }: AddMeshOptions) {
     mesh.renderOrder = this.getRenderOrder() + renderOrder;
 
+    let newPosition = position;
+    let newRotation = rotation;
+
+    // Needle should appear at the bottom
+    if (shouldInversePercentage) {
+      newPosition = newPosition.flip();
+      newRotation = newRotation.flip();
+    }
+
     // Text and images should be rotated so that they're pointing upright
+    if (shouldKeepUpright) {
+      newPosition = newPosition.rotateAndFlip(Updatable.OFFSET_AMOUNT_DEGREES);
+      newRotation = newRotation.rotateAndFlip(Updatable.OFFSET_AMOUNT_DEGREES);
+    }
+
     this.setMeshAttributes(
       mesh,
-      shouldKeepUpright ? position.rotateAndFlip(Updatable.OFFSET_AMOUNT_DEGREES) : position,
-      shouldKeepUpright ? rotation.rotateAndFlip(Updatable.OFFSET_AMOUNT_DEGREES) : rotation,
+      newPosition,
+      newRotation,
     );
 
     if (mesh instanceof THREE.Mesh) {
@@ -55,8 +70,8 @@ abstract class Updatable {
    * upright at the bottom of the user's screen (instead of to the right)
    */
   public update() {
-    const worldPoint = this.center.rotateAndFlip(Updatable.OFFSET_AMOUNT_DEGREES);
-    const rotation = this.rotation.rotateAndFlip(-Updatable.OFFSET_AMOUNT_DEGREES);
+    const worldPoint = this.center.rotate(-Updatable.OFFSET_AMOUNT_DEGREES);
+    const rotation = this.rotation.rotate(-Updatable.OFFSET_AMOUNT_DEGREES);
     this.setMeshAttributes(this._group, worldPoint, rotation);
   }
 
@@ -116,6 +131,10 @@ interface AddMeshOptions {
   // Text and Images should be kept upright. Everything else should be offset so that
   // 0% appears at the bottom of the user's screen.
   shouldKeepUpright?: boolean;
+
+  // Used for the needles. When we want to indicate the needle is at a point in the song,
+  // it offset the rotation so it appears at the bottom of the circle
+  shouldInversePercentage?: boolean;
 }
 
 export default Updatable;

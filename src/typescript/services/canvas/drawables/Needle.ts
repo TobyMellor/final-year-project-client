@@ -36,6 +36,7 @@ class Needle extends Updatable {
       material,
       position,
       renderOrder: 0,
+      shouldInversePercentage: true,
     });
   }
 

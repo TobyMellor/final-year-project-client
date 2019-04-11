@@ -64,13 +64,13 @@ class SongTransitionModel extends ActionModel {
   }
 
   public get transitionMiddleBeat() {
-    if (this.transitionOutEndBeat === this.transitionInStartBeat) {
-      return this.transitionOutEndBeat;
+    if (this.transitionInEndBeat === this.transitionInStartBeat) {
+      return this.transitionInEndBeat;
     }
 
     const beats = this.track.beats;
     const middleBeatOrder = Math.floor(
-      Math.abs(this.transitionInStartBeat.order - this.transitionOutEndBeat.order) / 2,
+      Math.abs(this.transitionInStartBeat.order - this.transitionInEndBeat.order) / 2,
     );
     const middleBeat = beats[middleBeatOrder];
 

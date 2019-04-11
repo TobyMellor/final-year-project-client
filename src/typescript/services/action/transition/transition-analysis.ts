@@ -39,9 +39,9 @@ export async function getMockedTransitions(originTrack: TrackModel): Promise<Son
   }
 
   if (originTrack.ID === reborn.ID) {
-    push(feelTheLove, 50, 100);
+    push(feelTheLove, 400, 100);
     push(myPropeller, 124, 76);
-    push(cryingLightning, 76, 200);
+    push(cryingLightning, 312, 200);
     push(controlla, 175, 234);
     push(hotlingBling, 253, 122);
   } else if (originTrack.ID === feelTheLove.ID) {

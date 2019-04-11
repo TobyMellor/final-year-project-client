@@ -91,7 +91,6 @@ class CanvasService {
 
     transitions.forEach(({ destinationTrack, transitionMiddleBeat }) => {
       const percentage = transitionMiddleBeat.getPercentageInTrack(originTrack.duration);
-      console.log("percent", percentage, destinationTrack, transitionMiddleBeat);
       const childSongCircle = drawableFactory.renderChildSongCircle(this.scene,
                                                                     parentSongCircle,
                                                                     destinationTrack,
@@ -191,7 +190,7 @@ class CanvasService {
     }
 
     this.scene.remove(this._branchNavBezierCurve, this._branchNavNeedle);
-    this._branchNavBezierCurve = this._branchNavBezierCurve = null;
+    this._branchNavBezierCurve = null;
   }
 
   public updateNeedle(needleType: NeedleType, percentage: number) {

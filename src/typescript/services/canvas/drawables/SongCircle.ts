@@ -6,6 +6,7 @@ import Updatable from './Updatable';
 import Circle from './utils/Circle';
 import * as THREE from 'three';
 import config from '../../../config';
+import Rotation from './utils/Rotation';
 
 class SongCircle extends Updatable {
   constructor(
@@ -210,7 +211,7 @@ class SongCircle extends Updatable {
 
   public get center(): WorldPoint {
     if (!this._parentSongCircle) {
-      return WorldPoint.getPoint(0, 0, Scene.Z_BASE_DISTANCE);
+      return WorldPoint.getOrigin().alignToSceneBase();
     }
 
     const centerWorldPoint = WorldPoint.getCenterPointOfCircleFromPercentage(this._parentSongCircle,
