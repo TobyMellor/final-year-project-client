@@ -1,4 +1,4 @@
-import { BezierCurveType } from '../types/enums';
+import { BezierCurveType, AnimationType, SongCircleType } from '../types/enums';
 
 const background = {
   colour: {
@@ -10,7 +10,14 @@ const songCircle = {
   resolution: 1,
   degreesInCircle: 360,
   colour: {
-    edge: 0x000000,
+    edge: {
+      [SongCircleType.PARENT]: 0x000000,
+      [SongCircleType.NEXT_PARENT_LOADING]: 0xF1C40F,
+      [SongCircleType.NEXT_PARENT_READY]: 0x2ECC71,
+      [SongCircleType.PARENT]: 0x000000,
+      [SongCircleType.CHILD]: 0x000000,
+      [SongCircleType.HIDDEN]: 0x000000,
+    },
     text: 0xFFFFFF,
     background: 0xFFFFFF,
     darkOverlay: 0x000000,
@@ -36,10 +43,26 @@ const bezierCurve = {
   dashSpacing: 0.3,
   colour: {
     [BezierCurveType.NORMAL]: 0xAAAAAA,
-    [BezierCurveType.NEXT]: songCircle.colour.edge,
+    [BezierCurveType.NEXT]: songCircle.colour.edge[SongCircleType.PARENT],
     [BezierCurveType.SCAFFOLD]: 0xF1C40F,
     [BezierCurveType.PREVIEW]: 0x2ECC71,
     [BezierCurveType.HIDDEN]: 0xAAAAAA,
+  },
+};
+
+const animations: {
+  [key in AnimationType]: {
+    durationMs: number,
+  }
+} = {
+  [AnimationType.FADE_IN]: {
+    durationMs: 350,
+  },
+  [AnimationType.FADE_OUT]: {
+    durationMs: 350,
+  },
+  [AnimationType.CHANGE_TYPE]: {
+    durationMs: 350,
   },
 };
 
@@ -48,7 +71,5 @@ export default {
   bezierCurve,
   needle,
   songCircle,
-  fadeInDurationMs: 350,
-  fadeOutDurationMs: 350,
-  colourChangeDurationMs: 350,
+  animations,
 };

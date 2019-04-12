@@ -114,6 +114,12 @@ export enum SongCircleType {
   // This circle is in the middle of the screen (a parent circle, no artwork)
   PARENT = 'parent',
 
+  // This song circle will become the parent on the next pass
+  NEXT_PARENT_READY = 'next_parent_ready',
+
+  // This song circle has been chosen, but is loading
+  NEXT_PARENT_LOADING = 'next_parent_loading',
+
   // This circle is a child circle
   CHILD = 'child',
 
@@ -126,4 +132,10 @@ export enum ButtonColour {
   Success = 'btn-success',
   Danger = 'btn-danger',
   Warning = 'btn-warning',
+}
+
+export enum AnimationType {
+  FADE_IN = 'fade_in',
+  FADE_OUT = 'fade_out',
+  CHANGE_TYPE = 'change_type',
 }

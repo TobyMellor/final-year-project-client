@@ -1,7 +1,7 @@
 import Dispatcher from '../../events/Dispatcher';
 import Scene from '../canvas/drawables/Scene';
 import * as drawableFactory from '../../factories/drawable';
-import { FYPEvent, NeedleType, BezierCurveType } from '../../types/enums';
+import { FYPEvent, NeedleType, BezierCurveType, AnimationType } from '../../types/enums';
 import { FYPEventPayload } from '../../types/general';
 import BezierCurve from './drawables/BezierCurve';
 import BranchModel from '../../models/branches/Branch';
@@ -63,6 +63,11 @@ class CanvasService {
               });
 
     Dispatcher.getInstance()
+              .on(FYPEvent.TrackChangeRequested, () => {
+                // TODO: Implement
+              });
+
+    Dispatcher.getInstance()
               .on(FYPEvent.TrackChanging, ({
                 destinationTrack,
                 transitionDurationMs,
@@ -117,8 +122,8 @@ class CanvasService {
     const parentBezierCurves = this.getParentBezierCurves();
     const childBezierCurves = this.getBezierCurves(destinationTrack);
 
-    Updatable.animateOut(...parentBezierCurves);
-    Updatable.animateIn(...childBezierCurves);
+    Updatable.animate(AnimationType.FADE_IN, ...parentBezierCurves);
+    Updatable.animate(AnimationType.FADE_OUT, ...childBezierCurves);
 
     // TODO: Things we have to do here:
     // 1. Render in the BezierCurves immediately in BranchesAnalyzed, but hide them
@@ -135,7 +140,7 @@ class CanvasService {
     const songCircle = drawableFactory.renderParentSongCircle(this.scene, track);
     const playingNeedle = drawableFactory.renderNeedle(this.scene, songCircle, NeedleType.PLAYING, 0);
 
-    Updatable.animateIn(songCircle, playingNeedle);
+    Updatable.animate(AnimationType.FADE_IN, songCircle, playingNeedle);
 
     this._songCircles[track.ID] = songCircle;
     this._playingNeedle = playingNeedle;
@@ -148,7 +153,7 @@ class CanvasService {
     const bezierCurves = drawableFactory.renderBezierCurves(this.scene, songCircle, type, branches);
 
     if (type === BezierCurveType.NORMAL) {
-      Updatable.animateIn(...bezierCurves);
+      Updatable.animate(AnimationType.FADE_IN, ...bezierCurves);
     }
 
     this._bezierCurves[track.ID] = bezierCurves;
@@ -168,7 +173,7 @@ class CanvasService {
       const animationDelay = math.getRandomInteger(config.drawables.songCircle.childMinAnimationDelayMs,
                                                    config.drawables.songCircle.childMaxAnimationDelayMs);
       setTimeout(() => {
-        Updatable.animateIn(childSongCircle);
+        Updatable.animate(AnimationType.FADE_IN, childSongCircle);
       }, animationDelay);
 
       this._songCircles[destinationTrack.ID] = childSongCircle;

@@ -42,7 +42,7 @@ class CircleCanvas extends React.Component<CircleCanvasProps> {
     window.BranchManager = BranchManager;
 
     // @ts-ignore window.Dispatcher is for testing
-    window.Dispatcher = Dispatcher;
+    window.Dispatcher = Dispatcher.getInstance();
   }
 
   render() {

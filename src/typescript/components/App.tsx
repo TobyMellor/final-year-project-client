@@ -8,7 +8,6 @@ import Dispatcher from '../events/Dispatcher';
 import { UIBarType, FYPEventPayload, OptionsPanelProps } from '../types/general';
 import OptionsPanel from './options-panel/OptionsPanel';
 import config from '../config';
-import TrackModel from '../models/audio-analysis/Track';
 import SongTransitionModel from '../models/SongTransition';
 
 interface AppProps {}

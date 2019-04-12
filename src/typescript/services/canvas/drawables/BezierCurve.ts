@@ -6,7 +6,7 @@ import Updatable, { AnimatableMesh } from './Updatable';
 import * as THREE from 'three';
 import WorldPoint from './utils/WorldPoint';
 import Rotation from './utils/Rotation';
-import { BezierCurveType } from '../../../types/enums';
+import { BezierCurveType, AnimationType } from '../../../types/enums';
 import * as conversions from '../../../utils/conversions';
 const MeshLine = require('three.meshline');
 
@@ -91,6 +91,7 @@ class BezierCurve extends Updatable {
       renderOrder: 0,
       rotation: Rotation.getRotationFromPercentage(0).rotateAndFlip(180), // Fix the previewing bezier to position
       shouldKeepVisible: type === BezierCurveType.SCAFFOLD || type === BezierCurveType.PREVIEW,
+      canChangeColour: true,
     });
   }
 
@@ -127,26 +128,18 @@ class BezierCurve extends Updatable {
 
   public set type(type: BezierCurveType) {
     if (type !== this._type) {
-      const [startR, startG, startB] = conversions.decimalToRgb(config.drawables.bezierCurve.colour[this._type]);
-      const [endR, endG, endB] = conversions.decimalToRgb(config.drawables.bezierCurve.colour[type]);
+      const startRGB = conversions.decimalToRgb(config.drawables.bezierCurve.colour[this._type]);
+      const endRGB = conversions.decimalToRgb(config.drawables.bezierCurve.colour[type]);
+
+      super.animateWithOptions(AnimationType.CHANGE_TYPE, {
+        startRGB,
+        endRGB,
+      });
 
       this._type = type;
 
       // Trigger a re-render of this element to make it appear ontop of other bezier curves
       super.refreshChildren();
-
-      // Fade to the next colour
-      super.animate(config.drawables.colourChangeDurationMs, (animationDecimal: number, [mesh]: AnimatableMesh[]) => {
-        const material = mesh.material as THREE.MeshLambertMaterial;
-        const geometry = mesh.geometry as THREE.Geometry;
-        const currentR = startR + (endR - startR) * animationDecimal;
-        const currentG = startG + (endG - startG) * animationDecimal;
-        const currentB = startB + (endB - startB) * animationDecimal;
-        const currentHEX = conversions.rgbToDecimal(currentR, currentG, currentB);
-
-        material.color.setHex(currentHEX);
-        geometry.colorsNeedUpdate = true;
-      });
     }
   }
 

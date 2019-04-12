@@ -4,6 +4,8 @@ import Scene from './Scene';
 import Rotation from './utils/Rotation';
 import config from '../../../config';
 import * as bezierEasing from 'bezier-easing';
+import { AnimationType } from '../../../types/enums';
+import * as conversions from '../../../utils/conversions';
 
 abstract class Updatable {
   private _group: AnimatableGroup;
@@ -33,16 +35,38 @@ abstract class Updatable {
     drawMode = THREE.TrianglesDrawMode,
     rotation = Rotation.getZero(),
     renderOrder,
-    fadeIn = (animationDecimal: number, mesh: AnimatableMesh) => {
+    fadeIn = ({ animationDecimal, mesh }: MeshAnimationOptions) => {
       (<THREE.Material>mesh.material).opacity = animationDecimal;
     },
-    fadeOut = (animationDecimal: number, mesh: AnimatableMesh) => fadeIn(1 - animationDecimal, mesh),
+    fadeOut = (options: MeshAnimationOptions) => fadeIn({
+      ...options,
+      animationDecimal: 1 - options.animationDecimal,
+    }),
+    canChangeColour = false,
     shouldKeepUpright = false,
     shouldInversePercentage = false,
   }: AddMeshOptions) {
     mesh.renderOrder = this.getRenderOrder() + renderOrder;
     mesh.fadeIn = fadeIn;
     mesh.fadeOut = fadeOut;
+
+    if (canChangeColour) {
+      mesh.changeColour = (
+        { startRGB: [startR, startG, startB], endRGB: [endR, endG, endB], animationDecimal }: MeshAnimationOptions,
+      ) => {
+        const material = mesh.material as THREE.MeshLambertMaterial;
+        const geometry = mesh.geometry as THREE.Geometry;
+
+        const currentR = startR + (endR - startR) * animationDecimal;
+        const currentG = startG + (endG - startG) * animationDecimal;
+        const currentB = startB + (endB - startB) * animationDecimal;
+
+        const currentHEX = conversions.rgbToDecimal(currentR, currentG, currentB);
+
+        material.color.setHex(currentHEX);
+        geometry.colorsNeedUpdate = true;
+      };
+    }
 
     let newPosition = position;
     let newRotation = rotation;
@@ -105,6 +129,11 @@ abstract class Updatable {
       // Place all updates here that require a re-render
       clone.renderOrder = this.getRenderOrder();
 
+      // Animations don't copy over in THREE.js's .clone method since we defined them
+      clone.changeColour = childMesh.changeColour;
+      clone.fadeIn = childMesh.fadeIn;
+      clone.fadeOut = childMesh.fadeOut;
+
       group.remove(childMesh);
       group.add(clone);
     });
@@ -132,27 +161,43 @@ abstract class Updatable {
     mesh.rotation.set(rotation.x, rotation.y, rotation.z);
   }
 
-  public animate(
+  private animate(
     durationMs: number,
-    animationFn: (animationDecimal: number, meshes: AnimatableMesh[], isFirstLoop?: boolean) => void,
+    animationType: AnimationType,
+    additionalOptions: BaseAnimationOptions = {},
   ) {
     const meshes = this._group.children as THREE.Mesh[];
-    let animationEndMs: number;
-    animationFn(0, meshes, true);
+    const animateMeshes = (options: { animationDecimal: number, isFirstLoop?: boolean, isLastLoop?: boolean }) => {
+      const meshAnimationFn = this.getAnimationFn(animationType);
 
+      meshes.forEach(mesh => meshAnimationFn({
+        mesh,
+        ...options, // animationDecimal, isFirstLoop, isLastLoop
+        ...additionalOptions, // Anything required in the animation loop in the Updatable
+      }));
+    };
+
+    animateMeshes({
+      animationDecimal: 0,
+      isFirstLoop: true,
+    });
+
+    let animationEndMs: number;
     const renderFn = (nowMs: number) => {
       const remainingMs = animationEndMs - nowMs;
 
       // If the animation has ended
       if (remainingMs < 0) {
-        animationFn(1, meshes);
+        animateMeshes({
+          animationDecimal: 1,
+          isLastLoop: true,
+        });
         return;
       }
 
-      // TODO: Here I can apply easing formulas for the animation
       const easing = bezierEasing(0.42, 0, 1, 1);
       const animationDecimal = easing(1 - (remainingMs / durationMs));
-      animationFn(animationDecimal, meshes, false);
+      animateMeshes({ animationDecimal });
 
       // Repeat until the animation has finished
       requestAnimationFrame(renderFn);
@@ -165,26 +210,31 @@ abstract class Updatable {
     });
   }
 
-  public static animateIn(...updatables: Updatable[]) {
+  public static animate(type: AnimationType, ...updatables: Updatable[]) {
     // The setTimeout really helps here with initial lag during the loading of the page, potentially because
     // this task is scheduled after intensive work analysing branches (See: https://www.youtube.com/watch?v=cCOL7MC4Pl0)
     setTimeout(() => {
-      updatables.forEach(updatable => updatable.animate(config.drawables.fadeInDurationMs, updatable.fadeIn));
+      updatables.forEach(updatable => updatable.animate(config.drawables.animations[type].durationMs, type));
     }, 0);
   }
 
-  public static animateOut(...updatables: Updatable[]) {
+  protected animateWithOptions(type: AnimationType, options: BaseAnimationOptions) {
     setTimeout(() => {
-      updatables.forEach(updatable => updatable.animate(config.drawables.fadeOutDurationMs, updatable.fadeOut));
+      this.animate(config.drawables.animations[type].durationMs, type, options);
     }, 0);
   }
 
-  private fadeIn(animationDecimal: number, meshes: AnimatableMesh[], isFirstLoop: boolean) {
-    meshes.forEach(mesh => mesh.fadeIn(animationDecimal, mesh, isFirstLoop));
-  }
-
-  private fadeOut(animationDecimal: number, meshes: AnimatableMesh[]) {
-    meshes.forEach(mesh => mesh.fadeOut(animationDecimal, mesh));
+  getAnimationFn(type: AnimationType) {
+    switch (type) {
+      case AnimationType.FADE_IN:
+        return (options: MeshAnimationOptions) => options.mesh.fadeIn(options);
+      case AnimationType.FADE_OUT:
+        return (options: MeshAnimationOptions) => options.mesh.fadeOut(options);
+      case AnimationType.CHANGE_TYPE:
+        return (options: MeshAnimationOptions) => options.mesh.changeColour && options.mesh.changeColour(options);
+      default:
+        throw new Error('AnimationType not found!');
+    }
   }
 }
 
@@ -197,8 +247,9 @@ class AnimatableGroup extends THREE.Group {
 }
 
 export interface AnimatableMesh extends THREE.Mesh {
-  fadeIn?: (animationDecimal: number, mesh: AnimatableMesh, isFirstLoop?: boolean) => void;
-  fadeOut?: (animationDecimal: number, mesh: AnimatableMesh, isFirstLoop?: boolean) => void;
+  changeColour?: MeshAnimationFn;
+  fadeIn?: MeshAnimationFn;
+  fadeOut?: MeshAnimationFn;
 }
 
 interface CreateMeshOptions extends AddMeshOptions {
@@ -225,8 +276,24 @@ interface AddMeshOptions {
   shouldInversePercentage?: boolean;
 
   shouldKeepVisible?: boolean;
-  fadeIn?: (animationDecimal: number, mesh: AnimatableMesh, isFirstLoop?: boolean) => void;
-  fadeOut?: (animationDecimal: number, mesh: AnimatableMesh, isFirstLoop?: boolean) => void;
+  canChangeColour?: boolean;
+  changeColour?: MeshAnimationFn;
+  fadeIn?: MeshAnimationFn;
+  fadeOut?: MeshAnimationFn;
 }
+
+type MeshAnimationFn = (options: MeshAnimationOptions) => void;
+
+type BaseAnimationOptions = {
+  animationDecimal?: number,
+  isFirstLoop?: boolean,
+  isLastLoop?: boolean,
+  startRGB?: [number, number, number],
+  endRGB?: [number, number, number],
+};
+
+type MeshAnimationOptions = BaseAnimationOptions & {
+  mesh: AnimatableMesh,
+};
 
 export default Updatable;

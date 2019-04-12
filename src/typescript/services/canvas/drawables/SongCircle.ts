@@ -6,7 +6,7 @@ import Updatable, { AnimatableMesh } from './Updatable';
 import Circle from './utils/Circle';
 import * as THREE from 'three';
 import config from '../../../config';
-import { SongCircleType } from '../../../types/enums';
+import { SongCircleType, AnimationType } from '../../../types/enums';
 
 type Input = {
   scene: Scene,
@@ -45,7 +45,7 @@ class SongCircle extends Updatable {
     this._percentage = percentage;
 
     this.addCircle(track, radius);
-    this.addCircleOutline(radius, lineWidth);
+    this.addCircleOutline(type, radius, lineWidth);
     this.addText(track, radius, lineWidth);
 
     super.addAll(scene);
@@ -71,7 +71,7 @@ class SongCircle extends Updatable {
       material: materialArtwork,
       renderOrder: 0,
       shouldKeepUpright: true,
-      fadeIn: (animationDecimal: number, mesh: AnimatableMesh) => {
+      fadeIn: ({ animationDecimal, mesh }) => {
         if (!this.isParentSongCircle()) {
           (<THREE.Material>mesh.material).opacity = animationDecimal;
         }
@@ -82,7 +82,7 @@ class SongCircle extends Updatable {
       geometry: geometryOverlay,
       material: materialOverlay,
       renderOrder: 1,
-      fadeIn: (animationDecimal: number, mesh: AnimatableMesh, isFirstLoop: boolean) => {
+      fadeIn: ({ animationDecimal, mesh, isFirstLoop }) => {
         const material = mesh.material as THREE.MeshLambertMaterial;
         const geometry = mesh.geometry as THREE.Geometry;
         material.opacity = animationDecimal * config.drawables.songCircle.opacity.darkOverlay;
@@ -95,7 +95,7 @@ class SongCircle extends Updatable {
     });
   }
 
-  private addCircleOutline(radius: number, lineWidth: number) {
+  private addCircleOutline(type: SongCircleType, radius: number, lineWidth: number) {
     const geometry = new THREE.Geometry();
 
     for (let i = 0; i <= config.drawables.songCircle.degreesInCircle; i += config.drawables.songCircle.resolution) {
@@ -125,13 +125,16 @@ class SongCircle extends Updatable {
       );
     }
 
-    const material = new THREE.MeshLambertMaterial({ color: config.drawables.songCircle.colour.edge });
+    const material = new THREE.MeshLambertMaterial({
+      color: config.drawables.songCircle.colour.edge[type],
+    });
 
     super.createAndAddMesh({
       geometry,
       material,
       drawMode: THREE.TriangleStripDrawMode,
       renderOrder: 2,
+      canChangeColour: true,
     });
   }
 
@@ -223,7 +226,7 @@ class SongCircle extends Updatable {
           mesh: textMesh,
           renderOrder: 2,
           shouldKeepUpright: true,
-          fadeIn: (animationDecimal: number, mesh: AnimatableMesh) => {
+          fadeIn: ({ animationDecimal, mesh }) => {
             if (!this.isParentSongCircle()) {
               (<THREE.Material>mesh.material).opacity = animationDecimal;
             }
@@ -255,6 +258,20 @@ class SongCircle extends Updatable {
                                 textVerticalPadding);
 
     });
+  }
+
+  public set type(type: SongCircleType) {
+    if (this._type !== type) {
+      const startRGB = conversions.decimalToRgb(config.drawables.songCircle.colour.edge[this._type]);
+      const endRGB = conversions.decimalToRgb(config.drawables.songCircle.colour.edge[type]);
+
+      super.animateWithOptions(AnimationType.CHANGE_TYPE, {
+        startRGB,
+        endRGB,
+      });
+
+      this._type = type;
+    }
   }
 
   public get center(): WorldPoint {
