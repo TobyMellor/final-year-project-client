@@ -64,6 +64,7 @@
     "webpack-dev-server": "^3.2.1"
   },
   "dependencies": {
+    "bezier-easing": "^2.1.0",
     "three-orbitcontrols-ts": "^0.1.2"
   }
 }
