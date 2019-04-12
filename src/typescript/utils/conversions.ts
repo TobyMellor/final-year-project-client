@@ -79,3 +79,17 @@ export function getTimeIdentifierFromMilliseconds(ms?: number): TimeIdentifier {
     secs: millisecondsToSeconds(ms),
   };
 }
+
+// Edited from original function: https://stackoverflow.com/a/8469042/2957677
+export function rgbToDecimal(r: number, g: number, b: number): number {
+  return (r << 16) + (g << 8) + b;
+}
+
+// Edited from original function: https://stackoverflow.com/a/8469042/2957677
+export function decimalToRgb(decimal: number): [number, number, number] {
+  return [
+    (decimal & 0xff0000) >> 16,
+    (decimal & 0x00ff00) >> 8,
+    (decimal & 0x0000ff),
+  ];
+}

@@ -99,10 +99,31 @@ export enum BezierCurveType {
 
   // The user is previewing this branch in the BranchNav
   PREVIEW = 'preview',
+
+  // Branch to be rendered in the next song, and will be visible after the transition
+  HIDDEN = 'hidden',
 }
 
 // TODO: Implement more!
 export enum TransitionType {
   IMMEDIATE = 'immediate',
   FADE = 'fade',
+}
+
+export enum SongCircleType {
+  // This circle is in the middle of the screen (a parent circle, no artwork)
+  PARENT = 'parent',
+
+  // This circle is a child circle
+  CHILD = 'child',
+
+  // This is a child circle of a child circle, and is therefore not rendered
+  HIDDEN = 'hidden',
+}
+
+export enum ButtonColour {
+  Primary = 'btn-primary',
+  Success = 'btn-success',
+  Danger = 'btn-danger',
+  Warning = 'btn-warning',
 }

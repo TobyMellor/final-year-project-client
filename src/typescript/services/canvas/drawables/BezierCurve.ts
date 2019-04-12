@@ -2,16 +2,29 @@ import config from '../../../config';
 import Scene from './Scene';
 import SongCircle from './SongCircle';
 import BranchModel from '../../../models/branches/Branch';
-import Updatable from './Updatable';
+import Updatable, { AnimatableMesh } from './Updatable';
 import * as THREE from 'three';
 import WorldPoint from './utils/WorldPoint';
 import Rotation from './utils/Rotation';
 import { BezierCurveType } from '../../../types/enums';
+import * as conversions from '../../../utils/conversions';
 const MeshLine = require('three.meshline');
 
 type MeshLineOptions = {
   lineWidth: number;
   color: number;
+  dashOffset?: number;
+  dashArray?: number;
+  dashRatio?: number;
+};
+
+type Input = {
+  scene: Scene;
+  songCircle: SongCircle;
+  type: BezierCurveType;
+  fromPercentage: number;
+  toPercentage: number;
+  branch: BranchModel | null;
 };
 
 /**
@@ -23,23 +36,36 @@ class BezierCurve extends Updatable {
   private _curve: THREE.CubicBezierCurve3 = null;
   private _positionNeedsUpdate: boolean = false;
 
-  constructor(
-    scene: Scene,
-    private _songCircle: SongCircle,
-    private _type: BezierCurveType,
-    private _fromPercentage: number,
-    private _toPercentage: number,
-    public branch: BranchModel | null, // Not present if it's a previewing Branch
-  ) {
+  private _type: BezierCurveType;
+  private _songCircle: SongCircle;
+  private _fromPercentage: number;
+  private _toPercentage: number;
+  public branch: BranchModel | null; // Not present if it's a previewing Branch
+
+  constructor({
+    scene,
+    type,
+    songCircle,
+    fromPercentage,
+    toPercentage,
+    branch,
+  }: Input) {
     super();
 
-    const meshLineOptions = this.getMeshLineOptions(_type, _fromPercentage, _toPercentage);
-    this.addBezierCurve(_songCircle, _fromPercentage, _toPercentage, meshLineOptions);
+    this._songCircle = songCircle;
+    this._type = type;
+    this._fromPercentage = fromPercentage;
+    this._toPercentage = toPercentage;
+    this.branch = branch;
+
+    const meshLineOptions = this.getMeshLineOptions(type, fromPercentage, toPercentage);
+    this.addBezierCurve(type, songCircle, fromPercentage, toPercentage, meshLineOptions);
 
     super.addAll(scene);
   }
 
   private addBezierCurve(
+    type: BezierCurveType,
     songCircle: SongCircle,
     fromPercentage: number,
     toPercentage: number,
@@ -64,6 +90,7 @@ class BezierCurve extends Updatable {
       geometry: line.geometry,
       renderOrder: 0,
       rotation: Rotation.getRotationFromPercentage(0).rotateAndFlip(180), // Fix the previewing bezier to position
+      shouldKeepVisible: type === BezierCurveType.SCAFFOLD || type === BezierCurveType.PREVIEW,
     });
   }
 
@@ -100,10 +127,26 @@ class BezierCurve extends Updatable {
 
   public set type(type: BezierCurveType) {
     if (type !== this._type) {
+      const [startR, startG, startB] = conversions.decimalToRgb(config.drawables.bezierCurve.colour[this._type]);
+      const [endR, endG, endB] = conversions.decimalToRgb(config.drawables.bezierCurve.colour[type]);
+
       this._type = type;
 
       // Trigger a re-render of this element to make it appear ontop of other bezier curves
       super.refreshChildren();
+
+      // Fade to the next colour
+      super.animate(config.drawables.colourChangeDurationMs, (animationDecimal: number, [mesh]: AnimatableMesh[]) => {
+        const material = mesh.material as THREE.MeshLambertMaterial;
+        const geometry = mesh.geometry as THREE.Geometry;
+        const currentR = startR + (endR - startR) * animationDecimal;
+        const currentG = startG + (endG - startG) * animationDecimal;
+        const currentB = startB + (endB - startB) * animationDecimal;
+        const currentHEX = conversions.rgbToDecimal(currentR, currentG, currentB);
+
+        material.color.setHex(currentHEX);
+        geometry.colorsNeedUpdate = true;
+      });
     }
   }
 
@@ -122,7 +165,6 @@ class BezierCurve extends Updatable {
 
         return {
           dashOffset,
-          transparent: true,
           dashArray: config.drawables.bezierCurve.dashSize,
           dashRatio: config.drawables.bezierCurve.dashSpacing,
         };
@@ -165,19 +207,11 @@ class BezierCurve extends Updatable {
   public update() {
     const group = super.getMesh();
     const [bezierCurveMesh] = group.children as THREE.Mesh[];
-    const material = bezierCurveMesh.material as THREE.MeshBasicMaterial;
-    const geometry = bezierCurveMesh.geometry as THREE.Geometry;
     const meshLineOptions = this.getMeshLineOptions(this._type, this._fromPercentage, this._toPercentage);
-
-    // Update the bezier curve colours (next branch being highlighted)
-    if (material.color.getHex() !== meshLineOptions.color) {
-      material.color.setHex(meshLineOptions.color);
-      geometry.colorsNeedUpdate = true;
-    }
 
     if (this._positionNeedsUpdate) {
       this._positionNeedsUpdate = false;
-      this.addBezierCurve(this._songCircle, this._fromPercentage, this._toPercentage, meshLineOptions);
+      this.addBezierCurve(this._type, this._songCircle, this._fromPercentage, this._toPercentage, meshLineOptions);
       group.remove(bezierCurveMesh);
     }
 

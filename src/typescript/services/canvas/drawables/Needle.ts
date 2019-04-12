@@ -7,16 +7,31 @@ import Rotation from './utils/Rotation';
 import { NeedleType } from '../../../types/enums';
 import config from '../../../config';
 
+type Input = {
+  scene: Scene;
+  songCircle: SongCircle;
+  needleType: NeedleType;
+  percentage: number;
+};
+
 class Needle extends Updatable {
-  constructor(
-    scene: Scene,
-    private _songCircle: SongCircle,
-    needleType: NeedleType,
-    private _percentage: number,
-  ) {
+  private _songCircle: SongCircle;
+  public needleType: NeedleType;
+  private _percentage: number;
+
+  constructor({
+    scene,
+    songCircle,
+    needleType,
+    percentage,
+  }: Input) {
     super();
 
-    this.addNeedle(_songCircle, needleType, _percentage);
+    this._songCircle = songCircle;
+    this.needleType = needleType;
+    this._percentage = percentage;
+
+    this.addNeedle(songCircle, needleType, percentage);
 
     super.addAll(scene);
   }
@@ -26,7 +41,7 @@ class Needle extends Updatable {
     const geometry = new THREE.PlaneGeometry(height, width);
 
     const color = this.getColor(needleType);
-    const material = new THREE.MeshBasicMaterial({ color });
+    const material = new THREE.MeshLambertMaterial({ color });
 
     const position = WorldPoint.getOrigin()
                                .translate(height / 2, 0);

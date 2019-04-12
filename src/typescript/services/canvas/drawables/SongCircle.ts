@@ -2,57 +2,96 @@ import Track from '../../../models/audio-analysis/Track';
 import WorldPoint from './utils/WorldPoint';
 import Scene from './Scene';
 import * as conversions from '../../../utils/conversions';
-import Updatable from './Updatable';
+import Updatable, { AnimatableMesh } from './Updatable';
 import Circle from './utils/Circle';
 import * as THREE from 'three';
 import config from '../../../config';
-import Rotation from './utils/Rotation';
+import { SongCircleType } from '../../../types/enums';
+
+type Input = {
+  scene: Scene,
+  type: SongCircleType,
+  track: Track,
+  radius: number,
+  lineWidth: number,
+  parentSongCircle?: SongCircle | null, // null if it's the first parent
+  percentage?: number,
+};
 
 class SongCircle extends Updatable {
-  constructor(
-    scene: Scene,
-    public track: Track,
-    public radius: number,
-    public lineWidth: number,
-    private _parentSongCircle: SongCircle = null,
-    private _percentage: number = -1,
-    backgroundColour: number = null, // If present, this overrides the album art
-  ) {
+  private _type: SongCircleType;
+  public track: Track;
+  public radius: number;
+  public lineWidth: number;
+  private _parentSongCircle: SongCircle;
+  private _percentage: number;
+
+  constructor({
+    scene,
+    type,
+    track,
+    radius,
+    lineWidth,
+    parentSongCircle = null,
+    percentage = -1,
+  }: Input) {
     super();
 
-    this.addCircle(track, radius, backgroundColour);
-    this.addCircleOutline(radius, lineWidth);
+    this._type = type;
+    this.track = track;
+    this.radius = radius;
+    this.lineWidth = lineWidth;
+    this._parentSongCircle = parentSongCircle;
+    this._percentage = percentage;
 
-    if (_parentSongCircle) {
-      this.addText(track, radius, lineWidth);
-    }
+    this.addCircle(track, radius);
+    this.addCircleOutline(radius, lineWidth);
+    this.addText(track, radius, lineWidth);
 
     super.addAll(scene);
   }
 
-  private addCircle(track: Track, radius: number, backgroundColour: number) {
-    const geometry = new THREE.CircleGeometry(radius, config.drawables.songCircle.degreesInCircle);
-    let material;
+  private addCircle(track: Track, radius: number) {
+    const geometryArtwork = new THREE.CircleGeometry(radius, config.drawables.songCircle.degreesInCircle);
+    const geometryOverlay = geometryArtwork.clone();
 
-    if (backgroundColour === null) {
-      const texture = new THREE.TextureLoader().load(track.bestImageURL);
+    const texture = new THREE.TextureLoader().load(track.bestImageURL);
 
-      material = new THREE.MeshPhongMaterial({
-        emissive: 0xFFFFFF,
-        emissiveMap: texture,
-        emissiveIntensity: 1 - config.drawables.songCircle.opacity.darkOverlay,
-      });
-    } else {
-      material = new THREE.MeshBasicMaterial({ color: backgroundColour });
-    }
-
-    material.depthTest = false;
+    const materialArtwork = new THREE.MeshLambertMaterial({
+      color: config.drawables.songCircle.colour.background,
+      map: texture,
+    });
+    const materialOverlay = new THREE.MeshLambertMaterial({
+      color: config.drawables.songCircle.colour.darkOverlay,
+      opacity: config.drawables.songCircle.opacity.darkOverlay,
+    });
 
     super.createAndAddMesh({
-      geometry,
-      material,
+      geometry: geometryArtwork,
+      material: materialArtwork,
       renderOrder: 0,
       shouldKeepUpright: true,
+      fadeIn: (animationDecimal: number, mesh: AnimatableMesh) => {
+        if (!this.isParentSongCircle()) {
+          (<THREE.Material>mesh.material).opacity = animationDecimal;
+        }
+      },
+    });
+
+    super.createAndAddMesh({
+      geometry: geometryOverlay,
+      material: materialOverlay,
+      renderOrder: 1,
+      fadeIn: (animationDecimal: number, mesh: AnimatableMesh, isFirstLoop: boolean) => {
+        const material = mesh.material as THREE.MeshLambertMaterial;
+        const geometry = mesh.geometry as THREE.Geometry;
+        material.opacity = animationDecimal * config.drawables.songCircle.opacity.darkOverlay;
+
+        if (this.isParentSongCircle() && isFirstLoop) {
+          material.color.setHex(config.drawables.songCircle.colour.background);
+          geometry.colorsNeedUpdate = true;
+        }
+      },
     });
   }
 
@@ -86,13 +125,13 @@ class SongCircle extends Updatable {
       );
     }
 
-    const material = new THREE.MeshBasicMaterial({ color: config.drawables.songCircle.colour.edge });
+    const material = new THREE.MeshLambertMaterial({ color: config.drawables.songCircle.colour.edge });
 
     super.createAndAddMesh({
       geometry,
       material,
       drawMode: THREE.TriangleStripDrawMode,
-      renderOrder: 1,
+      renderOrder: 2,
     });
   }
 
@@ -113,7 +152,7 @@ class SongCircle extends Updatable {
         const geometry = new THREE.TextGeometry(text, {
           font,
           size: fontSize,
-          height: 0.01,
+          height: 0,
           curveSegments: 4,
         });
 
@@ -131,7 +170,11 @@ class SongCircle extends Updatable {
         // (instead of the LEFT of the text)
         centerX(geometry);
 
-        const material = new THREE.MeshBasicMaterial({ color: config.drawables.songCircle.colour.text });
+        const material = new THREE.MeshBasicMaterial({
+          color: config.drawables.songCircle.colour.text,
+          transparent: true,
+          opacity: 0,
+        });
         const textMesh = new THREE.Mesh(geometry, material);
 
         return textMesh;
@@ -180,6 +223,11 @@ class SongCircle extends Updatable {
           mesh: textMesh,
           renderOrder: 2,
           shouldKeepUpright: true,
+          fadeIn: (animationDecimal: number, mesh: AnimatableMesh) => {
+            if (!this.isParentSongCircle()) {
+              (<THREE.Material>mesh.material).opacity = animationDecimal;
+            }
+          },
         });
 
         return { predictedSize, fontSize: currentFontSize };
@@ -223,11 +271,15 @@ class SongCircle extends Updatable {
   }
 
   protected getRenderOrder(): number {
-    if (!this._parentSongCircle) {
+    if (this.isParentSongCircle()) {
       return -10000000;
     }
 
     return -this.track.duration.ms;
+  }
+
+  private isParentSongCircle() {
+    return this._type === SongCircleType.PARENT;
   }
 }
 

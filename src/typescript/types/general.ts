@@ -1,7 +1,7 @@
 import SegmentModel from '../models/audio-analysis/Segment';
 import BeatModel from '../models/audio-analysis/Beat';
 import BarModel from '../models/audio-analysis/Bar';
-import { BeatListOrientation, BranchNavStatus, NeedleType, TransitionType } from './enums';
+import { BeatListOrientation, BranchNavStatus, NeedleType, TransitionType, ButtonColour } from './enums';
 import TrackModel from '../models/audio-analysis/Track';
 import BranchModel from '../models/branches/Branch';
 import ForwardBranchModel from '../models/branches/ForwardBranch';
@@ -131,10 +131,38 @@ export interface BarState {
   zIndexes: number[];
 }
 
-export interface SettingsPanelProps {
-  onToggleBranchNavClick: () => void;
-  isBranchNavHidden: boolean;
-  isBranchNavDisabled: boolean;
+export interface DropdownProps {
+  options: {
+    ID: string,
+    text: string,
+  }[];
+  label: string;
+  disabled?: boolean;
+  onClick: (ID: string) => void;
+}
+
+export interface OptionsPanelProps {
+  toggles: {
+    buttons: ButtonProps[],
+    dropdowns: DropdownProps[],
+  };
+  isDebugPanel?: boolean;
+}
+
+export interface OptionsPanelState {}
+
+export interface ButtonProps {
+  colourClassName?: ButtonColour;
+  onClick: () => void;
+  label: string;
+  shouldFadeIn?: boolean;
+  shouldHide?: boolean;
+  disabled?: boolean;
+}
+
+export interface ButtonState {
+  hasFadeFinished: boolean;
+  fadeTimer: NodeJS.Timeout;
 }
 
 export type FYPEventPayload = {

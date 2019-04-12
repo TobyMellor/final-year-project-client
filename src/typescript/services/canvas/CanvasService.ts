@@ -10,6 +10,8 @@ import Needle from './drawables/Needle';
 import * as math from '../../utils/math';
 import TrackModel from '../../models/audio-analysis/Track';
 import SongTransitionModel from '../../models/SongTransition';
+import Updatable from './drawables/Updatable';
+import config from '../../config';
 
 class CanvasService {
   private static _instance: CanvasService = null;
@@ -35,7 +37,9 @@ class CanvasService {
               });
 
     Dispatcher.getInstance()
-              .on(FYPEvent.BranchesAnalyzed, ({ track, branches }) => this.renderBezierCurves(track, ...branches));
+              .on(FYPEvent.BranchesAnalyzed, ({ track, branches }) => {
+                this.renderBezierCurves(track, BezierCurveType.NORMAL, ...branches);
+              });
 
     Dispatcher.getInstance()
               .on(FYPEvent.TransitionsAnalyzed, data => this.renderChildSongCircles(data));
@@ -54,7 +58,9 @@ class CanvasService {
               .on(FYPEvent.BeatBatchStopped, data => this.stopSongCircleRotation(data));
 
     Dispatcher.getInstance()
-              .on(FYPEvent.PlayingTrackBranchAdded, ({ branch }) => this.renderBezierCurves(branch.track, branch));
+              .on(FYPEvent.PlayingTrackBranchAdded, ({ branch }) => {
+                this.renderBezierCurves(branch.track, BezierCurveType.NORMAL, branch);
+              });
 
     Dispatcher.getInstance()
               .on(FYPEvent.TrackChanging, ({
@@ -71,6 +77,13 @@ class CanvasService {
                                              transitionOutDurationMs,
                                              transitionInStartMs,
                                              transitionInDurationMs);
+              });
+
+    Dispatcher.getInstance()
+              .on(FYPEvent.TrackChanged, ({ track }) => {
+                if (this._playingTrackID) {
+                  this.updateParentSong(track);
+                }
               });
   }
 
@@ -100,21 +113,43 @@ class CanvasService {
                              getEndCameraLocationPointFn,
                              getEndCameraFocusPointFn,
                              transitionDurationMs);
+
+    const parentBezierCurves = this.getParentBezierCurves();
+    const childBezierCurves = this.getBezierCurves(destinationTrack);
+
+    Updatable.animateOut(...parentBezierCurves);
+    Updatable.animateIn(...childBezierCurves);
+
+    // TODO: Things we have to do here:
+    // 1. Render in the BezierCurves immediately in BranchesAnalyzed, but hide them
+    // 2. Wait until transitionOutStartMs, Updatable.fadeOut() (on SC and bezier curves) for transitionOutDurationMs
+    // 3. Wait until transitionInStartMs, Updatable.fadeIn() (on SC and bezier curves) for transitionInDurationMs
+    // 4. Change the playingTrackID etc when animateCamera is finished
+  }
+
+  private updateParentSong({ ID }: TrackModel) {
+    this._playingTrackID = ID;
   }
 
   private renderParentSongCircle({ track }: FYPEventPayload['TrackChangeRequested']) {
     const songCircle = drawableFactory.renderParentSongCircle(this.scene, track);
     const playingNeedle = drawableFactory.renderNeedle(this.scene, songCircle, NeedleType.PLAYING, 0);
 
-    const trackID = track.ID;
-    this._playingTrackID = trackID;
-    this._songCircles[trackID] = songCircle;
+    Updatable.animateIn(songCircle, playingNeedle);
+
+    this._songCircles[track.ID] = songCircle;
     this._playingNeedle = playingNeedle;
+
+    this.updateParentSong(track);
   }
 
-  public renderBezierCurves(track: TrackModel, ...branches: BranchModel[]) {
+  public renderBezierCurves(track: TrackModel, type: BezierCurveType, ...branches: BranchModel[]) {
     const songCircle = this.getSongCircle(track);
-    const bezierCurves = drawableFactory.renderBezierCurves(this.scene, songCircle, branches);
+    const bezierCurves = drawableFactory.renderBezierCurves(this.scene, songCircle, type, branches);
+
+    if (type === BezierCurveType.NORMAL) {
+      Updatable.animateIn(...bezierCurves);
+    }
 
     this._bezierCurves[track.ID] = bezierCurves;
   }
@@ -128,6 +163,13 @@ class CanvasService {
                                                                     parentSongCircle,
                                                                     destinationTrack,
                                                                     percentage);
+
+      // Stagger in childSongCircle loading for effect
+      const animationDelay = math.getRandomInteger(config.drawables.songCircle.childMinAnimationDelayMs,
+                                                   config.drawables.songCircle.childMaxAnimationDelayMs);
+      setTimeout(() => {
+        Updatable.animateIn(childSongCircle);
+      }, animationDelay);
 
       this._songCircles[destinationTrack.ID] = childSongCircle;
     });

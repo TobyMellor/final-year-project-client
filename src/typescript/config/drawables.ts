@@ -12,11 +12,17 @@ const songCircle = {
   colour: {
     edge: 0x000000,
     text: 0xFFFFFF,
-    background: 0xEBE5E7,
+    background: 0xFFFFFF,
+    darkOverlay: 0x000000,
   },
   opacity: {
     darkOverlay: 0.6,
   },
+
+  // Child SongCircles will appear to load in staggered for effect, they will be randomly delayed between
+  // config.songCircle.childMaxAnimationDelayMs to config.songCircle.childMaxAnimationDelayMs
+  childMinAnimationDelayMs: 5000,
+  childMaxAnimationDelayMs: 15000,
 };
 
 const needle = {
@@ -29,10 +35,11 @@ const bezierCurve = {
   dashSize: 0.05,
   dashSpacing: 0.3,
   colour: {
-    [BezierCurveType.NORMAL]: 0xaaaaaa,
+    [BezierCurveType.NORMAL]: 0xAAAAAA,
     [BezierCurveType.NEXT]: songCircle.colour.edge,
     [BezierCurveType.SCAFFOLD]: 0xF1C40F,
     [BezierCurveType.PREVIEW]: 0x2ECC71,
+    [BezierCurveType.HIDDEN]: 0xAAAAAA,
   },
 };
 
@@ -41,4 +48,7 @@ export default {
   bezierCurve,
   needle,
   songCircle,
+  fadeInDurationMs: 350,
+  fadeOutDurationMs: 350,
+  colourChangeDurationMs: 350,
 };

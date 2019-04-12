@@ -5,6 +5,7 @@ import WorldPoint from './utils/WorldPoint';
 import Rotation from './utils/Rotation';
 import * as conversions from '../../../utils/conversions';
 import config from '../../../config';
+import * as drawableFactory from '../../../factories/drawable';
 
 export type Drawable = {
   meshes: THREE.Mesh[];
@@ -48,6 +49,9 @@ class Scene {
     renderer.setPixelRatio(window.devicePixelRatio);
     renderer.setClearColor(config.drawables.background.colour.background);
     renderer.setSize(window.innerWidth, window.innerHeight);
+
+    const ambientLight = new THREE.AmbientLight(0xFFFFFF, 1);
+    scene.add(ambientLight);
 
     this._scene = scene;
     this._camera = camera;

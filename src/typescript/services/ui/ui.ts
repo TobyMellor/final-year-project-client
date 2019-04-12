@@ -9,6 +9,7 @@ import { NeedleType, BezierCurveType } from '../../types/enums';
 import WorldPoint from '../canvas/drawables/utils/WorldPoint';
 import * as conversions from '../../utils/conversions';
 import BranchService from '../action/BranchService';
+import TransitionService from '../action/TransitionService';
 
 export function getUIBars(track: TrackModel): UIBarType[] {
   const { bars, segments } = track.audioAnalysis;

@@ -9,8 +9,8 @@ configure({ adapter: new Adapter() });
 
 describe('Button Component', () => {
   it('renders different button types', () => {
-    const wrapperPrimary = mount(<PrimaryButton onButtonClick={null} label="Primary Button" />);
-    const wrapperSuccess = mount(<SuccessButton onButtonClick={null} label="Success Button" />);
+    const wrapperPrimary = mount(<PrimaryButton onClick={null} label="Primary Button" />);
+    const wrapperSuccess = mount(<SuccessButton onClick={null} label="Success Button" />);
     const primaryButton = wrapperPrimary.find('button');
     const successButton = wrapperSuccess.find('button');
 
@@ -21,9 +21,9 @@ describe('Button Component', () => {
     expect(successButton.text()).toBe('Success Button');
   });
 
-  it('executes onButtonClick when clicked', () => {
+  it('executes onClick when clicked', () => {
     const handleClickFn = jest.fn();
-    const wrapper = mount(<PrimaryButton onButtonClick={handleClickFn} label="Test Button" />);
+    const wrapper = mount(<PrimaryButton onClick={handleClickFn} label="Test Button" />);
 
     wrapper.simulate('click');
 
@@ -32,7 +32,7 @@ describe('Button Component', () => {
   });
 
   it('hides if required', () => {
-    const wrapper = mount(<PrimaryButton onButtonClick={null} label="Test Button" />);
+    const wrapper = mount(<PrimaryButton onClick={null} label="Test Button" />);
 
     // The button should be visible by default
     expect(doesButtonHaveClass(wrapper, 'd-none')).toBe(false);
@@ -45,7 +45,7 @@ describe('Button Component', () => {
 
   it('fades in if required', () => {
     const clock = sinon.useFakeTimers();
-    const wrapper = mount(<PrimaryButton onButtonClick={null} label="Test Button" />);
+    const wrapper = mount(<PrimaryButton onClick={null} label="Test Button" />);
 
     // The button should not fade in/out by default
     expect(doesButtonHaveClass(wrapper, 'start-fade')).toBe(false);

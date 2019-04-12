@@ -27,16 +27,16 @@ class BranchNavFooter extends React.Component<BranchNavFooterProps> {
       <div className="modal-footer">
         <SuccessButton key="preview"
                        label="Preview"
-                       onButtonClick={() => onPreviewClick()}
+                       onClick={() => onPreviewClick()}
                        shouldHide={isPreviewing}
                        shouldFadeIn={true} />
         <Button key="previewing_back"
                 label="Back"
-                onButtonClick={() => onPreviewingBackClick()}
+                onClick={() => onPreviewingBackClick()}
                 shouldHide={!isPreviewing} />
         <SuccessButton key="previewing_create_branch"
                        label="Create Branch"
-                       onButtonClick={() => onPreviewingCreateBranchClick()}
+                       onClick={() => onPreviewingCreateBranchClick()}
                        shouldHide={!isPreviewing} />
       </div>
     );

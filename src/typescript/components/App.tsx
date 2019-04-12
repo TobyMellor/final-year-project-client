@@ -2,12 +2,14 @@ import * as React from 'react';
 import Nav from './Nav';
 import CircleCanvas from './CircleCanvas';
 import BranchNav from './branch-nav/BranchNav';
-import { getUIBars } from '../services/ui/ui';
+import * as uiService from '../services/ui/ui';
 import { FYPEvent, BranchNavStatus } from '../types/enums';
 import Dispatcher from '../events/Dispatcher';
-import { UIBarType, FYPEventPayload } from '../types/general';
-import SettingsPanel from './settings-panel/SettingsPanel';
+import { UIBarType, FYPEventPayload, OptionsPanelProps } from '../types/general';
+import OptionsPanel from './options-panel/OptionsPanel';
 import config from '../config';
+import TrackModel from '../models/audio-analysis/Track';
+import SongTransitionModel from '../models/SongTransition';
 
 interface AppProps {}
 
@@ -15,8 +17,13 @@ interface AppState {
   UIBars: UIBarType[];
   isBranchNavHidden: boolean;
   isBranchNavDisabled: boolean;
+  hasRequestedTrackChange: boolean;
   branchNavKey: number;
   branchNavClearTimer: NodeJS.Timeout | null;
+  childTracks: {
+    ID: string,
+    text: string,
+  }[];
 }
 
 class App extends React.Component<AppProps, AppState> {
@@ -27,17 +34,25 @@ class App extends React.Component<AppProps, AppState> {
       UIBars: [],
       isBranchNavHidden: true,
       isBranchNavDisabled: false,
+      hasRequestedTrackChange: false,
       branchNavKey: 1,
       branchNavClearTimer: null,
+      childTracks: [],
     };
 
     // When a new song has been loaded and analyzed
     Dispatcher.getInstance()
               .on(FYPEvent.TrackChanged, data => this.updateBars(data));
+
+    if (config.fyp.debug) {
+      Dispatcher.getInstance()
+                .on(FYPEvent.TransitionsAnalyzed, ({ transitions }) => this.setChildTracks(transitions));
+    }
   }
 
   render() {
-    const { UIBars, isBranchNavHidden, isBranchNavDisabled, branchNavKey } = this.state;
+    const { UIBars, isBranchNavHidden, branchNavKey } = this.state;
+    const debugPanel = config.fyp.debug && <OptionsPanel {...this.getDebugPanelProps()} />;
 
     return (
       <React.Fragment>
@@ -47,9 +62,8 @@ class App extends React.Component<AppProps, AppState> {
                    UIBars={UIBars}
                    isHidden={isBranchNavHidden}
                    onRequestClose={(status: BranchNavStatus) => this.handleToggleBranchNav(status)} />
-        <SettingsPanel onToggleBranchNavClick={() => this.handleToggleBranchNav()}
-                       isBranchNavHidden={isBranchNavHidden}
-                       isBranchNavDisabled={isBranchNavDisabled} />
+        {debugPanel}
+        <OptionsPanel {...this.getOptionsPanelProps()} />
       </React.Fragment>
     );
   }
@@ -87,7 +101,7 @@ class App extends React.Component<AppProps, AppState> {
   }
 
   private updateBars({ track }: FYPEventPayload['TrackChanged']) {
-    const UIBars = getUIBars(track);
+    const UIBars = uiService.getUIBars(track);
 
     this.setState({
       UIBars,
@@ -99,6 +113,59 @@ class App extends React.Component<AppProps, AppState> {
     this.setState(({ branchNavKey }) => ({
       branchNavKey: branchNavKey + 1,
     }));
+  }
+
+  private getOptionsPanelProps(): OptionsPanelProps {
+    const { isBranchNavHidden, isBranchNavDisabled } = this.state;
+    const toggleBranchNavButton = {
+      label: isBranchNavHidden ? 'Add Branch' : 'Hide Branch Creator',
+      disabled: isBranchNavDisabled,
+      onClick: () => this.handleToggleBranchNav(),
+    };
+
+    return {
+      toggles: {
+        buttons: [
+          toggleBranchNavButton,
+        ],
+        dropdowns: [],
+      },
+    };
+  }
+
+  private getDebugPanelProps(): OptionsPanelProps {
+    const { hasRequestedTrackChange, childTracks } = this.state;
+    const requestTrackChangeDropdown = {
+      label: 'Request Track Change',
+      disabled: hasRequestedTrackChange,
+      options: childTracks,
+      onClick: (ID: string) => this.handleRequestTrackChange(ID),
+    };
+
+    return {
+      isDebugPanel: true,
+      toggles: {
+        buttons: [],
+        dropdowns: [
+          requestTrackChangeDropdown,
+        ],
+      },
+    };
+  }
+
+  private setChildTracks(transitions: SongTransitionModel[]) {
+    const childTracks = transitions.map(({ destinationTrack }) => {
+      return {
+        ID: destinationTrack.ID,
+        text: destinationTrack.name,
+      };
+    });
+
+    this.setState({ childTracks });
+  }
+
+  private handleRequestTrackChange(ID: string) {
+    console.log(`ID: ${ID}`);
   }
 }
 

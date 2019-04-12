@@ -72,11 +72,16 @@ canvas {
       bottom: 0;
       margin: 8px;
 
+      &.debug-panel {
+        top: 0;
+        bottom: initial;
+      }
+
       .modal-body {
         display: flex;
         justify-content: center;
 
-        > button {
+        > button, > .input-group {
           margin: 16px;
         }
       }
@@ -433,4 +438,8 @@ canvas {
   to {
     transform: scale3d(1, 1, 1);
   }
+}
+
+.input-group select {
+  height: 40px;
 }

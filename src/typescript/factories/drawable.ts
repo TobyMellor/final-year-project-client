@@ -4,8 +4,7 @@ import Scene from '../services/canvas/drawables/Scene';
 import BezierCurve from '../services/canvas/drawables/BezierCurve';
 import BranchModel from '../models/branches/Branch';
 import Needle from '../services/canvas/drawables/Needle';
-import { NeedleType, BezierCurveType } from '../types/enums';
-import config from '../config';
+import { NeedleType, BezierCurveType, SongCircleType } from '../types/enums';
 
 export function renderParentSongCircle(
   scene: Scene,
@@ -13,13 +12,14 @@ export function renderParentSongCircle(
 ): SongCircle {
   const radius = 1;
   const lineWidth = getLineWidthForSong(radius);
-  const parentSongCircle = new SongCircle(scene,
-                                          track,
-                                          radius,
-                                          lineWidth,
-                                          null,
-                                          -1,
-                                          config.drawables.songCircle.colour.background);
+  const type = SongCircleType.PARENT;
+  const parentSongCircle = new SongCircle({
+    scene,
+    type,
+    track,
+    radius,
+    lineWidth,
+  });
 
   return parentSongCircle;
 }
@@ -32,12 +32,16 @@ export function renderChildSongCircle(
 ): SongCircle {
   const radius = getRadiusForSong(parentSongCircle, track);
   const lineWidth = getLineWidthForSong(radius);
-  const childSongCircle = new SongCircle(scene,
-                                         track,
-                                         radius,
-                                         lineWidth,
-                                         parentSongCircle,
-                                         percentage);
+  const type = SongCircleType.CHILD;
+  const childSongCircle = new SongCircle({
+    scene,
+    type,
+    track,
+    radius,
+    lineWidth,
+    parentSongCircle,
+    percentage,
+  });
 
   return childSongCircle;
 }
@@ -45,6 +49,7 @@ export function renderChildSongCircle(
 export function renderBezierCurves(
   scene: Scene,
   songCircle: SongCircle,
+  type: BezierCurveType,
   branches: BranchModel[],
 ): BezierCurve[] {
   const trackDuration = songCircle.track.duration;
@@ -57,7 +62,7 @@ export function renderBezierCurves(
 
     return renderBezierCurveFromPercentages(scene,
                                             songCircle,
-                                            BezierCurveType.NORMAL,
+                                            type,
                                             earliestPercentage,
                                             latestPercentage,
                                             branch);
@@ -70,16 +75,18 @@ export function renderBezierCurveFromPercentages(
   scene: Scene,
   songCircle: SongCircle,
   type: BezierCurveType,
-  earliestPercentage: number | null,
-  latestPercentage: number | null,
+  fromPercentage: number | null,
+  toPercentage: number | null,
   branch: BranchModel = null,
 ): BezierCurve {
-  return new BezierCurve(scene,
-                         songCircle,
-                         type,
-                         earliestPercentage,
-                         latestPercentage,
-                         branch);
+  return new BezierCurve({
+    scene,
+    songCircle,
+    type,
+    fromPercentage,
+    toPercentage,
+    branch,
+  });
 }
 
 export function updateNextBezierCurve(
@@ -104,10 +111,12 @@ export function updateBezierCurve(
 }
 
 export function renderNeedle(scene: Scene, songCircle: SongCircle, needleType: NeedleType, percentage: number): Needle {
-  return new Needle(scene,
-                    songCircle,
-                    needleType,
-                    percentage);
+  return new Needle({
+    scene,
+    songCircle,
+    needleType,
+    percentage,
+  });
 }
 
 export function updateNeedle(needle: Needle, percentage: number) {

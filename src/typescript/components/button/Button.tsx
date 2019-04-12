@@ -1,20 +1,8 @@
 import * as React from 'react';
 import cx from 'classnames';
 import ui from '../../config/ui';
-
-interface ButtonProps {
-  colourClassName?: ButtonColour;
-  onButtonClick: () => void;
-  label: string;
-  shouldFadeIn?: boolean;
-  shouldHide?: boolean;
-  disabled?: boolean;
-}
-
-interface ButtonState {
-  hasFadeFinished: boolean;
-  fadeTimer: NodeJS.Timeout;
-}
+import { ButtonColour } from '../../types/enums';
+import { ButtonProps, ButtonState } from '../../types/general';
 
 class Button extends React.Component<ButtonProps, ButtonState> {
   constructor(props: ButtonProps) {
@@ -43,7 +31,7 @@ class Button extends React.Component<ButtonProps, ButtonState> {
 
   handleClick() {
     if (!this.props.disabled) {
-      this.props.onButtonClick();
+      this.props.onClick();
     }
   }
 
@@ -87,12 +75,5 @@ export const DangerButton = (props: ButtonProps) => {
 export const WarningButton = (props: ButtonProps) => {
   return <Button {...props} colourClassName={ButtonColour.Warning} />;
 };
-
-enum ButtonColour {
-  Primary = 'btn-primary',
-  Success = 'btn-success',
-  Danger = 'btn-danger',
-  Warning = 'btn-warning',
-}
 
 export default Button;

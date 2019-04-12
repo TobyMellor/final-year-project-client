@@ -6,6 +6,7 @@ import TransitionService from '../services/action/TransitionService';
 import ActionDecider from '../services/action/ActionDecider';
 import { TransitionManager } from '../services/action/transition/transition-management';
 import { BranchManager } from '../services/action/branch/branch-management';
+import Dispatcher from '../events/Dispatcher';
 
 interface CircleCanvasProps {
 
@@ -39,6 +40,9 @@ class CircleCanvas extends React.Component<CircleCanvasProps> {
 
     // @ts-ignore window.BranchManager is for testing
     window.BranchManager = BranchManager;
+
+    // @ts-ignore window.Dispatcher is for testing
+    window.Dispatcher = Dispatcher;
   }
 
   render() {
