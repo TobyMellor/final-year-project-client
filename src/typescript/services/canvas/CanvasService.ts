@@ -111,10 +111,10 @@ class CanvasService {
     transitionInStartMs: number,
     transitionInDurationMs: number,
   ) {
-    const getStartCameraLocationPointFn = () => this.getParentSongCircle().center.alignToCameraBase();
-    const getStartCameraFocusPointFn = () => this.getParentSongCircle().center;
-    const getEndCameraLocationPointFn = () => this.getSongCircle(destinationTrack).center.alignToCameraBase();
-    const getEndCameraFocusPointFn = () => this.getSongCircle(destinationTrack).center;
+    const getStartCameraFocusPointFn = () => this.getParentSongCircle().getAdjustedCenter();
+    const getStartCameraLocationPointFn = () => getStartCameraFocusPointFn().alignToCameraBase();
+    const getEndCameraFocusPointFn = () => this.getSongCircle(destinationTrack).getAdjustedCenter();
+    const getEndCameraLocationPointFn = () => getEndCameraFocusPointFn().alignToCameraBase();
 
     this.scene.animateCamera(getStartCameraLocationPointFn,
                              getStartCameraFocusPointFn,

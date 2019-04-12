@@ -3,13 +3,12 @@ import WorldPoint from './utils/WorldPoint';
 import Scene from './Scene';
 import Rotation from './utils/Rotation';
 import config from '../../../config';
-import * as bezierEasing from 'bezier-easing';
-import { AnimationType } from '../../../types/enums';
+import { AnimationType, AnimationCurve } from '../../../types/enums';
 import * as conversions from '../../../utils/conversions';
 
 abstract class Updatable {
   private _group: AnimatableGroup;
-  public abstract center: WorldPoint;
+  protected abstract center: WorldPoint;
   protected _rotation: Rotation = Rotation.getZero();
   protected abstract getRenderOrder(): number;
   private static OFFSET_AMOUNT_DEGREES: number = 90;
@@ -111,9 +110,21 @@ abstract class Updatable {
    * upright at the bottom of the user's screen (instead of to the right)
    */
   public update() {
-    const worldPoint = this.center.rotate(-Updatable.OFFSET_AMOUNT_DEGREES);
-    const rotation = this.rotation.rotate(-Updatable.OFFSET_AMOUNT_DEGREES);
+    const worldPoint = this.getAdjustedCenter();
+    const rotation = this.getAdjustedRotation();
     this.setMeshAttributes(this._group, worldPoint, rotation);
+  }
+
+  public getCenter() {
+    return this.center;
+  }
+
+  public getAdjustedCenter(): WorldPoint {
+    return this.center.rotate(-Updatable.OFFSET_AMOUNT_DEGREES);
+  }
+
+  public getAdjustedRotation(): Rotation {
+    return this.rotation.rotate(-Updatable.OFFSET_AMOUNT_DEGREES);
   }
 
   /**
@@ -195,7 +206,7 @@ abstract class Updatable {
         return;
       }
 
-      const easing = bezierEasing(0.42, 0, 1, 1);
+      const easing = config.scene.animationCurves[AnimationCurve.EASE_IN];
       const animationDecimal = easing(1 - (remainingMs / durationMs));
       animateMeshes({ animationDecimal });
 

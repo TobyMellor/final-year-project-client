@@ -274,7 +274,7 @@ class SongCircle extends Updatable {
     }
   }
 
-  public get center(): WorldPoint {
+  protected get center(): WorldPoint {
     if (!this._parentSongCircle) {
       return WorldPoint.getOrigin().alignToSceneBase();
     }

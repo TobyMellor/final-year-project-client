@@ -44,7 +44,7 @@ class WorldPoint extends Primitive {
   }
 
   public static getCenterPointOfCircleFromPercentage(
-    { center: parentCircleCenter, radius: parentCircleRadius }: SongCircle,
+    songCircle: SongCircle,
     percentage: number,
     ourCircleRadius: number = 0,
     ourCircleLineWidth: number = 1,
@@ -53,10 +53,10 @@ class WorldPoint extends Primitive {
     const angleRadians = super.getAngleFromPercentage(percentage, this.rotationOffsetPercentage);
 
     // Distance from our circles center to the parent's center point
-    const centerToCenterDistance: number = parentCircleRadius +
+    const centerToCenterDistance: number = songCircle.radius +
                                            ourCircleRadius +
                                            ourCircleLineWidth;
-    const circle = new Circle(parentCircleCenter, centerToCenterDistance);
+    const circle = new Circle(songCircle.getCenter(), centerToCenterDistance);
 
     return circle.getPointOnCircle(angleRadians);
   }
@@ -72,12 +72,12 @@ class WorldPoint extends Primitive {
    *                               fix something to the bottom of a circle
    */
   public static getPointOnCircleFromPercentage(
-    { center: parentCircleCenter, radius: parentCircleRadius }: SongCircle,
+    songCircle: SongCircle,
     percentage: number,
     rotationOffsetPercentage: number = this.rotationOffsetPercentage,
   ): WorldPoint {
     const angleRadians = super.getAngleFromPercentage(percentage, rotationOffsetPercentage);
-    const circle = new Circle(parentCircleCenter, parentCircleRadius);
+    const circle = new Circle(songCircle.getCenter(), songCircle.radius);
 
     return circle.getPointOnCircle(angleRadians);
   }

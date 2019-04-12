@@ -139,3 +139,10 @@ export enum AnimationType {
   FADE_OUT = 'fade_out',
   CHANGE_TYPE = 'change_type',
 }
+
+export enum AnimationCurve {
+  EASE = 'ease',
+  EASE_IN = 'ease_in',
+  EASE_OUT = 'ease_out',
+  LINEAR = 'linear',
+}

@@ -6,6 +6,7 @@ import Rotation from './utils/Rotation';
 import * as conversions from '../../../utils/conversions';
 import config from '../../../config';
 import * as drawableFactory from '../../../factories/drawable';
+import { AnimationCurve } from '../../../types/enums';
 
 export type Drawable = {
   meshes: THREE.Mesh[];
@@ -215,8 +216,8 @@ class Scene {
           return;
         }
 
-        // TODO: Here I can apply easing formulas for the animation
-        const animationDecimal = 1 - (remainingMs / durationMs);
+        const easing = config.scene.animationCurves[AnimationCurve.EASE];
+        const animationDecimal = easing(1 - (remainingMs / durationMs));
 
         // We're using functions here as the start and end points can change
         // as the song rotates or circle sizes increase

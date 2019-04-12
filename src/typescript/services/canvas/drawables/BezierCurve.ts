@@ -102,7 +102,7 @@ class BezierCurve extends Updatable {
   ): THREE.Vector3[] {
     // The 4 control points (center is used twice)
     // If a 0 percentage is given, it will be anchored to the bottom of the SongCircle
-    const centerPoint = songCircle.center;
+    const centerPoint = this.center;
     const fromPoint = WorldPoint.getPointOnCircleFromPercentage(songCircle, fromPercentage);
     const toPoint = WorldPoint.getPointOnCircleFromPercentage(songCircle, toPercentage);
 
@@ -173,8 +173,8 @@ class BezierCurve extends Updatable {
     };
   }
 
-  public get center(): WorldPoint {
-    return this._songCircle.center;
+  protected get center(): WorldPoint {
+    return this._songCircle.getCenter();
   }
 
   protected get rotation(): Rotation {
