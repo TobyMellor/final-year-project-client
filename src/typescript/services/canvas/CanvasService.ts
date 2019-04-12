@@ -1,7 +1,7 @@
 import Dispatcher from '../../events/Dispatcher';
 import Scene from '../canvas/drawables/Scene';
 import * as drawableFactory from '../../factories/drawable';
-import { FYPEvent, NeedleType, BezierCurveType, AnimationType } from '../../types/enums';
+import { FYPEvent, NeedleType, BezierCurveType, AnimationType, SongCircleType } from '../../types/enums';
 import { FYPEventPayload } from '../../types/general';
 import BezierCurve from './drawables/BezierCurve';
 import BranchModel from '../../models/branches/Branch';
@@ -29,10 +29,11 @@ class CanvasService {
     this.scene = Scene.getInstance(canvas);
 
     Dispatcher.getInstance()
-              .on(FYPEvent.TrackChangeRequested, (data) => {
-                // Only listen to this event once
+              .on(FYPEvent.TrackChangeRequested, ({ track }) => {
                 if (!this._playingTrackID) {
-                  this.renderParentSongCircle(data);
+                  this.renderParentSongCircle(track);
+                } else {
+                  this.updateChildSongCircle(track, SongCircleType.NEXT_PARENT_LOADING);
                 }
               });
 
@@ -42,7 +43,9 @@ class CanvasService {
               });
 
     Dispatcher.getInstance()
-              .on(FYPEvent.TransitionsAnalyzed, data => this.renderChildSongCircles(data));
+              .on(FYPEvent.TransitionsAnalyzed, ({ track, transitions }) => {
+                this.renderChildSongCircles(track, transitions);
+              });
 
     Dispatcher.getInstance()
               .on(FYPEvent.BeatBatchPlaying, (data) => {
@@ -63,8 +66,8 @@ class CanvasService {
               });
 
     Dispatcher.getInstance()
-              .on(FYPEvent.TrackChangeRequested, () => {
-                // TODO: Implement
+              .on(FYPEvent.TrackChangeReady, ({ track }) => {
+                this.updateChildSongCircle(track, SongCircleType.NEXT_PARENT_READY);
               });
 
     Dispatcher.getInstance()
@@ -136,7 +139,7 @@ class CanvasService {
     this._playingTrackID = ID;
   }
 
-  private renderParentSongCircle({ track }: FYPEventPayload['TrackChangeRequested']) {
+  private renderParentSongCircle(track: TrackModel) {
     const songCircle = drawableFactory.renderParentSongCircle(this.scene, track);
     const playingNeedle = drawableFactory.renderNeedle(this.scene, songCircle, NeedleType.PLAYING, 0);
 
@@ -159,7 +162,7 @@ class CanvasService {
     this._bezierCurves[track.ID] = bezierCurves;
   }
 
-  private renderChildSongCircles({ track: originTrack, transitions }: FYPEventPayload['TransitionsAnalyzed']) {
+  private renderChildSongCircles(originTrack: TrackModel, transitions: SongTransitionModel[]) {
     const parentSongCircle = this.getSongCircle(originTrack);
 
     transitions.forEach(({ destinationTrack, transitionMiddleBeat }) => {
@@ -281,6 +284,12 @@ class CanvasService {
     }
 
     drawableFactory.updateNeedle(needle, percentage);
+  }
+
+  private updateChildSongCircle(track: TrackModel, type: SongCircleType) {
+    const childSongCircle = this.getSongCircle(track);
+
+    drawableFactory.updateChildSongCircle(childSongCircle, type);
   }
 
   private isBranchNavOpen(): boolean {

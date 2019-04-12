@@ -123,6 +123,10 @@ export function updateNeedle(needle: Needle, percentage: number) {
   needle.percentage = percentage;
 }
 
+export function updateChildSongCircle(songCircle: SongCircle, type: SongCircleType) {
+  songCircle.type = type;
+}
+
 function getRadiusForSong(
   { track: parentTrack, radius: parentRadius }: SongCircle,
   childTrack: TrackModel,

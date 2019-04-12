@@ -104,7 +104,7 @@ class WebAudioService {
     }
 
     // Signal to the ActionDecider that we can now take the transition
-    this.dispatchTrackChangeReady();
+    this.dispatchTrackChangeReady(this._nextTrack);
   }
 
   private changePlayingTrack() {
@@ -275,9 +275,11 @@ class WebAudioService {
     this.dispatchBeatBatchStopped(resetPercentage);
   }
 
-  private dispatchTrackChangeReady() {
+  private dispatchTrackChangeReady(track: TrackModel) {
     Dispatcher.getInstance()
-              .dispatch(FYPEvent.TrackChangeReady);
+              .dispatch(FYPEvent.TrackChangeReady, {
+                track,
+              });
   }
 
   private dispatchTrackChanged(track: TrackModel) {

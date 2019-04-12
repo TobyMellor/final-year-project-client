@@ -183,7 +183,9 @@ export type FYPEventPayload = {
   TrackChanged: {
     track: TrackModel;
   };
-  TrackChangeReady: {};
+  TrackChangeReady: {
+    track: TrackModel;
+  };
   TrackChanging: {
     destinationTrack: TrackModel;
     transitionDurationMs: number;
