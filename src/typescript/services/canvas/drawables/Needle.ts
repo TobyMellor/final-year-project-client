@@ -67,7 +67,7 @@ class Needle extends Updatable {
   }
 
   private getHeightAndWidth(songCircle: SongCircle): [number, number] {
-    const songCircleLineWidth = songCircle.lineWidth;
+    const songCircleLineWidth = songCircle.initialLineWidth;
     const height = songCircleLineWidth * config.drawables.needle.relativeHeight;
     const width = songCircleLineWidth * config.drawables.needle.relativeWidth;
 

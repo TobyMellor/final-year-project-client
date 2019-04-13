@@ -123,10 +123,23 @@ class CanvasService {
                              transitionDurationMs);
 
     const parentBezierCurves = this.getParentBezierCurves();
-    const childBezierCurves = this.getBezierCurves(destinationTrack);
+    const nextParentBezierCurves = this.getBezierCurves(destinationTrack);
+    const parentSongCircle = this.getParentSongCircle();
+    const nextParentSongCircle = this.getSongCircle(destinationTrack);
 
-    Updatable.animate(AnimationType.FADE_IN, ...parentBezierCurves);
-    Updatable.animate(AnimationType.FADE_OUT, ...childBezierCurves);
+    const childSongCircles = Object.values(this._songCircles)
+                                   .filter(({ track: childTrack }) => {
+                                     return childTrack.ID !== this._playingTrackID &&
+                                            childTrack.ID !== destinationTrack.ID;
+                                   });
+
+    drawableFactory.transitionChildToParent(parentSongCircle,
+                                            nextParentSongCircle,
+                                            childSongCircles,
+                                            parentBezierCurves,
+                                            nextParentBezierCurves);
+
+    // TODO: Switch playingTrackID
 
     // TODO: Things we have to do here:
     // 1. Render in the BezierCurves immediately in BranchesAnalyzed, but hide them
@@ -289,7 +302,7 @@ class CanvasService {
   private updateChildSongCircle(track: TrackModel, type: SongCircleType) {
     const childSongCircle = this.getSongCircle(track);
 
-    drawableFactory.updateChildSongCircle(childSongCircle, type);
+    drawableFactory.updateSongCircleType(childSongCircle, type);
   }
 
   private isBranchNavOpen(): boolean {

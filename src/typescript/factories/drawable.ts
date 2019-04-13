@@ -4,21 +4,18 @@ import Scene from '../services/canvas/drawables/Scene';
 import BezierCurve from '../services/canvas/drawables/BezierCurve';
 import BranchModel from '../models/branches/Branch';
 import Needle from '../services/canvas/drawables/Needle';
-import { NeedleType, BezierCurveType, SongCircleType } from '../types/enums';
+import { NeedleType, BezierCurveType, SongCircleType, AnimationType } from '../types/enums';
+import Updatable from '../services/canvas/drawables/Updatable';
 
 export function renderParentSongCircle(
   scene: Scene,
   track: TrackModel,
 ): SongCircle {
-  const radius = 1;
-  const lineWidth = getLineWidthForSong(radius);
   const type = SongCircleType.PARENT;
   const parentSongCircle = new SongCircle({
     scene,
     type,
     track,
-    radius,
-    lineWidth,
   });
 
   return parentSongCircle;
@@ -30,15 +27,11 @@ export function renderChildSongCircle(
   track: TrackModel,
   percentage: number,
 ): SongCircle {
-  const radius = getRadiusForSong(parentSongCircle, track);
-  const lineWidth = getLineWidthForSong(radius);
   const type = SongCircleType.CHILD;
   const childSongCircle = new SongCircle({
     scene,
     type,
     track,
-    radius,
-    lineWidth,
     parentSongCircle,
     percentage,
   });
@@ -123,19 +116,20 @@ export function updateNeedle(needle: Needle, percentage: number) {
   needle.percentage = percentage;
 }
 
-export function updateChildSongCircle(songCircle: SongCircle, type: SongCircleType) {
+export function updateSongCircleType(songCircle: SongCircle, type: SongCircleType) {
   songCircle.type = type;
 }
 
-function getRadiusForSong(
-  { track: parentTrack, radius: parentRadius }: SongCircle,
-  childTrack: TrackModel,
-): number {
-  const relativeSize = childTrack.duration.ms / parentTrack.duration.ms;
+export function transitionChildToParent(
+  parentSongCircle: SongCircle,
+  nextParentSongCircle: SongCircle,
+  childSongCircles: SongCircle[],
+  parentBezierCurves: BezierCurve[],
+  childBezierCurves: BezierCurve[],
+) {
+  Updatable.animate(AnimationType.FADE_OUT, ...parentBezierCurves, ...childSongCircles);
+  Updatable.animate(AnimationType.FADE_IN, ...childBezierCurves);
 
-  return relativeSize * parentRadius;
-}
-
-function getLineWidthForSong(radius: number): number {
-  return radius * 0.1;
+  updateSongCircleType(parentSongCircle, SongCircleType.CHILD);
+  updateSongCircleType(nextParentSongCircle, SongCircleType.PARENT);
 }

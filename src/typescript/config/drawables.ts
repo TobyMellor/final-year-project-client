@@ -7,8 +7,7 @@ const background = {
 };
 
 const songCircle = {
-  resolution: 1,
-  degreesInCircle: 360,
+  resolution: 150,
   colour: {
     edge: {
       [SongCircleType.PARENT]: 0x000000,
@@ -28,8 +27,8 @@ const songCircle = {
 
   // Child SongCircles will appear to load in staggered for effect, they will be randomly delayed between
   // config.songCircle.childMaxAnimationDelayMs to config.songCircle.childMaxAnimationDelayMs
-  childMinAnimationDelayMs: 5000,
-  childMaxAnimationDelayMs: 15000,
+  childMinAnimationDelayMs: 2500,
+  childMaxAnimationDelayMs: 7500,
 };
 
 const needle = {

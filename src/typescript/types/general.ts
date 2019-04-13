@@ -227,3 +227,5 @@ export type QueuedBeatBatch = {
 
 export type ForwardAndBackwardBranch = [ForwardBranchModel, BackwardBranchModel];
 export type ForwardAndBackwardBranches = [ForwardBranchModel[], BackwardBranchModel[]];
+
+export type RGB = [number, number, number];

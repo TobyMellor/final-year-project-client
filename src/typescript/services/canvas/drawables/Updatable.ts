@@ -3,11 +3,12 @@ import WorldPoint from './utils/WorldPoint';
 import Scene from './Scene';
 import Rotation from './utils/Rotation';
 import config from '../../../config';
-import { AnimationType, AnimationCurve } from '../../../types/enums';
-import * as conversions from '../../../utils/conversions';
+import { AnimationType, AnimationCurve, SongCircleType } from '../../../types/enums';
+import * as animations from '../../../utils/animations';
+import { RGB } from '../../../types/general';
 
 abstract class Updatable {
-  private _group: AnimatableGroup;
+  protected _group: AnimatableGroup;
   protected abstract center: WorldPoint;
   protected _rotation: Rotation = Rotation.getZero();
   protected abstract getRenderOrder(): number;
@@ -34,14 +35,13 @@ abstract class Updatable {
     drawMode = THREE.TrianglesDrawMode,
     rotation = Rotation.getZero(),
     renderOrder,
-    fadeIn = ({ animationDecimal, mesh }: MeshAnimationOptions) => {
-      (<THREE.Material>mesh.material).opacity = animationDecimal;
-    },
+    fadeIn = (options: MeshAnimationOptions) => animations.defaultFadeIn(options),
     fadeOut = (options: MeshAnimationOptions) => fadeIn({
       ...options,
       animationDecimal: 1 - options.animationDecimal,
     }),
-    canChangeColour = false,
+    canChangeType = false,
+    changeType = (options: MeshAnimationOptions) => animations.defaultChangeType(options),
     shouldKeepUpright = false,
     shouldInversePercentage = false,
   }: AddMeshOptions) {
@@ -49,22 +49,8 @@ abstract class Updatable {
     mesh.fadeIn = fadeIn;
     mesh.fadeOut = fadeOut;
 
-    if (canChangeColour) {
-      mesh.changeColour = (
-        { startRGB: [startR, startG, startB], endRGB: [endR, endG, endB], animationDecimal }: MeshAnimationOptions,
-      ) => {
-        const material = mesh.material as THREE.MeshLambertMaterial;
-        const geometry = mesh.geometry as THREE.Geometry;
-
-        const currentR = startR + (endR - startR) * animationDecimal;
-        const currentG = startG + (endG - startG) * animationDecimal;
-        const currentB = startB + (endB - startB) * animationDecimal;
-
-        const currentHEX = conversions.rgbToDecimal(currentR, currentG, currentB);
-
-        material.color.setHex(currentHEX);
-        geometry.colorsNeedUpdate = true;
-      };
+    if (canChangeType) {
+      mesh.changeType = changeType;
     }
 
     let newPosition = position;
@@ -141,7 +127,7 @@ abstract class Updatable {
       clone.renderOrder = this.getRenderOrder();
 
       // Animations don't copy over in THREE.js's .clone method since we defined them
-      clone.changeColour = childMesh.changeColour;
+      clone.changeType = childMesh.changeType;
       clone.fadeIn = childMesh.fadeIn;
       clone.fadeOut = childMesh.fadeOut;
 
@@ -176,48 +162,52 @@ abstract class Updatable {
     durationMs: number,
     animationType: AnimationType,
     additionalOptions: BaseAnimationOptions = {},
-  ) {
-    const meshes = this._group.children as THREE.Mesh[];
-    const animateMeshes = (options: { animationDecimal: number, isFirstLoop?: boolean, isLastLoop?: boolean }) => {
-      const meshAnimationFn = this.getAnimationFn(animationType);
+  ): Promise<void> {
+    return new Promise((resolve) => {
+      const meshes = this._group.children as THREE.Mesh[];
+      const animateMeshes = (options: { animationDecimal: number, isFirstLoop?: boolean, isLastLoop?: boolean }) => {
+        const meshAnimationFn = this.getAnimationFn(animationType);
 
-      meshes.forEach(mesh => meshAnimationFn({
-        mesh,
-        ...options, // animationDecimal, isFirstLoop, isLastLoop
-        ...additionalOptions, // Anything required in the animation loop in the Updatable
-      }));
-    };
+        meshes.forEach(mesh => meshAnimationFn({
+          mesh,
+          material: mesh.material as THREE.MeshLambertMaterial,
+          geometry: mesh.geometry as THREE.Geometry,
+          ...options, // animationDecimal, isFirstLoop, isLastLoop
+          ...additionalOptions, // Anything required in the animation loop in the Updatable
+        }));
+      };
 
-    animateMeshes({
-      animationDecimal: 0,
-      isFirstLoop: true,
-    });
+      animateMeshes({
+        animationDecimal: 0,
+        isFirstLoop: true,
+      });
 
-    let animationEndMs: number;
-    const renderFn = (nowMs: number) => {
-      const remainingMs = animationEndMs - nowMs;
+      let animationEndMs: number;
+      const renderFn = (nowMs: number) => {
+        const remainingMs = animationEndMs - nowMs;
 
-      // If the animation has ended
-      if (remainingMs < 0) {
-        animateMeshes({
-          animationDecimal: 1,
-          isLastLoop: true,
-        });
-        return;
-      }
+        // If the animation has ended
+        if (remainingMs < 0) {
+          animateMeshes({
+            animationDecimal: 1,
+            isLastLoop: true,
+          });
+          return resolve();
+        }
 
-      const easing = config.scene.animationCurves[AnimationCurve.EASE_IN];
-      const animationDecimal = easing(1 - (remainingMs / durationMs));
-      animateMeshes({ animationDecimal });
+        const easing = config.scene.animationCurves[AnimationCurve.EASE_IN];
+        const animationDecimal = easing(1 - (remainingMs / durationMs));
+        animateMeshes({ animationDecimal });
 
-      // Repeat until the animation has finished
-      requestAnimationFrame(renderFn);
-    };
+        // Repeat until the animation has finished
+        requestAnimationFrame(renderFn);
+      };
 
-    requestAnimationFrame((startMs) => {
-      animationEndMs = startMs + durationMs;
+      requestAnimationFrame((startMs) => {
+        animationEndMs = startMs + durationMs;
 
-      renderFn(startMs);
+        renderFn(startMs);
+      });
     });
   }
 
@@ -229,10 +219,10 @@ abstract class Updatable {
     }, 0);
   }
 
-  protected animateWithOptions(type: AnimationType, options: BaseAnimationOptions) {
-    setTimeout(() => {
-      this.animate(config.drawables.animations[type].durationMs, type, options);
-    }, 0);
+  protected animateWithOptions(type: AnimationType, options: BaseAnimationOptions): Promise<void> {
+    // setTimeout(() => {
+    return this.animate(config.drawables.animations[type].durationMs, type, options);
+    // }, 0);
   }
 
   getAnimationFn(type: AnimationType) {
@@ -242,7 +232,7 @@ abstract class Updatable {
       case AnimationType.FADE_OUT:
         return (options: MeshAnimationOptions) => options.mesh.fadeOut(options);
       case AnimationType.CHANGE_TYPE:
-        return (options: MeshAnimationOptions) => options.mesh.changeColour && options.mesh.changeColour(options);
+        return (options: MeshAnimationOptions) => options.mesh.changeType && options.mesh.changeType(options);
       default:
         throw new Error('AnimationType not found!');
     }
@@ -258,7 +248,7 @@ class AnimatableGroup extends THREE.Group {
 }
 
 export interface AnimatableMesh extends THREE.Mesh {
-  changeColour?: MeshAnimationFn;
+  changeType?: MeshAnimationFn;
   fadeIn?: MeshAnimationFn;
   fadeOut?: MeshAnimationFn;
 }
@@ -287,8 +277,8 @@ interface AddMeshOptions {
   shouldInversePercentage?: boolean;
 
   shouldKeepVisible?: boolean;
-  canChangeColour?: boolean;
-  changeColour?: MeshAnimationFn;
+  canChangeType?: boolean;
+  changeType?: MeshAnimationFn;
   fadeIn?: MeshAnimationFn;
   fadeOut?: MeshAnimationFn;
 }
@@ -299,12 +289,18 @@ type BaseAnimationOptions = {
   animationDecimal?: number,
   isFirstLoop?: boolean,
   isLastLoop?: boolean,
-  startRGB?: [number, number, number],
-  endRGB?: [number, number, number],
+  fromType?: SongCircleType,
+  toType?: SongCircleType,
+  startRGB?: RGB,
+  endRGB?: RGB,
+  startScale?: number,
+  endScale?: number,
 };
 
-type MeshAnimationOptions = BaseAnimationOptions & {
+export type MeshAnimationOptions = BaseAnimationOptions & {
   mesh: AnimatableMesh,
+  material: THREE.MeshLambertMaterial,
+  geometry: THREE.Geometry,
 };
 
 export default Updatable;

@@ -1,4 +1,7 @@
 import BeatModel from '../models/audio-analysis/Beat';
+import { MeshAnimationOptions } from '../services/canvas/drawables/Updatable';
+import * as conversions from './conversions';
+import { RGB } from '../types/general';
 
 export function areArraysEqual<T>(arr1: T[], arr2: T[]): boolean {
   if (arr1.length !== arr2.length) {

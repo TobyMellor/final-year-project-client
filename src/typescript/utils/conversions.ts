@@ -1,4 +1,4 @@
-import { TimeIdentifier } from '../types/general';
+import { TimeIdentifier, RGB } from '../types/general';
 import Scene from '../services/canvas/drawables/Scene';
 import * as math from './math';
 
@@ -86,7 +86,7 @@ export function rgbToDecimal(r: number, g: number, b: number): number {
 }
 
 // Edited from original function: https://stackoverflow.com/a/8469042/2957677
-export function decimalToRgb(decimal: number): [number, number, number] {
+export function decimalToRgb(decimal: number): RGB {
   return [
     (decimal & 0xff0000) >> 16,
     (decimal & 0x00ff00) >> 8,
