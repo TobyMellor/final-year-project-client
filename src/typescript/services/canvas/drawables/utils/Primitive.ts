@@ -27,10 +27,7 @@ abstract class Primitive {
     return this.rotate(degrees).flip();
   }
 
-  protected static getAngleFromPercentage(
-    percentage: number,
-    offsetPercentage: number = 0,
-  ): number {
+  protected static getAngleFromPercentage(percentage: number, offsetPercentage: number = 0): number {
     const percentageWithOffset = percentage - offsetPercentage;
     const angle: number = conversions.percentageToRadians(percentageWithOffset);
 

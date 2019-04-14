@@ -29,6 +29,14 @@ const songCircle = {
   // config.songCircle.childMaxAnimationDelayMs to config.songCircle.childMaxAnimationDelayMs
   childMinAnimationDelayMs: 2500,
   childMaxAnimationDelayMs: 7500,
+  minSongCircleSize: 0.5,
+  maxSongCircleSize: 1.5,
+
+  // Songs with a duration below this value will have their size set to minSongCircleSize
+  minSongCircleDurationSecs: 100,
+
+  // Songs with a duration above this value will have their size set to maxSongCircleSize
+  maxSongCircleDurationSecs: 360,
 };
 
 const needle = {

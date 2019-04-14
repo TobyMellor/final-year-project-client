@@ -7,6 +7,7 @@ import * as conversions from '../../../utils/conversions';
 import config from '../../../config';
 import * as drawableFactory from '../../../factories/drawable';
 import { AnimationCurve } from '../../../types/enums';
+import * as animations from '../../../utils/animations';
 
 export type Drawable = {
   meshes: THREE.Mesh[];
@@ -15,7 +16,7 @@ export type Drawable = {
 class Scene {
   private static _instance: Scene = null;
 
-  public static Z_BASE_DISTANCE = -5;
+  public static Z_BASE_DISTANCE = -7;
 
   private static CAMERA_FOV_DEGREES: number = 45;
   public static CAMERA_Z_CLIP_NEAR: number = 0.1;
@@ -34,6 +35,9 @@ class Scene {
   // The current NDC coordinates of the pan, eventually will match _panTarget
   private _panActualX: number = 0;
   private _panActualY: number = 0;
+
+  private getCameraLocationPointFn = () => WorldPoint.getOrigin().alignToCameraBase();
+  private getCameraFocusPointFn = () => WorldPoint.getOrigin().alignToSceneBase();
 
   private constructor(whereToDraw: HTMLCanvasElement) {
     const scene = new THREE.Scene();
@@ -109,17 +113,17 @@ class Scene {
     // Update position/rotation/colour etc of THREE.js meshes
     this.update();
 
-    this._panActualX += (this._panTargetX - this._panActualX) * config.scene.panCatchupSpeed;
-    this._panActualY += (this._panTargetY - this._panActualY) * config.scene.panCatchupSpeed;
+    // FIXME: This looks great, but transparent textures are fighting with eachother causing flickering
+    // this._panActualX += (this._panTargetX - this._panActualX) * config.scene.panCatchupSpeed;
+    // this._panActualY += (this._panTargetY - this._panActualY) * config.scene.panCatchupSpeed;
 
-    const cameraFocusPoint = WorldPoint.getPoint(0, 0, Scene.Z_BASE_DISTANCE);
-    const cameraLocationPoint = WorldPoint.getPoint(
-      -this._panActualX * config.scene.panAmount,
-      this._panActualY * config.scene.panAmount,
-      this._camera.position.z,
-    );
-    // FIXME: Reintroduce
-    // this.moveCamera(cameraLocationPoint, cameraFocusPoint);
+    // const cameraFocusPoint = WorldPoint.getOrigin().alignToSceneBase();
+    // const cameraLocationPoint = WorldPoint.getPoint(
+    //   -this._panActualX * config.scene.panAmount,
+    //   this._panActualY * config.scene.panAmount,
+    //   this._camera.position.z,
+    // );
+    this.moveCamera(this.getCameraLocationPointFn(), this.getCameraFocusPointFn());
 
     // Re-render everything on the scene through THREE.js
     this._renderer.render(this._scene, this._camera);
@@ -200,9 +204,9 @@ class Scene {
         animationDecimal: number,
       ): WorldPoint {
         return WorldPoint.getPoint(
-          startX + ((endX - startX) * animationDecimal),
-          startY + ((endY - startY) * animationDecimal),
-          startZ + ((endZ - startZ) * animationDecimal),
+          animations.getProgressFromTo(startX, endX, animationDecimal),
+          animations.getProgressFromTo(startY, endY, animationDecimal),
+          animations.getProgressFromTo(startZ, endZ, animationDecimal),
         );
       }
 
@@ -211,7 +215,8 @@ class Scene {
 
         // If the animation has ended
         if (remainingMs < 0) {
-          this.moveCamera(getEndCameraLocationPointFn(), getEndCameraFocusPointFn());
+          this.getCameraLocationPointFn = getEndCameraLocationPointFn;
+          this.getCameraFocusPointFn = getEndCameraFocusPointFn;
           resolve();
           return;
         }
@@ -233,7 +238,8 @@ class Scene {
                                                               endCameraFocusPoint,
                                                               animationDecimal);
 
-        this.moveCamera(currentCameraLocationPoint, currentCameraFocusPoint);
+        this.getCameraLocationPointFn = () => currentCameraLocationPoint;
+        this.getCameraFocusPointFn = () => currentCameraFocusPoint;
 
         // Repeat until the animation has finished
         requestAnimationFrame(renderFn);

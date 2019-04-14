@@ -8,6 +8,7 @@ import * as THREE from 'three';
 import config from '../../../config';
 import { SongCircleType, AnimationType } from '../../../types/enums';
 import * as animations from '../../../utils/animations';
+import * as math from '../../../utils/math';
 
 type Input = {
   scene: Scene,
@@ -20,11 +21,11 @@ type Input = {
 class SongCircle extends Updatable {
   private _type: SongCircleType;
   public track: TrackModel;
-  public initialRadius: number;
-  public initialLineWidth: number;
-  private _scale: number = 1;
-  private _parentSongCircle: SongCircle;
+  public radius: number;
+  public lineWidth: number;
+  public parentSongCircle: SongCircle;
   private _percentage: number;
+  private _childDepth: number;
 
   constructor({
     scene,
@@ -37,21 +38,22 @@ class SongCircle extends Updatable {
 
     this._type = type;
     this.track = track;
-    this._parentSongCircle = parentSongCircle;
+    this.parentSongCircle = parentSongCircle;
     this._percentage = percentage;
 
-    const initialRadius = this.initialRadius = this.getRadius(type, parentSongCircle, track);
-    const initialLineWidth = this.initialLineWidth = this.getInitialLineWidth(initialRadius);
+    this.radius = this.getRadius(track);
+    this.lineWidth = this.getLineWidth(this.radius);
+    this._childDepth = this.getChildDepth(this.parentSongCircle);
 
-    this.addCircle(track, initialRadius);
-    this.addCircleOutline(type, initialRadius, initialLineWidth);
-    this.addText(track, initialRadius, initialLineWidth);
+    this.addCircle(track, this.radius);
+    this.addCircleOutline(type, this.radius, this.lineWidth);
+    this.addText(track, this.radius, this.lineWidth);
 
     super.addAll(scene);
   }
 
-  private addCircle(track: TrackModel, initialRadius: number) {
-    const geometryArtwork = new THREE.CircleGeometry(initialRadius, config.drawables.songCircle.resolution);
+  private addCircle(track: TrackModel, radius: number) {
+    const geometryArtwork = new THREE.CircleGeometry(this.radius, config.drawables.songCircle.resolution);
     const geometryOverlay = geometryArtwork.clone();
 
     const texture = new THREE.TextureLoader().load(track.bestImageURL);
@@ -76,20 +78,7 @@ class SongCircle extends Updatable {
         }
       },
       canChangeType: true,
-      changeType: (options: MeshAnimationOptions) => {
-        const isTransitioningToChild = this.isTransitioningToChild(options.fromType, options.toType);
-        const isTransitioningtoParent = this.isTransitioningToParent(options.fromType, options.toType);
-
-        if (isTransitioningToChild || isTransitioningtoParent) {
-          animations.defaultChangeScale(options);
-
-          if (isTransitioningtoParent) {
-            animations.defaultFadeOut(options);
-          } else {
-            animations.defaultFadeIn(options);
-          }
-        }
-      },
+      changeType: (options: MeshAnimationOptions) => this.fadeChildParentMeshes(options),
     });
 
     super.createAndAddMesh({
@@ -130,15 +119,14 @@ class SongCircle extends Updatable {
           });
 
           material.opacity = animations.getProgressFromTo(startOpacity, endOpacity, animationDecimal);
-          animations.defaultChangeScale(options);
         }
       },
     });
   }
 
-  private addCircleOutline(type: SongCircleType, initialRadius: number, initialLineWidth: number) {
-    const innerRadius = initialRadius;
-    const outerRadius = initialRadius + initialLineWidth;
+  private addCircleOutline(type: SongCircleType, radius: number, lineWidth: number) {
+    const innerRadius = this.radius;
+    const outerRadius = this.radius + this.lineWidth;
     const geometry = new THREE.RingGeometry(innerRadius, outerRadius, config.drawables.songCircle.resolution);
     const material = new THREE.MeshLambertMaterial({
       color: config.drawables.songCircle.colour.edge[type],
@@ -153,7 +141,7 @@ class SongCircle extends Updatable {
     });
   }
 
-  private addText(track: TrackModel, initialRadius: number, initialLineWidth: number) {
+  private addText(track: TrackModel, radius: number, lineWidth: number) {
     const loader = new THREE.FontLoader();
 
     loader.load('/dist/fonts/san-fransisco/regular.json', (font: any) => {
@@ -246,13 +234,15 @@ class SongCircle extends Updatable {
               (<THREE.Material>mesh.material).opacity = animationDecimal;
             }
           },
+          canChangeType: true,
+          changeType: (options: MeshAnimationOptions) => this.fadeChildParentMeshes(options),
         });
 
         return { predictedSize, fontSize: currentFontSize };
       };
 
-      const circumference = initialRadius * 2; // Circumference of the circle, excluding the initialLineWidth
-      const textHorizontalPadding = initialLineWidth * 5; // Horizontal padding to add to the constraint
+      const circumference = this.radius * 2; // Circumference of the circle, excluding the this.lineWidth
+      const textHorizontalPadding = this.lineWidth * 5; // Horizontal padding to add to the constraint
       const textVerticalPadding = 0.025; // Vertical padding away from the center
 
       const titleMaxWidth = circumference - textHorizontalPadding;
@@ -279,18 +269,12 @@ class SongCircle extends Updatable {
     if (this._type !== type) {
       const startRGB = conversions.decimalToRgb(config.drawables.songCircle.colour.edge[this._type]);
       const endRGB = conversions.decimalToRgb(config.drawables.songCircle.colour.edge[type]);
-      const startScale = this._scale;
-      const endScale = this.getRadius(type, this._parentSongCircle, this.track) / this.initialRadius;
 
       super.animateWithOptions(AnimationType.CHANGE_TYPE, {
         startRGB,
         endRGB,
-        startScale,
-        endScale,
         fromType: this._type,
         toType: type,
-      }).then(() => {
-        this._scale = endScale;
       });
 
       this._type = type;
@@ -298,16 +282,14 @@ class SongCircle extends Updatable {
   }
 
   protected get center(): WorldPoint {
-    if (!this._parentSongCircle) {
+    if (!this.parentSongCircle) {
       return WorldPoint.getOrigin().alignToSceneBase();
     }
 
-    const centerWorldPoint = WorldPoint.getCenterPointOfCircleFromPercentage(this._parentSongCircle,
-                                                                             this._percentage,
-                                                                             this.initialRadius,
-                                                                             this.initialLineWidth);
-
-    return centerWorldPoint.alignToSceneBase();
+    return WorldPoint.getCenterPointOfCircleFromPercentage(this.parentSongCircle,
+                                                           this._percentage,
+                                                           this.radius,
+                                                           this.lineWidth).alignToSceneBase();
   }
 
   protected getRenderOrder(): number {
@@ -330,25 +312,35 @@ class SongCircle extends Updatable {
     return fromType === SongCircleType.PARENT && toType === SongCircleType.CHILD;
   }
 
-  private getRadius(
-    type: SongCircleType,
-    parentSongCircle: SongCircle | null,
-    track: TrackModel,
-  ): number {
-    if (type === SongCircleType.PARENT) {
-      return 1;
-    }
-
-    if (!parentSongCircle) {
-      return 0.25;
-    }
-
-    const relativeSize = track.duration.ms / parentSongCircle.track.duration.ms;
-    return relativeSize * parentSongCircle.initialRadius;
+  private getRadius(track: TrackModel): number {
+    return math.normalizeNumber(track.duration.secs,
+                                config.drawables.songCircle.minSongCircleDurationSecs,
+                                config.drawables.songCircle.maxSongCircleDurationSecs,
+                                config.drawables.songCircle.minSongCircleSize,
+                                config.drawables.songCircle.maxSongCircleSize);
   }
 
-  private getInitialLineWidth(radius: number): number {
+  private getLineWidth(radius: number): number {
     return radius * 0.1;
+  }
+
+  private fadeChildParentMeshes(options: MeshAnimationOptions) {
+    const isTransitioningToChild = this.isTransitioningToChild(options.fromType, options.toType);
+    const isTransitioningtoParent = this.isTransitioningToParent(options.fromType, options.toType);
+
+    if (isTransitioningtoParent) {
+      animations.defaultFadeOut(options);
+    } else if (isTransitioningToChild) {
+      animations.defaultFadeIn(options);
+    }
+  }
+
+  private getChildDepth(parentSongCircle: SongCircle | null, depth: number = 0): number {
+    if (!parentSongCircle) {
+      return depth;
+    }
+
+    return this.getChildDepth(parentSongCircle.parentSongCircle, depth + 1);
   }
 }
 
