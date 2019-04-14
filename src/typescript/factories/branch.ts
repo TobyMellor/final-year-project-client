@@ -1,11 +1,13 @@
 import BeatModel from '../models/audio-analysis/Beat';
 import ForwardBranchModel from '../models/branches/ForwardBranch';
 import BackwardBranchModel from '../models/branches/BackwardBranch';
-import { ForwardAndBackwardBranch, BeatBatch } from '../types/general';
+import { ForwardAndBackwardBranch, BeatBatch, TimeIdentifier } from '../types/general';
 import { BranchType } from '../types/enums';
 import BranchModel from '../models/branches/Branch';
 import TrackModel from '../models/audio-analysis/Track';
 import ActionModel from '../models/Action';
+import SongTransitionModel from '../models/SongTransition';
+import * as utils from '../utils/misc';
 
 export function createForwardAndBackwardBranch(
   track: TrackModel,
@@ -38,25 +40,36 @@ export function createBranchFromType(
   });
 }
 
-export function createBeatBatch(track: TrackModel, fromBeat: BeatModel, nextAction: ActionModel): BeatBatch {
-  const beats = track.beats;
-
+export function createBeatBatch(fromBeat: BeatModel, nextAction: ActionModel): BeatBatch {
   // All beats between, but not including, the fromBeat and the next branch's originBeat
-  const beatsBetweenFromAndOrigin = getBeatsBetween(beats,
+  const originTrack = nextAction.track;
+  const beatsToActionOrigin = utils.getBeatsBetween(originTrack.beats,
                                                     fromBeat,
-                                                    nextAction ? nextAction.originBeat : beats[beats.length - 1]);
+                                                    nextAction ? nextAction.originBeat
+                                                               : originTrack.beats[originTrack.beats.length - 1]);
+
+  const originTrackBeats = [fromBeat, ...beatsToActionOrigin];
+  let destinationTrackBeats: BeatModel[];
+  let destinationTrackEntry: TimeIdentifier;
+
+  if (nextAction instanceof SongTransitionModel) {
+    const { destinationTrack, transitionOutEndBeat, transitionInStartBeat, transitionInEndBeat } = nextAction;
+    const actionOrigin = beatsToActionOrigin[beatsToActionOrigin.length - 1];
+    const originTrackTransitionOutBeats = utils.getBeatsBetween(originTrack.beats, actionOrigin, transitionOutEndBeat);
+
+    originTrackBeats.push(...originTrackTransitionOutBeats);
+
+    destinationTrackEntry = utils.getDurationOfBeats(originTrackTransitionOutBeats);
+    destinationTrackBeats = utils.getBeatsBetween(destinationTrack.beats,
+                                                  transitionInStartBeat,
+                                                  transitionInEndBeat);
+  }
 
   return {
-    track,
-    beatsToOriginBeat: [fromBeat, ...beatsBetweenFromAndOrigin],
+    originTrackBeats,
+    destinationTrackBeats,
+    destinationTrackEntry,
+    track: originTrack,
     action: nextAction,
   };
-}
-
-function getBeatsBetween(
-  beats: BeatModel[],
-  { order: fromBeatOrder }: BeatModel,
-  { order: toBeatOrder }: BeatModel,
-): BeatModel[] {
-  return beats.slice(fromBeatOrder + 1, toBeatOrder);
 }

@@ -1,18 +1,9 @@
-/**
- * Music Service
- *
- * Handles:
- *  - Loading of tracks
- *  - Initially playing a track
- *  - Executing the Seek Queue
- */
-
 import TrackModel from '../../models/audio-analysis/Track';
 import Dispatcher from '../../events/Dispatcher';
 import * as trackFactory from '../../factories/track';
 import { FYPEvent, NeedleType, BranchType } from '../../types/enums';
-import BeatQueueManager from './BeatQueueManager';
-import { FYPEventPayload, BeatBatch, QueuedBeatBatch } from '../../types/general';
+import SampleQueueManager from './SampleQueueManager';
+import { FYPEventPayload, BeatBatch, QueuedSampleBatch } from '../../types/general';
 import * as utils from '../../utils/conversions';
 import BranchModel from '../../models/branches/Branch';
 import fyp from '../../config/fyp';
@@ -119,7 +110,7 @@ class WebAudioService {
   }
 
   /**
-   * When we receive some beats, add the beats to the BeatQueueManager's queue.
+   * When we receive some beats, add the beats to the SampleQueueManager's queue.
    * Then, start a sample for every beat. When all of these samples end, we'll
    * request more beats and repeat this process.
    *
@@ -133,40 +124,50 @@ class WebAudioService {
   private async queueBeatsForPlaying(
     { beatBatch }: FYPEventPayload['BeatBatchReady'],
     source: NeedleType = NeedleType.PLAYING,
-    onEndedCallbackFn?: () => void,
+    onEndedCallbackFn = () => {
+      const nextAction = SampleQueueManager.lastAction();
+      this.dispatchBeatBatchRequested(this._playingTrack, nextAction);
+    },
   ) {
-    if (!beatBatch || !beatBatch.beatsToOriginBeat || beatBatch.beatsToOriginBeat.length === 0) {
+    if (!beatBatch || !beatBatch.originTrackBeats || beatBatch.originTrackBeats.length === 0) {
       throw new Error('Attempted to request no beats!');
     }
 
-    const queuedBeatBatch = BeatQueueManager.add(this._audioContext, beatBatch);
+    const queuedSampleBatch = SampleQueueManager.add(this._audioContext, beatBatch);
     let lastBufferSource: AudioBufferSourceNode;
 
     // When the first beat has started, we want to dispatch the "BeatBatchPlaying" event
-    const onStartedFn = () => this.dispatchBeatBatchPlaying(queuedBeatBatch, source);
+    const onStartedFn = () => this.dispatchBeatBatchPlaying(queuedSampleBatch, source);
 
-    queuedBeatBatch.queuedBeatsToOriginBeat.forEach((queuedBeat, i) => {
-      const { startSecs, durationSecs } = queuedBeat.beat;
+    const { queuedSamplesToNextOriginBeat: samples } = queuedSampleBatch;
+    samples.forEach((sample, i) => {
+      const {
+        originTrackSubmittedCurrentTime,
+        originTrackBeats,
+        originTrackBeatsDurationSecs,
+      } = sample;
 
       lastBufferSource = this.playSample(beatBatch.track,
-                                         queuedBeat.submittedCurrentTime,
-                                         startSecs,
-                                         durationSecs,
+                                         originTrackSubmittedCurrentTime,
+                                         originTrackBeats[0].startSecs,
+                                         originTrackBeatsDurationSecs,
                                          i === 0 && onStartedFn);
+
+      if (beatBatch.action instanceof SongTransitionModel) {
+        const {
+          destinationTrackSubmittedCurrentTime,
+          destinationTrackBeats,
+          destinationTrackBeatsDurationSecs,
+        } = sample;
+
+        lastBufferSource = this.playSample(beatBatch.action.destinationTrack,
+                                           destinationTrackSubmittedCurrentTime,
+                                           destinationTrackBeats[0].startSecs,
+                                           destinationTrackBeatsDurationSecs);
+      }
     });
 
-    if (onEndedCallbackFn) {
-      // Custom onended: e.g. UI branch previewing
-      lastBufferSource.onended = onEndedCallbackFn;
-    } else {
-      // Default onended: Request next batch of beats
-      lastBufferSource.onended = () => {
-        // The next branch that we need to queue beats from
-        const nextAction = BeatQueueManager.lastAction();
-
-        this.dispatchBeatBatchRequested(this._playingTrack, nextAction);
-      };
-    }
+    lastBufferSource.onended = onEndedCallbackFn;
   }
 
   public previewBeatsWithOrders(
@@ -177,11 +178,11 @@ class WebAudioService {
     onEndedCallbackFn: () => void,
   ) {
     function createBeatBatch(track: TrackModel, beatOrders: number[], branch: BranchModel | null): BeatBatch {
-      const beatsToOriginBeat = beatOrders.map(beatOrder => beats[beatOrder]);
+      const originTrackBeats = beatOrders.map(beatOrder => beats[beatOrder]);
 
       return {
         track,
-        beatsToOriginBeat,
+        originTrackBeats,
         action: branch,
       };
     }
@@ -270,7 +271,7 @@ class WebAudioService {
     });
     this._audioBufferSourceNodes.clear();
 
-    BeatQueueManager.clear();
+    SampleQueueManager.clear();
 
     this.dispatchBeatBatchStopped(resetPercentage);
   }
@@ -308,24 +309,19 @@ class WebAudioService {
    *
    * This is used in the CanvasService, to start the canvas rotation.
    *
-   * @param startQueuedBeat The start beat of the batch
-   * @param endQueuedBeat The origin beat of a branch
+   * @param queuedSampleBatch The samples within a batch
    * @param source Who made the request
    */
   private dispatchBeatBatchPlaying(
-    { action: nextAction, queuedBeatsToOriginBeat: beats }: QueuedBeatBatch,
+    { action: nextAction, queuedSamplesToNextOriginBeat: samples }: QueuedSampleBatch,
     source: NeedleType,
   ) {
-    const startBeat = beats[0].beat;
-    const endBeat = beats[beats.length - 1].beat;
+    const startBeat = SampleQueueManager.getFirstBeatInSamples(samples);
+    const endBeat = SampleQueueManager.getLastBeatInSamples(samples);
     const songDuration = this._playingTrack.duration;
     const startPercentage = startBeat.getPercentageInTrack(songDuration);
     const endPercentage = endBeat.getPercentageInTrack(songDuration);
     const durationMs = endBeat.endMs - startBeat.startMs;
-
-    if (nextAction instanceof SongTransitionModel) {
-      this.changePlayingTrack();
-    }
 
     Dispatcher.getInstance()
               .dispatch(FYPEvent.BeatBatchPlaying, {

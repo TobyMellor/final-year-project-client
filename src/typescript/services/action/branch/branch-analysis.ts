@@ -151,6 +151,9 @@ export function getMockedSimilarBeats(
   if (trackID === '4RVbK6cV0VqWdpCDcx3hiT') { // Reborn
     beatPairs.push([beats[52], beats[100]]);
     beatPairs.push([beats[53], beats[325]]);
+    beatPairs.push([beats[194], beats[242]]);
+    beatPairs.push([beats[86], beats[214]]);
+    beatPairs.push([beats[106], beats[203]]);
   } else if (trackID === '3aUFrxO1B8EW63QchEl3wX') { // Feel The Love
     // Mock goes here
   } else if (trackID === '2hmHlBM0kPBm17Y7nVIW9f') { // My Propeller

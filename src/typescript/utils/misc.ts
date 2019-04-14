@@ -1,7 +1,8 @@
 import BeatModel from '../models/audio-analysis/Beat';
 import { MeshAnimationOptions } from '../services/canvas/drawables/Updatable';
 import * as conversions from './conversions';
-import { RGB } from '../types/general';
+import { RGB, TimeIdentifier } from '../types/general';
+import TimeIntervalModel from '../models/audio-analysis/TimeInterval';
 
 export function areArraysEqual<T>(arr1: T[], arr2: T[]): boolean {
   if (arr1.length !== arr2.length) {
@@ -57,4 +58,25 @@ export function shouldUpdate(
 
 export function getEarliestAndLatestBeat(firstBeat: BeatModel, secondBeat: BeatModel): [BeatModel, BeatModel] {
   return firstBeat.order < secondBeat.order ? [firstBeat, secondBeat] : [secondBeat, firstBeat];
+}
+
+export function getDurationOfBeats(beats: BeatModel[]): TimeIdentifier {
+  const durationMs = beats.reduce((acc, cur) => acc + cur.durationMs, 0);
+  const duration = conversions.getTimeIdentifierFromMilliseconds(durationMs);
+
+  return duration;
+}
+
+export function getBeatsBetween(
+  beats: BeatModel[],
+  { order: fromBeatOrder }: BeatModel,
+  { order: toBeatOrder }: BeatModel,
+  offset: number = 1, // Default: Does not include the "from" beat
+): BeatModel[] {
+  return beats.slice(fromBeatOrder + offset, toBeatOrder);
+}
+
+// Gets all beats from one to another, including the from and to beats
+export function getBeatsThrough(beats: BeatModel[], fromBeat: BeatModel, toBeat: BeatModel): BeatModel[] {
+  return getBeatsBetween(beats, fromBeat, toBeat, 0);
 }

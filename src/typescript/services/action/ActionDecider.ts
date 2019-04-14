@@ -24,6 +24,13 @@ class ActionDecider {
               .on(FYPEvent.BeatBatchRequested, ({ track, action, beatBatchCount }) => {
                 return this.dispatchBeatBatches(track, action, beatBatchCount);
               });
+
+    Dispatcher.getInstance()
+              .on(FYPEvent.TrackChangeReady, ({ track }) => {
+                if (this._nextTransition && this._nextTransition.destinationTrack.ID === track.ID) {
+                  this._isNextTransitionReady = true;
+                }
+              });
   }
 
   public static getInstance(): ActionDecider {
@@ -43,7 +50,7 @@ class ActionDecider {
     fromBeat: BeatModel,
   ): BeatModel {
     const nextAction = this.getAndLoadNext(track, fromBeat.startMs);
-    const beatBatch = branchFactory.createBeatBatch(track, fromBeat, nextAction);
+    const beatBatch = branchFactory.createBeatBatch(fromBeat, nextAction);
 
     Dispatcher.getInstance()
               .dispatch(FYPEvent.BeatBatchReady, {
@@ -59,7 +66,11 @@ class ActionDecider {
     if (this._isNextTransitionReady) {
       this._isNextTransitionReady = false;
 
-      return this._nextTransition;
+      if (this._nextTransition.track.ID === track.ID) {
+        return this._nextTransition;
+      }
+
+      this._nextTransition = null;
     }
 
     const nextActionType = this.getNextActionType();
@@ -83,7 +94,11 @@ class ActionDecider {
       return ActionType.BRANCH;
     }
 
-    // TODO: Implement ability to return ActionType.TRANSITION
+    const random = Math.random();
+    if (random < 0) {
+      return ActionType.TRANSITION;
+    }
+
     return ActionType.BRANCH;
   }
 

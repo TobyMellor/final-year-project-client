@@ -4,6 +4,7 @@ import SongTransitionModel from '../../models/SongTransition';
 import TrackModel from '../../models/audio-analysis/Track';
 import ActionService from './ActionService';
 import { TransitionManager } from './transition/transition-management';
+import * as math from '../../utils/math';
 
 class TransitionService extends ActionService {
   private static _instance: TransitionService = null;
@@ -24,7 +25,11 @@ class TransitionService extends ActionService {
   }
 
   public getNext(track: TrackModel, fromMs: number): SongTransitionModel {
-    return null; // TODO: Implement
+    const transitions = TransitionManager.getManager(track).transitions;
+    const randomIndex = Math.floor(Math.random() * transitions.length);
+    const randomTransition = transitions[randomIndex];
+
+    return randomTransition;
   }
 
   protected dispatchActions(track: TrackModel, transitions: SongTransitionModel[]) {

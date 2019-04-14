@@ -86,13 +86,6 @@ class CanvasService {
                                              transitionInStartMs,
                                              transitionInDurationMs);
               });
-
-    Dispatcher.getInstance()
-              .on(FYPEvent.TrackChanged, ({ track }) => {
-                if (this._playingTrackID) {
-                  this.updateParentSong(track);
-                }
-              });
   }
 
   public static getInstance(canvas?: HTMLCanvasElement): CanvasService {

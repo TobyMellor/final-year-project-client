@@ -6,9 +6,9 @@ import TrackModel from '../models/audio-analysis/Track';
 import BranchModel from '../models/branches/Branch';
 import ForwardBranchModel from '../models/branches/ForwardBranch';
 import BackwardBranchModel from '../models/branches/BackwardBranch';
-import QueuedBeatModel from '../models/web-audio/QueuedBeat';
 import SongTransitionModel from '../models/SongTransition';
 import ActionModel from '../models/Action';
+import QueuedSampleModel from '../models/web-audio/QueuedBeat';
 
 export type TimeIdentifier = {
   ms: number;
@@ -216,12 +216,14 @@ export type FYPEventPayload = {
 
 export type BeatBatch = {
   track: TrackModel,
-  beatsToOriginBeat: BeatModel[], // Beats up to, but not including, the originBeat of the branch or transition
+  originTrackBeats: BeatModel[], // Beats up to, but not including, the originBeat of the branch or transition
+  destinationTrackBeats?: BeatModel[],
+  destinationTrackEntry?: TimeIdentifier, // Time from originTrackBeats[0] to destinationTrackBeats[0]
   action: ActionModel,
 };
 
-export type QueuedBeatBatch = {
-  queuedBeatsToOriginBeat: QueuedBeatModel[],
+export type QueuedSampleBatch = {
+  queuedSamplesToNextOriginBeat: QueuedSampleModel[],
   action: ActionModel,
 };
 

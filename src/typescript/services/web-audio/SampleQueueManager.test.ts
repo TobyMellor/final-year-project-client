@@ -3,7 +3,7 @@ import config from '../../config';
 import WebAudioService from './WebAudioService';
 import { FYPEvent } from '../../types/enums';
 import { createTrack } from '../../factories/track';
-import BeatQueueManager from './BeatQueueManager';
+import BeatQueueManager from './SampleQueueManager';
 import Beat from '../../components/beat/Beat';
 import BranchModel from '../../models/branches/Branch';
 import BeatModel from '../../models/audio-analysis/Beat';
@@ -11,7 +11,7 @@ import ForwardBranchModel from '../../models/branches/ForwardBranch';
 import BackwardBranchModel from '../../models/branches/BackwardBranch';
 import TrackModel from '../../models/audio-analysis/Track';
 
-describe('Beat Queue Manager', () => {
+describe('Sample Queue Manager', () => {
   let track: TrackModel;
   let beats: BeatModel[];
   let branches: BranchModel[];

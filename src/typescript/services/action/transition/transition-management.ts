@@ -5,10 +5,10 @@ import SongTransitionModel from '../../../models/SongTransition';
 
 export class TransitionManager {
   private static _managers: { [trackID: string]: TransitionManager } = {};
-  private _transitions: SongTransitionModel[];
+  public transitions: SongTransitionModel[];
 
   constructor(transitions: SongTransitionModel[]) {
-    this._transitions = transitions;
+    this.transitions = transitions;
   }
 
   private static createManager({ ID }: TrackModel, transitions: SongTransitionModel[]): TransitionManager {

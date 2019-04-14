@@ -45,7 +45,9 @@ export async function getMockedTransitions(originTrack: TrackModel): Promise<Son
     push(controlla, 175, 234);
     push(hotlingBling, 253, 122);
   } else if (originTrack.ID === feelTheLove.ID) {
-    // Mock goes here
+    push(myPropeller, 124, 76);
+    push(cryingLightning, 50, 200);
+    push(controlla, 175, 234);
   } else if (originTrack.ID === myPropeller.ID) {
     // Mock goes here
   } else if (originTrack.ID === cryingLightning.ID) {

@@ -42,8 +42,10 @@ class SongTransitionModel extends ActionModel {
     transitionInStartBeat,
     transitionInEndBeat,
   }: Input) {
-    const [originBeat] = utils.getEarliestAndLatestBeat(transitionOutStartBeat, transitionInStartBeat);
-    const [_, destinationBeat] = utils.getEarliestAndLatestBeat(transitionOutEndBeat, transitionInEndBeat);
+    // const [originBeat] = utils.getEarliestAndLatestBeat(transitionOutStartBeat, transitionInStartBeat);
+    // const [_, destinationBeat] = utils.getEarliestAndLatestBeat(transitionOutEndBeat, transitionInEndBeat);
+    const originBeat = transitionOutStartBeat;
+    const destinationBeat = transitionInEndBeat;
 
     super({
       track,
