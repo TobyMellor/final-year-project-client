@@ -48,12 +48,11 @@ class CanvasService {
               });
 
     Dispatcher.getInstance()
-              .on(FYPEvent.BeatBatchPlaying, (data) => {
-                if (data.action instanceof SongTransitionModel) {
-                  // this.transitionChildToParent(data);
-                } else {
-                  this.updateNextBezierCurve(data);
-                  this.startSongCircleRotation(data);
+              .on(FYPEvent.BeatBatchPlaying, ({ nextAction, source, startPercentage, endPercentage, durationMs }) => {
+                this.startSongCircleRotation(source, startPercentage, endPercentage, durationMs);
+
+                if (!nextAction || nextAction instanceof BranchModel) {
+                  this.updateNextBezierCurve(nextAction);
                 }
               });
 
@@ -171,8 +170,8 @@ class CanvasService {
   private renderChildSongCircles(originTrack: TrackModel, transitions: SongTransitionModel[]) {
     const parentSongCircle = this.getSongCircle(originTrack);
 
-    transitions.forEach(({ destinationTrack, transitionMiddleBeat }) => {
-      const percentage = transitionMiddleBeat.getPercentageInTrack(originTrack.duration);
+    transitions.forEach(({ destinationTrack, transitionOutMiddleBeat }) => {
+      const percentage = transitionOutMiddleBeat.getPercentageInTrack(originTrack.duration);
       const childSongCircle = drawableFactory.renderChildSongCircle(this.scene,
                                                                     parentSongCircle,
                                                                     destinationTrack,
@@ -195,7 +194,7 @@ class CanvasService {
    *
    * @param eventPayload The next branch to be taken
    */
-  public updateNextBezierCurve({ nextAction: nextBranch }: FYPEventPayload['BeatBatchPlaying']) {
+  public updateNextBezierCurve(nextBranch: BranchModel) {
     if (!nextBranch) {
       const bezierCurves = this.getParentBezierCurves();
 
@@ -215,12 +214,12 @@ class CanvasService {
     this.scene.setRotationPercentage(percentage);
   }
 
-  public startSongCircleRotation({
-    source,
-    startPercentage,
-    endPercentage,
-    durationMs,
-  }: FYPEventPayload['BeatBatchPlaying']) {
+  public startSongCircleRotation(
+    source: NeedleType,
+    startPercentage: number,
+    endPercentage: number,
+    durationMs: number,
+  ) {
     this._isAnimating = true;
 
     const isBranchNavPreviewing = source === NeedleType.BRANCH_NAV;

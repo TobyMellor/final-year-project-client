@@ -330,7 +330,7 @@ class BranchNav extends React.Component<BranchNavProps, BranchNavState> {
 
       const needlePercent = this.state.lastFocusedBeatList === TOP ? topPercent : bottomPercent;
       uiService.setNeedleRotation(needlePercent);
-    }, conversions.secondsToMilliseconds(config.audio.schedulingDelaySecs));
+    }, conversions.secsToMs(config.audio.schedulingDelaySecs));
   }
 
   /**
@@ -648,7 +648,7 @@ class BranchNav extends React.Component<BranchNavProps, BranchNavState> {
     const beatPathTimer = setTimeout(() => {
       this.updatePlayingBeats(beatPath);
       this.updateQueuedBeats(beatPath);
-    }, conversions.secondsToMilliseconds(config.audio.schedulingDelaySecs));
+    }, conversions.secsToMs(config.audio.schedulingDelaySecs));
     this.setState({ beatPathTimer });
 
     // Play the opposite branch

@@ -217,8 +217,9 @@ export type FYPEventPayload = {
 export type BeatBatch = {
   track: TrackModel,
   originTrackBeats: BeatModel[], // Beats up to, but not including, the originBeat of the branch or transition
-  destinationTrackBeats?: BeatModel[],
-  destinationTrackEntry?: TimeIdentifier, // Time from originTrackBeats[0] to destinationTrackBeats[0]
+  originTrackTransitionOutBeats?: BeatModel[], // Beats after the originBeat of the transition, up to transition out
+  destinationTrackTransitionInBeats?: BeatModel[], // Beats from the transition in point, to the destinationBeat
+  destinationTrackEntryOffset?: TimeIdentifier, // Time from originTrackBeats[0] to destinationTrackBeats[0]
   action: ActionModel,
 };
 

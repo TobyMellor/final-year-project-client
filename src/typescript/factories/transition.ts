@@ -19,5 +19,6 @@ export function createImmediateTransition(
     transitionOutEndBeat: originTransitionBeat,
     transitionInStartBeat: destinationTransitionBeat,
     transitionInEndBeat: destinationTransitionBeat,
+    transitionInEntryOffsetMs: 0,
   });
 }

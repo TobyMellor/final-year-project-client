@@ -46,8 +46,8 @@ class AudioAnalysisModel {
     this._trackID = trackID;
 
     // Track Analysis
-    this._endOfFadeIn = conversions.getTimeIdentifierFromSeconds(track.end_of_fade_in);
-    this._startOfFadeOut = conversions.getTimeIdentifierFromSeconds(track.start_of_fade_out);
+    this._endOfFadeIn = conversions.getTimeIdentifierFromSecs(track.end_of_fade_in);
+    this._startOfFadeOut = conversions.getTimeIdentifierFromSecs(track.start_of_fade_out);
     this._tempo = {
       value: track.tempo,
       confidence: track.tempo_confidence,

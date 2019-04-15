@@ -14,44 +14,50 @@ class SampleQueueManager {
 
   public static add(
     audioContext: AudioContext,
-    { action, originTrackBeats, destinationTrackBeats, destinationTrackEntry }: BeatBatch,
+    {
+      action,
+      originTrackBeats,
+      originTrackTransitionOutBeats,
+      destinationTrackTransitionInBeats,
+      destinationTrackEntryOffset,
+    }: BeatBatch,
   ): QueuedSampleBatch {
     const firstSubmittedCurrentTimeInBatch = this.getNextSubmittedCurrentTime(audioContext);
     const queuedSamples: QueuedSampleModel[] = [];
+    let secondsSinceFirstSampleInBatch = 0;
 
-    // Schedule one long sample for Song Transitions to allow for fading and effects
-    // Schedule one sample per beat for normal branches to allow for more granular control
-    if (action instanceof SongTransitionModel) {
-      const originTrackSubmittedCurrentTime = firstSubmittedCurrentTimeInBatch;
-      const destinationTrackSubmittedCurrentTime = originTrackSubmittedCurrentTime + destinationTrackEntry.secs;
-      const sampleDurationSecs = destinationTrackEntry.secs + utils.getDurationOfBeats(destinationTrackBeats).secs;
+    // Schedule one beat per sample for beats up to the branch or transition origin
+    originTrackBeats.forEach((beat) => {
+      const originTrackSubmittedCurrentTime = firstSubmittedCurrentTimeInBatch + secondsSinceFirstSampleInBatch;
+      const sampleDurationSecs = beat.durationSecs;
+
+      secondsSinceFirstSampleInBatch += beat.durationSecs;
 
       queuedSamples.push(
         new QueuedSampleModel({
-          originTrackBeats,
-          destinationTrackBeats,
           originTrackSubmittedCurrentTime,
-          destinationTrackSubmittedCurrentTime,
+          originTrackBeats: [beat],
           durationSecs: sampleDurationSecs,
         }),
       );
-    } else {
-      let secondsSinceFirstSampleInBatch = 0;
+    });
 
-      originTrackBeats.forEach((beat) => {
-        const originTrackSubmittedCurrentTime = firstSubmittedCurrentTimeInBatch + secondsSinceFirstSampleInBatch;
-        const sampleDurationSecs = beat.durationSecs;
+    // Schedule one long sample for Song Transitions to allow for fading and effects
+    if (action instanceof SongTransitionModel) {
+      const originTrackSubmittedCurrentTime = firstSubmittedCurrentTimeInBatch + secondsSinceFirstSampleInBatch;
+      const destinationTrackSubmittedCurrentTime = originTrackSubmittedCurrentTime + destinationTrackEntryOffset.secs;
+      const sampleDurationSecs = destinationTrackEntryOffset.secs
+                               + utils.getDurationOfBeats(destinationTrackTransitionInBeats).secs;
 
-        secondsSinceFirstSampleInBatch += beat.durationSecs;
-
-        queuedSamples.push(
-          new QueuedSampleModel({
-            originTrackSubmittedCurrentTime,
-            originTrackBeats: [beat],
-            durationSecs: sampleDurationSecs,
-          }),
-        );
-      });
+      queuedSamples.push(
+        new QueuedSampleModel({
+          originTrackSubmittedCurrentTime,
+          destinationTrackSubmittedCurrentTime,
+          originTrackBeats: originTrackTransitionOutBeats,
+          destinationTrackBeats: destinationTrackTransitionInBeats,
+          durationSecs: sampleDurationSecs,
+        }),
+      );
     }
 
     this.queuedSampleBatches.push({
@@ -114,11 +120,17 @@ class SampleQueueManager {
   public static getLastBeatInSamples(samples: QueuedSampleModel[]) {
     const { originTrackBeats, destinationTrackBeats } = samples[samples.length - 1];
 
-    if (destinationTrackBeats) {
+    if (destinationTrackBeats && destinationTrackBeats.length) {
       return destinationTrackBeats[destinationTrackBeats.length - 1];
     }
 
-    return originTrackBeats[originTrackBeats.length - 1];
+    if (originTrackBeats.length) {
+      return originTrackBeats[originTrackBeats.length - 1];
+    }
+
+    // If there's no queued beats in this sample, it's an immediate transition. Try the next sample.
+    const beats = samples[samples.length - 2].originTrackBeats;
+    return beats[beats.length - 1];
   }
 }
 

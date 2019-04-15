@@ -16,7 +16,7 @@ class QueuedSampleModel {
   public destinationTrackBeats?: BeatModel[];
   public originTrackSubmittedCurrentTime: number;
   public destinationTrackSubmittedCurrentTime?: number;
-  private _duration: TimeIdentifier;
+  public duration: TimeIdentifier;
 
   constructor({
     originTrackBeats,
@@ -29,7 +29,7 @@ class QueuedSampleModel {
     this.destinationTrackBeats = destinationTrackBeats;
     this.originTrackSubmittedCurrentTime = originTrackSubmittedCurrentTime;
     this.destinationTrackSubmittedCurrentTime = destinationTrackSubmittedCurrentTime;
-    this._duration = conversions.getTimeIdentifierFromSeconds(durationSecs);
+    this.duration = conversions.getTimeIdentifierFromSecs(durationSecs);
   }
 
   public equals(queuedSample: QueuedSampleModel) {
@@ -37,11 +37,15 @@ class QueuedSampleModel {
   }
 
   public get endCurrentTime() {
-    return this.originTrackSubmittedCurrentTime + this._duration.secs;
+    return this.originTrackSubmittedCurrentTime + this.duration.secs;
   }
 
   public get durationSecs() {
-    return this._duration.secs;
+    return this.duration.secs;
+  }
+
+  public get durationMs() {
+    return this.duration.ms;
   }
 
   public get originTrackBeatsDurationSecs() {
@@ -54,6 +58,10 @@ class QueuedSampleModel {
 
   public get destinationTrackBeatsDurationSecs() {
     return utils.getDurationOfBeats(this.destinationTrackBeats || []).secs;
+  }
+
+  public get isTransitionSample(): boolean {
+    return !!this.destinationTrackSubmittedCurrentTime;
   }
 }
 

@@ -1,15 +1,17 @@
 import TrackModel from '../../models/audio-analysis/Track';
 import Dispatcher from '../../events/Dispatcher';
 import * as trackFactory from '../../factories/track';
-import { FYPEvent, NeedleType, BranchType } from '../../types/enums';
+import { FYPEvent, NeedleType, BranchType, TransitionType } from '../../types/enums';
 import SampleQueueManager from './SampleQueueManager';
 import { FYPEventPayload, BeatBatch, QueuedSampleBatch } from '../../types/general';
-import * as utils from '../../utils/conversions';
+import * as conversions from '../../utils/conversions';
 import BranchModel from '../../models/branches/Branch';
 import fyp from '../../config/fyp';
 import * as branchFactory from '../../factories/branch';
 import ActionModel from '../../models/Action';
 import SongTransitionModel from '../../models/SongTransition';
+import QueuedSampleModel from '../../models/web-audio/QueuedBeat';
+import config from '../../config';
 
 class WebAudioService {
   private static _instance: WebAudioService;
@@ -137,7 +139,9 @@ class WebAudioService {
     let lastBufferSource: AudioBufferSourceNode;
 
     // When the first beat has started, we want to dispatch the "BeatBatchPlaying" event
-    const onStartedFn = () => this.dispatchBeatBatchPlaying(queuedSampleBatch, source);
+    const onStartedFn = () => {
+      this.dispatchBeatBatchPlaying(queuedSampleBatch, source);
+    };
 
     const { queuedSamplesToNextOriginBeat: samples } = queuedSampleBatch;
     samples.forEach((sample, i) => {
@@ -145,29 +149,56 @@ class WebAudioService {
         originTrackSubmittedCurrentTime,
         originTrackBeats,
         originTrackBeatsDurationSecs,
+        isTransitionSample,
       } = sample;
+      let bufferSource: AudioBufferSourceNode;
 
-      lastBufferSource = this.playSample(beatBatch.track,
-                                         originTrackSubmittedCurrentTime,
-                                         originTrackBeats[0].startSecs,
-                                         originTrackBeatsDurationSecs,
-                                         i === 0 && onStartedFn);
+      if (originTrackBeats.length) {
+        bufferSource = this.playSample(beatBatch.track,
+                                       originTrackSubmittedCurrentTime,
+                                       originTrackBeats[0].startSecs,
+                                       originTrackBeatsDurationSecs,
+                                       i === 0 && onStartedFn);
+      }
 
-      if (beatBatch.action instanceof SongTransitionModel) {
+      if (isTransitionSample) {
         const {
           destinationTrackSubmittedCurrentTime,
           destinationTrackBeats,
           destinationTrackBeatsDurationSecs,
         } = sample;
 
-        lastBufferSource = this.playSample(beatBatch.action.destinationTrack,
-                                           destinationTrackSubmittedCurrentTime,
-                                           destinationTrackBeats[0].startSecs,
-                                           destinationTrackBeatsDurationSecs);
-      }
-    });
+        if (destinationTrackBeats.length) {
+          const action = beatBatch.action as SongTransitionModel;
 
-    lastBufferSource.onended = onEndedCallbackFn;
+          bufferSource = this.playSample(action.destinationTrack,
+                                         destinationTrackSubmittedCurrentTime,
+                                         destinationTrackBeats[0].startSecs,
+                                         destinationTrackBeatsDurationSecs);
+        }
+      }
+
+      // TODO: Cleanup
+      if (i === samples.length - 1) {
+        if (isTransitionSample) {
+          if (!bufferSource) {
+            lastBufferSource.onended = () => {
+              this.dispatchTrackChanging(beatBatch.action as SongTransitionModel, sample);
+              onEndedCallbackFn();
+            };
+          } else {
+            lastBufferSource.onended = () => {
+              this.dispatchTrackChanging(beatBatch.action as SongTransitionModel, sample);
+            };
+            bufferSource.onended = onEndedCallbackFn;
+          }
+        } else {
+          bufferSource.onended = onEndedCallbackFn;
+        }
+      }
+
+      lastBufferSource = bufferSource;
+    });
   }
 
   public previewBeatsWithOrders(
@@ -247,7 +278,7 @@ class WebAudioService {
         }
 
         onStartedFn();
-      }, utils.secondsToMilliseconds(when - this._audioContext.currentTime));
+      }, conversions.secsToMs(when - this._audioContext.currentTime));
     }
 
     this._audioBufferSourceNodes.add(source);
@@ -280,6 +311,33 @@ class WebAudioService {
     Dispatcher.getInstance()
               .dispatch(FYPEvent.TrackChangeReady, {
                 track,
+              });
+  }
+
+  private dispatchTrackChanging(
+    { destinationTrack, transitionInEntryOffset }: SongTransitionModel,
+    transitionSample: QueuedSampleModel,
+  ) {
+    const { durationMs, originTrackBeatsDurationSecs, destinationTrackBeatsDurationSecs } = transitionSample;
+
+    const transitionDurationMs = Math.max(durationMs, config.drawables.songCircle.minTransitionDurationMs);
+    const transitionOutStartMs = 0;
+    const transitionOutDurationMs = conversions.secsToMs(originTrackBeatsDurationSecs);
+    const transitionInStartMs =  transitionInEntryOffset.ms;
+    const transitionInDurationMs = conversions.secsToMs(destinationTrackBeatsDurationSecs);
+
+    setTimeout(() => {
+      this.changePlayingTrack();
+    }, transitionDurationMs);
+
+    Dispatcher.getInstance()
+              .dispatch(FYPEvent.TrackChanging, {
+                destinationTrack,
+                transitionDurationMs,
+                transitionOutStartMs,
+                transitionOutDurationMs,
+                transitionInStartMs,
+                transitionInDurationMs,
               });
   }
 

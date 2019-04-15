@@ -62,7 +62,7 @@ export function getEarliestAndLatestBeat(firstBeat: BeatModel, secondBeat: BeatM
 
 export function getDurationOfBeats(beats: BeatModel[]): TimeIdentifier {
   const durationMs = beats.reduce((acc, cur) => acc + cur.durationMs, 0);
-  const duration = conversions.getTimeIdentifierFromMilliseconds(durationMs);
+  const duration = conversions.getTimeIdentifierFromMs(durationMs);
 
   return duration;
 }
@@ -71,12 +71,15 @@ export function getBeatsBetween(
   beats: BeatModel[],
   { order: fromBeatOrder }: BeatModel,
   { order: toBeatOrder }: BeatModel,
-  offset: number = 1, // Default: Does not include the "from" beat
+  shouldIncludeFromTo: boolean = false,
 ): BeatModel[] {
-  return beats.slice(fromBeatOrder + offset, toBeatOrder);
+  const fromIndex = shouldIncludeFromTo ? fromBeatOrder : fromBeatOrder + 1;
+  const toIndex = shouldIncludeFromTo ? toBeatOrder + 1 : toBeatOrder;
+
+  return beats.slice(fromIndex, toIndex);
 }
 
 // Gets all beats from one to another, including the from and to beats
 export function getBeatsThrough(beats: BeatModel[], fromBeat: BeatModel, toBeat: BeatModel): BeatModel[] {
-  return getBeatsBetween(beats, fromBeat, toBeat, 0);
+  return getBeatsBetween(beats, fromBeat, toBeat, true);
 }

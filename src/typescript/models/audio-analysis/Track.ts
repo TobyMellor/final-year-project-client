@@ -43,7 +43,7 @@ class TrackModel {
     this._album = album instanceof AlbumModel ? album : new AlbumModel(album);
     this.audioFeatures = audioFeatures;
     this.audioAnalysis = audioAnalysis;
-    this._duration = conversions.getTimeIdentifierFromMilliseconds(duration_ms);
+    this._duration = conversions.getTimeIdentifierFromMs(duration_ms);
     this._isExplicit = explicit;
     this._ID = id;
     this._name = name;

@@ -2,7 +2,8 @@ import { TransitionType } from '../types/enums';
 import TrackModel from './audio-analysis/Track';
 import ActionModel, { Input as ActionInput } from './Action';
 import BeatModel from './audio-analysis/Beat';
-import * as utils from '../utils/misc';
+import * as conversions from '../utils/conversions';
+import { TimeIdentifier } from '../types/general';
 
 export type Input = {
   track: TrackModel;
@@ -12,6 +13,7 @@ export type Input = {
   transitionOutEndBeat: BeatModel;
   transitionInStartBeat: BeatModel;
   transitionInEndBeat: BeatModel;
+  transitionInEntryOffsetMs: number,
 };
 
 /**
@@ -32,6 +34,7 @@ class SongTransitionModel extends ActionModel {
   public transitionOutEndBeat: BeatModel;
   public transitionInStartBeat: BeatModel;
   public transitionInEndBeat: BeatModel;
+  public transitionInEntryOffset: TimeIdentifier;
 
   constructor({
     type,
@@ -41,6 +44,7 @@ class SongTransitionModel extends ActionModel {
     transitionOutEndBeat,
     transitionInStartBeat,
     transitionInEndBeat,
+    transitionInEntryOffsetMs,
   }: Input) {
     // const [originBeat] = utils.getEarliestAndLatestBeat(transitionOutStartBeat, transitionInStartBeat);
     // const [_, destinationBeat] = utils.getEarliestAndLatestBeat(transitionOutEndBeat, transitionInEndBeat);
@@ -63,16 +67,13 @@ class SongTransitionModel extends ActionModel {
     this.transitionOutEndBeat = transitionOutEndBeat;
     this.transitionInStartBeat = transitionInStartBeat;
     this.transitionInEndBeat = transitionInEndBeat;
+    this.transitionInEntryOffset = conversions.getTimeIdentifierFromMs(transitionInEntryOffsetMs);
   }
 
-  public get transitionMiddleBeat() {
-    if (this.transitionInEndBeat === this.transitionInStartBeat) {
-      return this.transitionInEndBeat;
-    }
-
+  public get transitionOutMiddleBeat() {
     const beats = this.track.beats;
-    const middleBeatOrder = Math.floor(
-      Math.abs(this.transitionInStartBeat.order - this.transitionInEndBeat.order) / 2,
+    const middleBeatOrder = this.transitionOutStartBeat.order + Math.floor(
+      Math.abs(this.transitionOutStartBeat.order - this.transitionOutEndBeat.order) / 2,
     );
     const middleBeat = beats[middleBeatOrder];
 

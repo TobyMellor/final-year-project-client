@@ -31,7 +31,7 @@ class BranchService extends ActionService {
 
   public getNext(track: TrackModel, fromMs: number): BranchModel {
     const branches = BranchManager.getManager(track)
-                                     .accessibleBranches;
+                                  .accessibleBranches;
     const nextBranch = branchChooser.getNextBranch(branches, fromMs);
 
     return nextBranch;

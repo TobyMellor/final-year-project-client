@@ -18,8 +18,8 @@ class TimeIntervalModel {
     confidence,
     order,
   }: Input) {
-    this._start = conversions.getTimeIdentifierFromSeconds(startSeconds);
-    this._duration = conversions.getTimeIdentifierFromSeconds(durationSeconds);
+    this._start = conversions.getTimeIdentifierFromSecs(startSeconds);
+    this._duration = conversions.getTimeIdentifierFromSecs(durationSeconds);
     this._confidence = confidence;
     this._order = order;
   }

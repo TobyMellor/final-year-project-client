@@ -29,6 +29,7 @@ const songCircle = {
   // config.songCircle.childMaxAnimationDelayMs to config.songCircle.childMaxAnimationDelayMs
   childMinAnimationDelayMs: 2500,
   childMaxAnimationDelayMs: 7500,
+  minTransitionDurationMs: 1500,
   minSongCircleSize: 0.5,
   maxSongCircleSize: 1.5,
 

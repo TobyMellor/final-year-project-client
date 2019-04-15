@@ -43,32 +43,40 @@ export function createBranchFromType(
 export function createBeatBatch(fromBeat: BeatModel, nextAction: ActionModel): BeatBatch {
   // All beats between, but not including, the fromBeat and the next branch's originBeat
   const originTrack = nextAction.track;
-  const beatsToActionOrigin = utils.getBeatsBetween(originTrack.beats,
-                                                    fromBeat,
-                                                    nextAction ? nextAction.originBeat
-                                                               : originTrack.beats[originTrack.beats.length - 1]);
+  const beatsToNextActionOrigin = utils.getBeatsBetween(originTrack.beats,
+                                                        fromBeat,
+                                                        nextAction ? nextAction.originBeat
+                                                                   : originTrack.beats[originTrack.beats.length - 1]);
 
-  const originTrackBeats = [fromBeat, ...beatsToActionOrigin];
-  let destinationTrackBeats: BeatModel[];
-  let destinationTrackEntry: TimeIdentifier;
+  const originTrackBeats = [fromBeat, ...beatsToNextActionOrigin];
 
   if (nextAction instanceof SongTransitionModel) {
-    const { destinationTrack, transitionOutEndBeat, transitionInStartBeat, transitionInEndBeat } = nextAction;
-    const actionOrigin = beatsToActionOrigin[beatsToActionOrigin.length - 1];
+    const {
+      destinationTrack,
+      transitionOutEndBeat,
+      transitionInStartBeat,
+      transitionInEndBeat,
+      transitionInEntryOffset,
+    } = nextAction;
+    const actionOrigin = beatsToNextActionOrigin[beatsToNextActionOrigin.length - 1];
+
     const originTrackTransitionOutBeats = utils.getBeatsBetween(originTrack.beats, actionOrigin, transitionOutEndBeat);
+    const destinationTrackTransitionInBeats = utils.getBeatsBetween(destinationTrack.beats,
+                                                                    transitionInStartBeat,
+                                                                    transitionInEndBeat);
 
-    originTrackBeats.push(...originTrackTransitionOutBeats);
-
-    destinationTrackEntry = utils.getDurationOfBeats(originTrackTransitionOutBeats);
-    destinationTrackBeats = utils.getBeatsBetween(destinationTrack.beats,
-                                                  transitionInStartBeat,
-                                                  transitionInEndBeat);
+    return {
+      originTrackBeats,
+      originTrackTransitionOutBeats,
+      destinationTrackTransitionInBeats,
+      destinationTrackEntryOffset: transitionInEntryOffset,
+      track: originTrack,
+      action: nextAction,
+    };
   }
 
   return {
     originTrackBeats,
-    destinationTrackBeats,
-    destinationTrackEntry,
     track: originTrack,
     action: nextAction,
   };

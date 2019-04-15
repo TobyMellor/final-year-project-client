@@ -50,33 +50,33 @@ export function percentageToDecimal(percentage: number): number {
   return percentage / 100;
 }
 
-export function secondsToMilliseconds(seconds: number): number {
+export function secsToMs(seconds: number): number {
   return seconds * 1000;
 }
 
-export function millisecondsToSeconds(ms: number): number {
+export function msToSecs(ms: number): number {
   return ms / 1000;
 }
 
-export function getTimeIdentifierFromSeconds(secs?: number): TimeIdentifier | null {
+export function getTimeIdentifierFromSecs(secs?: number): TimeIdentifier | null {
   if (!secs && secs !== 0) {
     return null;
   }
 
   return {
     secs,
-    ms: secondsToMilliseconds(secs),
+    ms: secsToMs(secs),
   };
 }
 
-export function getTimeIdentifierFromMilliseconds(ms?: number): TimeIdentifier {
+export function getTimeIdentifierFromMs(ms?: number): TimeIdentifier {
   if (!ms && ms !== 0) {
     return null;
   }
 
   return {
     ms,
-    secs: millisecondsToSeconds(ms),
+    secs: msToSecs(ms),
   };
 }
 

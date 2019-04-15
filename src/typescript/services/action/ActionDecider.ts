@@ -37,7 +37,8 @@ class ActionDecider {
     return this._instance || (this._instance = new this());
   }
 
-  private async dispatchBeatBatches(track: TrackModel, action: ActionModel, beatBatchCount: number) {
+  private async dispatchBeatBatches(playingTrack: TrackModel, action: ActionModel, beatBatchCount: number) {
+    const track = action instanceof SongTransitionModel ? action.destinationTrack : playingTrack;
     let fromBeat = action && action.destinationBeat || track.beats[0];
 
     for (let i = 0; i < beatBatchCount; i += 1) {
@@ -45,10 +46,7 @@ class ActionDecider {
     }
   }
 
-  private dispatchBeatBatchReady(
-    track: TrackModel,
-    fromBeat: BeatModel,
-  ): BeatModel {
+  private dispatchBeatBatchReady(track: TrackModel, fromBeat: BeatModel): BeatModel {
     const nextAction = this.getAndLoadNext(track, fromBeat.startMs);
     const beatBatch = branchFactory.createBeatBatch(fromBeat, nextAction);
 
@@ -61,21 +59,24 @@ class ActionDecider {
     return lastBeatInThisBatch;
   }
 
-  private getAndLoadNext(track: TrackModel, fromMs: number): ActionModel {
+  private getAndLoadNext(track: TrackModel, fromMs: number, actionType: ActionType = null): ActionModel {
     // If the track we requested to transition to has loaded, transition now
     if (this._isNextTransitionReady) {
-      this._isNextTransitionReady = false;
-
-      if (this._nextTransition.track.ID === track.ID) {
-        return this._nextTransition;
-      }
+      const nextAction = this._nextTransition;
 
       this._nextTransition = null;
+      this._isNextTransitionReady = false;
+
+      return nextAction;
     }
 
-    const nextActionType = this.getNextActionType();
+    const nextActionType = actionType ? actionType : this.getNextActionType();
     const nextActionService = this.getActionService(nextActionType);
     const nextAction = nextActionService.getNext(track, fromMs);
+
+    if (!nextAction && !actionType) {
+      return this.getAndLoadNext(track, fromMs, ActionType.BRANCH);
+    }
 
     if (nextActionType === ActionType.TRANSITION) {
       this._nextTransition = nextAction as SongTransitionModel;
@@ -95,7 +96,7 @@ class ActionDecider {
     }
 
     const random = Math.random();
-    if (random < 0) {
+    if (random < 1) {
       return ActionType.TRANSITION;
     }
 

@@ -50,10 +50,10 @@ class SegmentModel extends TimeIntervalModel {
   }: Input) {
     super({ start, duration, confidence, order });
     this._loudness = {
-      start: conversions.getTimeIdentifierFromSeconds(loudness_start),
-      maxTime: conversions.getTimeIdentifierFromSeconds(loudness_max_time),
+      start: conversions.getTimeIdentifierFromSecs(loudness_start),
+      maxTime: conversions.getTimeIdentifierFromSecs(loudness_max_time),
       max: loudness_max,
-      end: conversions.getTimeIdentifierFromSeconds(loudness_end),
+      end: conversions.getTimeIdentifierFromSecs(loudness_end),
     };
     this._pitch = pitches.reduce((a, b) => a + b);
     this._timbre = timbres.reduce((a, b) => a + b);
