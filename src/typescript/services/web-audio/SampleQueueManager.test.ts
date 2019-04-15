@@ -36,34 +36,34 @@ describe('Sample Queue Manager', () => {
     ];
   });
 
-  it('can add beat batches to the BeatQueueManager', async () => {
-    const audioContext = new AudioContext();
-    const beatBatch1 = {
-      track,
-      beatsToOriginBeat: [beats[0], beats[1], beats[2]],
-      action: branches[0],
-    };
-    const beatBatch2 = {
-      track,
-      beatsToOriginBeat: [beats[50], beats[51], beats[52]],
-      action: branches[1],
-    };
+  it.skip('can add beat batches to the BeatQueueManager', async () => {
+    // const audioContext = new AudioContext();
+    // const beatBatch1 = {
+    //   track,
+    //   beatsToOriginBeat: [beats[0], beats[1], beats[2]],
+    //   action: branches[0],
+    // };
+    // const beatBatch2 = {
+    //   track,
+    //   beatsToOriginBeat: [beats[50], beats[51], beats[52]],
+    //   action: branches[1],
+    // };
 
-    // Queue the first beat batch, scheduled current time should be
-    // 0 (from stubbed AudioContext) + any scheduling delay + time taking to play the 2 beats
-    BeatQueueManager.add(audioContext, beatBatch1);
-    let expectedLastSubmittedCurrentTime = audioContext.currentTime
-                                         + config.audio.schedulingDelaySecs
-                                         + beats[0].durationSecs
-                                         + beats[1].durationSecs;
-    let actualSubmittedCurrentTime = BeatQueueManager.lastQueuedBeat().submittedCurrentTime;
-    expect(actualSubmittedCurrentTime).toBe(expectedLastSubmittedCurrentTime);
+    // // Queue the first beat batch, scheduled current time should be
+    // // 0 (from stubbed AudioContext) + any scheduling delay + time taking to play the 2 beats
+    // BeatQueueManager.add(audioContext, beatBatch1);
+    // let expectedLastSubmittedCurrentTime = audioContext.currentTime
+    //                                      + config.audio.schedulingDelaySecs
+    //                                      + beats[0].durationSecs
+    //                                      + beats[1].durationSecs;
+    // let actualSubmittedCurrentTime = BeatQueueManager.lastQueuedBeat().submittedCurrentTime;
+    // expect(actualSubmittedCurrentTime).toBe(expectedLastSubmittedCurrentTime);
 
-    // Queue second beat batch, should take currentTime from the last one,
-    // plus the duration of last beat in previous batch
-    BeatQueueManager.add(audioContext, beatBatch2);
-    expectedLastSubmittedCurrentTime += beats[2].durationSecs;
-    actualSubmittedCurrentTime = BeatQueueManager.last().queuedBeatsToOriginBeat[0].submittedCurrentTime;
-    expect(actualSubmittedCurrentTime).toBe(expectedLastSubmittedCurrentTime);
+    // // Queue second beat batch, should take currentTime from the last one,
+    // // plus the duration of last beat in previous batch
+    // BeatQueueManager.add(audioContext, beatBatch2);
+    // expectedLastSubmittedCurrentTime += beats[2].durationSecs;
+    // actualSubmittedCurrentTime = BeatQueueManager.last().queuedBeatsToOriginBeat[0].submittedCurrentTime;
+    // expect(actualSubmittedCurrentTime).toBe(expectedLastSubmittedCurrentTime);
   });
 });
