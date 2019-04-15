@@ -8,6 +8,7 @@ import SongTransitionModel from '../../models/SongTransition';
 import ActionService from './ActionService';
 import BeatModel from '../../models/audio-analysis/Beat';
 import * as branchFactory from '../../factories/branch';
+import { FYPEventPayload } from '../../types/general';
 
 enum ActionType {
   BRANCH = 'branch',
@@ -21,15 +22,25 @@ class ActionDecider {
 
   private constructor() {
     Dispatcher.getInstance()
-              .on(FYPEvent.BeatBatchRequested, ({ track, action, beatBatchCount }) => {
+              .on(FYPEvent.BeatBatchRequested, ({
+                track,
+                action,
+                beatBatchCount,
+              }: FYPEventPayload['BeatBatchRequested']) => {
                 return this.dispatchBeatBatches(track, action, beatBatchCount);
               });
 
     Dispatcher.getInstance()
-              .on(FYPEvent.TrackChangeReady, ({ track }) => {
+              .on(FYPEvent.TrackChangeReady, ({ track }: FYPEventPayload['TrackChangeReady']) => {
                 if (this._nextTransition && this._nextTransition.destinationTrack.ID === track.ID) {
                   this._isNextTransitionReady = true;
                 }
+              });
+
+    Dispatcher.getInstance()
+              .on(FYPEvent.TrackChanged, () => {
+                this._isNextTransitionReady = false;
+                this._nextTransition = null;
               });
   }
 
@@ -48,12 +59,17 @@ class ActionDecider {
 
   private dispatchBeatBatchReady(track: TrackModel, fromBeat: BeatModel): BeatModel {
     const nextAction = this.getAndLoadNext(track, fromBeat.startMs);
+
+    if (!nextAction) {
+      debugger;
+    }
+
     const beatBatch = branchFactory.createBeatBatch(fromBeat, nextAction);
 
     Dispatcher.getInstance()
               .dispatch(FYPEvent.BeatBatchReady, {
                 beatBatch,
-              });
+              } as FYPEventPayload['BeatBatchReady']);
 
     const lastBeatInThisBatch = nextAction.destinationBeat;
     return lastBeatInThisBatch;
@@ -118,7 +134,7 @@ class ActionDecider {
     Dispatcher.getInstance()
               .dispatch(FYPEvent.TrackChangeRequested, {
                 track,
-              });
+              } as FYPEventPayload['TrackChangeRequested']);
   }
 }
 

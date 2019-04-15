@@ -72,12 +72,13 @@ class WorldPoint extends Primitive {
    *                               fix something to the bottom of a circle
    */
   public static getPointOnCircleFromPercentage(
+    centerPoint: WorldPoint,
     songCircle: SongCircle,
     percentage: number,
     rotationOffsetPercentage: number = this.rotationOffsetPercentage,
   ): WorldPoint {
     const angleRadians = super.getAngleFromPercentage(percentage, rotationOffsetPercentage);
-    const circle = new Circle(songCircle.getCenter(), songCircle.radius);
+    const circle = new Circle(centerPoint, songCircle.radius);
 
     return circle.getPointOnCircle(angleRadians);
   }

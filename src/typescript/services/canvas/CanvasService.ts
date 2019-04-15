@@ -29,7 +29,7 @@ class CanvasService {
     this.scene = Scene.getInstance(canvas);
 
     Dispatcher.getInstance()
-              .on(FYPEvent.TrackChangeRequested, ({ track }) => {
+              .on(FYPEvent.TrackChangeRequested, ({ track }: FYPEventPayload['TrackChangeRequested']) => {
                 if (!this._playingTrackID) {
                   this.renderParentSongCircle(track);
                 } else {
@@ -38,34 +38,44 @@ class CanvasService {
               });
 
     Dispatcher.getInstance()
-              .on(FYPEvent.BranchesAnalyzed, ({ track, branches }) => {
-                this.renderBezierCurves(track, BezierCurveType.NORMAL, ...branches);
+              .on(FYPEvent.BranchesAnalyzed, ({ track, branches }: FYPEventPayload['BranchesAnalyzed']) => {
+                const curveType = this._playingTrackID === track.ID ? BezierCurveType.NORMAL : BezierCurveType.HIDDEN;
+
+                this.renderBezierCurves(track, curveType, ...branches);
               });
 
     Dispatcher.getInstance()
-              .on(FYPEvent.TransitionsAnalyzed, ({ track, transitions }) => {
+              .on(FYPEvent.TransitionsAnalyzed, ({ track, transitions }: FYPEventPayload['TransitionsAnalyzed']) => {
                 this.renderChildSongCircles(track, transitions);
               });
 
     Dispatcher.getInstance()
-              .on(FYPEvent.BeatBatchPlaying, ({ nextAction, source, startPercentage, endPercentage, durationMs }) => {
+              .on(FYPEvent.BeatBatchPlaying, ({
+                nextAction,
+                source,
+                startPercentage,
+                endPercentage,
+                durationMs,
+              }: FYPEventPayload['BeatBatchPlaying']) => {
                 this.startSongCircleRotation(source, startPercentage, endPercentage, durationMs);
 
                 if (!nextAction || nextAction instanceof BranchModel) {
-                  this.updateNextBezierCurve(nextAction);
+                  this.updateNextBezierCurve(nextAction as BranchModel | null);
                 }
               });
 
     Dispatcher.getInstance()
-              .on(FYPEvent.BeatBatchStopped, data => this.stopSongCircleRotation(data));
+              .on(FYPEvent.BeatBatchStopped, ({ resetPercentage }: FYPEventPayload['BeatBatchStopped']) => {
+                this.stopSongCircleRotation(resetPercentage);
+              });
 
     Dispatcher.getInstance()
-              .on(FYPEvent.PlayingTrackBranchAdded, ({ branch }) => {
+              .on(FYPEvent.PlayingTrackBranchAdded, ({ branch }: FYPEventPayload['PlayingTrackBranchAdded']) => {
                 this.renderBezierCurves(branch.track, BezierCurveType.NORMAL, branch);
               });
 
     Dispatcher.getInstance()
-              .on(FYPEvent.TrackChangeReady, ({ track }) => {
+              .on(FYPEvent.TrackChangeReady, ({ track }: FYPEventPayload['TrackChangeReady']) => {
                 this.updateChildSongCircle(track, SongCircleType.NEXT_PARENT_READY);
               });
 
@@ -77,13 +87,18 @@ class CanvasService {
                 transitionOutDurationMs,
                 transitionInStartMs,
                 transitionInDurationMs,
-              }) => {
+              }: FYPEventPayload['TrackChanging']) => {
                 this.transitionChildToParent(destinationTrack,
                                              transitionDurationMs,
                                              transitionOutStartMs,
                                              transitionOutDurationMs,
                                              transitionInStartMs,
                                              transitionInDurationMs);
+              });
+
+    Dispatcher.getInstance()
+              .on(FYPEvent.TrackChanged, ({ track }: FYPEventPayload['TrackChanged']) => {
+                this.updateParentSong(track);
               });
   }
 
@@ -130,8 +145,6 @@ class CanvasService {
                                             childSongCircles,
                                             parentBezierCurves,
                                             nextParentBezierCurves);
-
-    // TODO: Switch playingTrackID
 
     // TODO: Things we have to do here:
     // 1. Render in the BezierCurves immediately in BranchesAnalyzed, but hide them
@@ -244,7 +257,7 @@ class CanvasService {
     );
   }
 
-  public stopSongCircleRotation({ resetPercentage }: FYPEventPayload['BeatBatchStopped']) {
+  public stopSongCircleRotation(resetPercentage: number) {
     this._isAnimating = false;
 
     if (resetPercentage !== null) {

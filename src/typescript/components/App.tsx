@@ -9,6 +9,7 @@ import { UIBarType, FYPEventPayload, OptionsPanelProps } from '../types/general'
 import OptionsPanel from './options-panel/OptionsPanel';
 import config from '../config';
 import SongTransitionModel from '../models/SongTransition';
+import TrackModel from '../models/audio-analysis/Track';
 
 interface AppProps {}
 
@@ -41,11 +42,15 @@ class App extends React.Component<AppProps, AppState> {
 
     // When a new song has been loaded and analyzed
     Dispatcher.getInstance()
-              .on(FYPEvent.TrackChanged, data => this.updateBars(data));
+              .on(FYPEvent.TrackChanged, ({ track }: FYPEventPayload['TrackChanged']) => {
+                this.updateBars(track);
+              });
 
     if (config.fyp.debug) {
       Dispatcher.getInstance()
-                .on(FYPEvent.TransitionsAnalyzed, ({ transitions }) => this.setChildTracks(transitions));
+                .on(FYPEvent.TransitionsAnalyzed, ({ transitions }: FYPEventPayload['TransitionsAnalyzed']) => {
+                  this.setChildTracks(transitions);
+                });
     }
   }
 
@@ -99,7 +104,7 @@ class App extends React.Component<AppProps, AppState> {
     );
   }
 
-  private updateBars({ track }: FYPEventPayload['TrackChanged']) {
+  private updateBars(track: TrackModel) {
     const UIBars = uiService.getUIBars(track);
 
     this.setState({

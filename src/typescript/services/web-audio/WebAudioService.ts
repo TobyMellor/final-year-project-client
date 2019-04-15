@@ -37,7 +37,9 @@ class WebAudioService {
     //   '0wwPcA6wtMf6HUMpIRdeP7',
 
     Dispatcher.getInstance()
-              .on(FYPEvent.TrackChangeRequested, data => this.startLoadingNextTrack(data));
+              .on(FYPEvent.TrackChangeRequested, ({ track }: FYPEventPayload['TrackChangeRequested']) => {
+                this.startLoadingNextTrack(track);
+              });
 
     // Once we've loaded the track and analyzed it
     Dispatcher.getInstance()
@@ -45,7 +47,9 @@ class WebAudioService {
 
     // When the Branch Service has given us new beats
     Dispatcher.getInstance()
-              .on(FYPEvent.BeatBatchReady, data => this.queueBeatsForPlaying(data));
+              .on(FYPEvent.BeatBatchReady, ({ beatBatch }: FYPEventPayload['BeatBatchReady']) => {
+                this.queueBeatsForPlaying(beatBatch);
+              });
 
     const initialTrackID = '4RVbK6cV0VqWdpCDcx3hiT'; // TODO: Replace dynamically
     trackFactory.createTrack(initialTrackID)
@@ -53,7 +57,7 @@ class WebAudioService {
                   Dispatcher.getInstance()
                             .dispatch(FYPEvent.TrackChangeRequested, {
                               track: initialTrack,
-                            });
+                            } as FYPEventPayload['TrackChangeRequested']);
                 });
   }
 
@@ -61,7 +65,7 @@ class WebAudioService {
     return this._instance || (this._instance = new this());
   }
 
-  private startLoadingNextTrack({ track }: FYPEventPayload['TrackChangeRequested']) {
+  private startLoadingNextTrack(track: TrackModel) {
     this._nextTrack = track;
 
     async function getAudioBuffer(audioContext: AudioContext, trackID: string) {
@@ -124,11 +128,13 @@ class WebAudioService {
    *                          has finished playing (e.g. used for UI branch previewing)
    */
   private async queueBeatsForPlaying(
-    { beatBatch }: FYPEventPayload['BeatBatchReady'],
+    beatBatch: BeatBatch,
     source: NeedleType = NeedleType.PLAYING,
     onEndedCallbackFn = () => {
       const nextAction = SampleQueueManager.lastAction();
-      this.dispatchBeatBatchRequested(this._playingTrack, nextAction);
+      const nextTrack = nextAction instanceof SongTransitionModel ? nextAction.destinationTrack : this._playingTrack;
+
+      this.dispatchBeatBatchRequested(nextTrack, nextAction);
     },
   ) {
     if (!beatBatch || !beatBatch.originTrackBeats || beatBatch.originTrackBeats.length === 0) {
@@ -232,7 +238,7 @@ class WebAudioService {
     // Preview everything up to, and including, the origin beat
     const firstBeatBatch = createBeatBatch(this._playingTrack, [...beforeOriginBeatOrders, originBeatOrder], branch);
     this.queueBeatsForPlaying(
-      { beatBatch: firstBeatBatch },
+      firstBeatBatch,
       NeedleType.BRANCH_NAV,
       () => {},
     );
@@ -240,7 +246,7 @@ class WebAudioService {
     // Preview everything after the destination beat
     const secondBeatBatch = createBeatBatch(this._playingTrack, afterDestinationBeatOrders, null);
     this.queueBeatsForPlaying(
-      { beatBatch: secondBeatBatch },
+      secondBeatBatch,
       NeedleType.BRANCH_NAV,
       onEndedCallbackFn,
     );
@@ -311,7 +317,7 @@ class WebAudioService {
     Dispatcher.getInstance()
               .dispatch(FYPEvent.TrackChangeReady, {
                 track,
-              });
+              } as FYPEventPayload['TrackChangeReady']);
   }
 
   private dispatchTrackChanging(
@@ -338,14 +344,14 @@ class WebAudioService {
                 transitionOutDurationMs,
                 transitionInStartMs,
                 transitionInDurationMs,
-              });
+              } as FYPEventPayload['TrackChanging']);
   }
 
   private dispatchTrackChanged(track: TrackModel) {
     Dispatcher.getInstance()
               .dispatch(FYPEvent.TrackChanged, {
                 track,
-              });
+              } as FYPEventPayload['TrackChanged']);
   }
 
   private dispatchBeatBatchRequested(
@@ -358,7 +364,7 @@ class WebAudioService {
                 track,
                 action,
                 beatBatchCount,
-              });
+              } as FYPEventPayload['BeatBatchRequested']);
   }
 
   /**
@@ -388,14 +394,14 @@ class WebAudioService {
                 endPercentage,
                 durationMs,
                 source,
-              });
+              } as FYPEventPayload['BeatBatchPlaying']);
   }
 
   private dispatchBeatBatchStopped(resetPercentage: number | null) {
     Dispatcher.getInstance()
               .dispatch(FYPEvent.BeatBatchStopped, {
                 resetPercentage,
-              });
+              } as FYPEventPayload['BeatBatchStopped']);
   }
 }
 

@@ -8,6 +8,7 @@ import Dispatcher from '../../events/Dispatcher';
 import * as branchChooser from './branch/branch-choosing';
 import ActionService from './ActionService';
 import * as utils from '../../utils/misc';
+import { FYPEventPayload } from '../../types/general';
 
 class BranchService extends ActionService {
   private static _instance: BranchService = null;
@@ -16,7 +17,9 @@ class BranchService extends ActionService {
     super();
 
     Dispatcher.getInstance()
-              .on(FYPEvent.TrackChangeRequested, ({ track }) => super.generateAndDispatchActions(track));
+              .on(FYPEvent.TrackChangeRequested, ({ track }: FYPEventPayload['TrackChangeRequested']) => {
+                super.generateAndDispatchActions(track);
+              });
   }
 
   public static getInstance(): BranchService {
@@ -57,14 +60,14 @@ class BranchService extends ActionService {
               .dispatch(FYPEvent.BranchesAnalyzed, {
                 track,
                 branches,
-              });
+              } as FYPEventPayload['BranchesAnalyzed']);
   }
 
   private dispatchPlayingTrackBranchAdded(branch: BranchModel) {
     Dispatcher.getInstance()
               .dispatch(FYPEvent.PlayingTrackBranchAdded, {
                 branch,
-              });
+              } as FYPEventPayload['PlayingTrackBranchAdded']);
   }
 }
 

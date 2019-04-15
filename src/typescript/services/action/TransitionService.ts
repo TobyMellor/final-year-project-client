@@ -4,7 +4,7 @@ import SongTransitionModel from '../../models/SongTransition';
 import TrackModel from '../../models/audio-analysis/Track';
 import ActionService from './ActionService';
 import { TransitionManager } from './transition/transition-management';
-import * as math from '../../utils/math';
+import { FYPEventPayload } from '../../types/general';
 
 class TransitionService extends ActionService {
   private static _instance: TransitionService = null;
@@ -13,7 +13,9 @@ class TransitionService extends ActionService {
     super();
 
     Dispatcher.getInstance()
-              .on(FYPEvent.BranchesAnalyzed, ({ track }) => super.generateAndDispatchActions(track));
+              .on(FYPEvent.BranchesAnalyzed, ({ track }: FYPEventPayload['BranchesAnalyzed']) => {
+                super.generateAndDispatchActions(track);
+              });
   }
 
   public static getInstance(): TransitionService {
@@ -37,7 +39,7 @@ class TransitionService extends ActionService {
               .dispatch(FYPEvent.TransitionsAnalyzed, {
                 track,
                 transitions,
-              });
+              } as FYPEventPayload['TransitionsAnalyzed']);
   }
 }
 

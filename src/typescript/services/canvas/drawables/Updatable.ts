@@ -46,11 +46,6 @@ abstract class Updatable {
     shouldInversePercentage = false,
   }: AddMeshOptions) {
     mesh.renderOrder = this.getRenderOrder() + renderOrder;
-    // (<THREE.MeshLambertMaterial>mesh.material).depthTest = false;
-    (<THREE.MeshLambertMaterial>mesh.material).polygonOffset = true;
-    (<THREE.MeshLambertMaterial>mesh.material).polygonOffsetFactor = renderOrder;
-    (<THREE.MeshLambertMaterial>mesh.material).polygonOffsetUnits = 1;
-    // (<THREE.MeshLambertMaterial>mesh.material).group = true;
     mesh.fadeIn = fadeIn;
     mesh.fadeOut = fadeOut;
 
@@ -296,8 +291,8 @@ type BaseAnimationOptions = {
   isLastLoop?: boolean,
   fromType?: SongCircleType,
   toType?: SongCircleType,
-  startRGB?: RGB,
-  endRGB?: RGB,
+  startRGB?: RGB | null,
+  endRGB?: RGB | null,
   startScale?: number,
   endScale?: number,
 };

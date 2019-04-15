@@ -75,7 +75,9 @@ class Needle extends Updatable {
   }
 
   protected get center() {
-    const position = WorldPoint.getPointOnCircleFromPercentage(this._songCircle, this._percentage);
+    const position = WorldPoint.getPointOnCircleFromPercentage(this._songCircle.getCenter(),
+                                                               this._songCircle,
+                                                               this._percentage);
 
     return position.alignToSceneBase();
   }

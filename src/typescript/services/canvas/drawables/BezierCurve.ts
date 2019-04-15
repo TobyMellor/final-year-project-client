@@ -102,9 +102,9 @@ class BezierCurve extends Updatable {
   ): THREE.Vector3[] {
     // The 4 control points (center is used twice)
     // If a 0 percentage is given, it will be anchored to the bottom of the SongCircle
-    const centerPoint = this.center;
-    const fromPoint = WorldPoint.getPointOnCircleFromPercentage(songCircle, fromPercentage);
-    const toPoint = WorldPoint.getPointOnCircleFromPercentage(songCircle, toPercentage);
+    const centerPoint = WorldPoint.getOrigin().alignToSceneBase();
+    const fromPoint = WorldPoint.getPointOnCircleFromPercentage(centerPoint, songCircle, fromPercentage);
+    const toPoint = WorldPoint.getPointOnCircleFromPercentage(centerPoint, songCircle, toPercentage);
 
     // From point is largest, to point is smallest
 

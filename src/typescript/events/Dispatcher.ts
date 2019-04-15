@@ -20,7 +20,7 @@ class Dispatcher {
   dispatch(eventName: string, data: any = null) {
     const event = this.events[eventName];
 
-    loggerService.debug(`Event ${eventName} dispatched!`);
+    loggerService.debug(`Event ${eventName} dispatched!`, { data });
 
     if (event) {
       loggerService.debug(`Event ${eventName} fired to ${event.getListenerCount()} listener(s)!`);
