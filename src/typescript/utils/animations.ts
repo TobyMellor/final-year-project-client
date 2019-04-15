@@ -2,7 +2,7 @@ import * as conversions from './conversions';
 import { MeshAnimationOptions } from '../services/canvas/drawables/Updatable';
 
 export function defaultChangeType(options: MeshAnimationOptions) {
-  if (options.startRGB && options.endRGB) {
+  if (options.startRGB != null && options.endRGB != null) {
     defaultChangeColour(options);
   }
 
