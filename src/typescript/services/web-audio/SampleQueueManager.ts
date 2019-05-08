@@ -12,6 +12,24 @@ class SampleQueueManager {
     this.queuedSampleBatches = [];
   }
 
+  public static clearFuture(audioContext: AudioContext): QueuedSampleModel | null {
+    const playingQueuedSample: QueuedSampleModel | null = this.getPlayingQueuedSample(audioContext);
+
+    if (!playingQueuedSample) {
+      this.clear();
+      return null;
+    }
+
+    // Keep one sample, so the next sample can be queued from it
+    // Leaving the action as null will not dispatch another request
+    this.queuedSampleBatches = [{
+      queuedSamplesToNextOriginBeat: [playingQueuedSample],
+      action: null,
+    }];
+
+    return playingQueuedSample;
+  }
+
   public static add(
     audioContext: AudioContext,
     {
@@ -131,6 +149,22 @@ class SampleQueueManager {
     // If there's no queued beats in this sample, it's an immediate transition. Try the next sample.
     const beats = samples[samples.length - 2].originTrackBeats;
     return beats[beats.length - 1];
+  }
+
+  private static getPlayingQueuedSample(audioContext: AudioContext): QueuedSampleModel {
+    for (let i = this.queuedSampleBatches.length - 1; i >= 0; i -= 1) {
+      const { queuedSamplesToNextOriginBeat: queuedSamples } = this.queuedSampleBatches[i];
+
+      for (let j = queuedSamples.length - 1; j >= 0; j -= 1) {
+        const queuedSample = queuedSamples[j];
+
+        if (queuedSample.originTrackSubmittedCurrentTime <= audioContext.currentTime) {
+          return queuedSamples[j];
+        }
+      }
+    }
+
+    return null;
   }
 }
 

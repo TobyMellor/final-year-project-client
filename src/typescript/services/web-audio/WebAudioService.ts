@@ -1,9 +1,9 @@
 import TrackModel from '../../models/audio-analysis/Track';
 import Dispatcher from '../../events/Dispatcher';
 import * as trackFactory from '../../factories/track';
-import { FYPEvent, NeedleType, BranchType, TransitionType } from '../../types/enums';
+import { FYPEvent, NeedleType, BranchType } from '../../types/enums';
 import SampleQueueManager from './SampleQueueManager';
-import { FYPEventPayload, BeatBatch, QueuedSampleBatch } from '../../types/general';
+import { FYPEventPayload, BeatBatch, QueuedSampleBatch, Sample } from '../../types/general';
 import * as conversions from '../../utils/conversions';
 import BranchModel from '../../models/branches/Branch';
 import fyp from '../../config/fyp';
@@ -19,7 +19,7 @@ class WebAudioService {
   private _audioContext: AudioContext;
   private _audioBuffers: { [trackID: string]: AudioBuffer } = {};
   private _nextTrackAudioBufferPromise: Promise<AudioBuffer>;
-  private _audioBufferSourceNodes: Set<AudioBufferSourceNode> = new Set();
+  private _samples: Sample[] = [];
 
   private _playingTrack: TrackModel = null;
   private _nextTrack: TrackModel = null;
@@ -34,7 +34,9 @@ class WebAudioService {
     //   '6wVWJl64yoTzU27EI8ep20', // Crying Lightning
     //   '3aUFrxO1B8EW63QchEl3wX',
     //   '2hmHlBM0kPBm17Y7nVIW9f',
-    //   '0wwPcA6wtMf6HUMpIRdeP7',
+    //   '0wwPcA6wtMf6HUMpIRdeP7', // Hotline Bling
+    //   '2zMMdC4xvRClYcWNFJBZ0j', // End Game
+    //   '1JbR9RDP3ogVNEWFgNXAjh' // Look what you made me do
 
     Dispatcher.getInstance()
               .on(FYPEvent.TrackChangeRequested, ({ track }: FYPEventPayload['TrackChangeRequested']) => {
@@ -51,7 +53,12 @@ class WebAudioService {
                 this.queueBeatsForPlaying(beatBatch);
               });
 
-    const initialTrackID = '4RVbK6cV0VqWdpCDcx3hiT'; // TODO: Replace dynamically
+    Dispatcher.getInstance()
+              .on(FYPEvent.SeekRequested, ({ percentage }: FYPEventPayload['SeekRequested']) => {
+                this.seek(percentage);
+              });
+
+    const initialTrackID = '1JbR9RDP3ogVNEWFgNXAjh'; // TODO: Replace dynamically
     trackFactory.createTrack(initialTrackID)
                 .then((initialTrack: TrackModel) => {
                   Dispatcher.getInstance()
@@ -95,7 +102,7 @@ class WebAudioService {
 
       // Schedule two BeatBatches in advance
       const SCHEDULE_BUFFER_COUNT = 2;
-      this.dispatchBeatBatchRequested(this._playingTrack, null, SCHEDULE_BUFFER_COUNT);
+      this.dispatchBeatBatchRequested(this._playingTrack, null, 0, SCHEDULE_BUFFER_COUNT);
 
       return;
     }
@@ -142,29 +149,30 @@ class WebAudioService {
     }
 
     const queuedSampleBatch = SampleQueueManager.add(this._audioContext, beatBatch);
-    let lastBufferSource: AudioBufferSourceNode;
+    let lastSample: Sample;
 
     // When the first beat has started, we want to dispatch the "BeatBatchPlaying" event
     const onStartedFn = () => {
       this.dispatchBeatBatchPlaying(queuedSampleBatch, source);
     };
 
-    const { queuedSamplesToNextOriginBeat: samples } = queuedSampleBatch;
-    samples.forEach((sample, i) => {
+    const { queuedSamplesToNextOriginBeat: queuedSamples } = queuedSampleBatch;
+    queuedSamples.forEach((queuedSample, i) => {
       const {
         originTrackSubmittedCurrentTime,
         originTrackBeats,
         originTrackBeatsDurationSecs,
         isTransitionSample,
-      } = sample;
-      let bufferSource: AudioBufferSourceNode;
+      } = queuedSample;
+      let sample: Sample;
 
       if (originTrackBeats.length) {
-        bufferSource = this.playSample(beatBatch.track,
-                                       originTrackSubmittedCurrentTime,
-                                       originTrackBeats[0].startSecs,
-                                       originTrackBeatsDurationSecs,
-                                       i === 0 && onStartedFn);
+        sample = this.playSample(beatBatch.track,
+                                 queuedSample,
+                                 originTrackSubmittedCurrentTime,
+                                 originTrackBeats[0].startSecs,
+                                 originTrackBeatsDurationSecs,
+                                 i === 0 && onStartedFn);
       }
 
       if (isTransitionSample) {
@@ -172,38 +180,39 @@ class WebAudioService {
           destinationTrackSubmittedCurrentTime,
           destinationTrackBeats,
           destinationTrackBeatsDurationSecs,
-        } = sample;
+        } = queuedSample;
 
         if (destinationTrackBeats.length) {
           const action = beatBatch.action as SongTransitionModel;
 
-          bufferSource = this.playSample(action.destinationTrack,
-                                         destinationTrackSubmittedCurrentTime,
-                                         destinationTrackBeats[0].startSecs,
-                                         destinationTrackBeatsDurationSecs);
+          sample = this.playSample(action.destinationTrack,
+                                   queuedSample,
+                                   destinationTrackSubmittedCurrentTime,
+                                   destinationTrackBeats[0].startSecs,
+                                   destinationTrackBeatsDurationSecs);
         }
       }
 
       // TODO: Cleanup
-      if (i === samples.length - 1) {
+      if (i === queuedSamples.length - 1) {
         if (isTransitionSample) {
-          if (!bufferSource) {
-            lastBufferSource.onended = () => {
-              this.dispatchTrackChanging(beatBatch.action as SongTransitionModel, sample);
-              onEndedCallbackFn();
+          if (!sample) {
+            lastSample.source.onended = () => {
+              this.dispatchTrackChanging(beatBatch.action as SongTransitionModel, queuedSample);
+              this.dispatchBeatBatchRequested((beatBatch.action as SongTransitionModel).destinationTrack, beatBatch.action);
             };
           } else {
-            lastBufferSource.onended = () => {
-              this.dispatchTrackChanging(beatBatch.action as SongTransitionModel, sample);
+            lastSample.source.onended = () => {
+              this.dispatchTrackChanging(beatBatch.action as SongTransitionModel, queuedSample);
             };
-            bufferSource.onended = onEndedCallbackFn;
+            sample.source.onended = onEndedCallbackFn;
           }
         } else {
-          bufferSource.onended = onEndedCallbackFn;
+          sample.source.onended = onEndedCallbackFn;
         }
       }
 
-      lastBufferSource = bufferSource;
+      lastSample = sample;
     });
   }
 
@@ -254,11 +263,12 @@ class WebAudioService {
 
   private playSample(
     track: TrackModel,
+    queuedSample: QueuedSampleModel,
     when?: number,
     offset?: number,
     duration?: number,
     onStartedFn?: (() => void) | null,
-  ): AudioBufferSourceNode {
+  ): Sample {
     const audioBuffer = this.getAudioBuffer(track);
     const source = this._audioContext.createBufferSource();
 
@@ -276,20 +286,22 @@ class WebAudioService {
 
     source.start(when, offset, duration);
 
+    let onStartedTimer;
     if (onStartedFn) {
-      setTimeout(() => {
-        // If we've called this.stop(), don't request more beats.
-        if (!this._audioBufferSourceNodes.has(source)) {
-          return;
-        }
-
+      onStartedTimer = setTimeout(() => {
         onStartedFn();
       }, conversions.secsToMs(when - this._audioContext.currentTime));
     }
 
-    this._audioBufferSourceNodes.add(source);
+    const sample: Sample = {
+      onStartedTimer,
+      queuedSample,
+      source,
+    };
 
-    return source;
+    this._samples.push(sample);
+
+    return sample;
   }
 
   private getAudioBuffer({ ID }: TrackModel): AudioBuffer {
@@ -302,15 +314,42 @@ class WebAudioService {
    */
   public stop(resetPercentage: number = null) {
     // Stop all queued samples, then clear them from memory
-    this._audioBufferSourceNodes.forEach((source) => {
+    this._samples.forEach(({ source, onStartedTimer }) => {
       source.onended = null;
       source.stop();
+      clearTimeout(onStartedTimer);
     });
-    this._audioBufferSourceNodes.clear();
+    this._samples = [];
 
     SampleQueueManager.clear();
 
     this.dispatchBeatBatchStopped(resetPercentage);
+  }
+
+  public seek(percentage: number) {
+    const playingQueuedSample: QueuedSampleModel | null = SampleQueueManager.clearFuture(this._audioContext);
+
+    if (playingQueuedSample) {
+      this._samples = this._samples.filter((sample) => {
+        sample.source.onended = null;
+        clearTimeout(sample.onStartedTimer);
+        delete sample.onStartedTimer;
+
+        if (sample.queuedSample.uuid !== playingQueuedSample.uuid) {
+          sample.source.stop();
+          return false;
+        }
+
+        return true;
+      });
+    } else {
+      this._samples = [];
+    }
+
+    const track = this._playingTrack;
+    const playthroughMs = track.duration.ms * conversions.percentageToDecimal(percentage);
+
+    this.dispatchBeatBatchRequested(track, null, playthroughMs, 2); // TODO: Make SCHEDULE COUNT GLOBAL
   }
 
   private dispatchTrackChangeReady(track: TrackModel) {
@@ -357,6 +396,7 @@ class WebAudioService {
   private dispatchBeatBatchRequested(
     track: TrackModel,
     action: ActionModel | null, // null if start of song
+    fromMs?: number,
     beatBatchCount: number = 1,
   ) {
     Dispatcher.getInstance()
@@ -364,6 +404,7 @@ class WebAudioService {
                 track,
                 action,
                 beatBatchCount,
+                fromMs,
               } as FYPEventPayload['BeatBatchRequested']);
   }
 

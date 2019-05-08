@@ -71,14 +71,22 @@ class WorldPoint extends Primitive {
    *                               This can be manually overridden if you always want to, say,
    *                               fix something to the bottom of a circle
    */
-  public static getPointOnCircleFromPercentage(
+  public static getPointOnSongCircleFromPercentage(
     centerPoint: WorldPoint,
     songCircle: SongCircle,
     percentage: number,
-    rotationOffsetPercentage: number = this.rotationOffsetPercentage,
   ): WorldPoint {
+    return WorldPoint.getPointOnCircleFromPercentage(centerPoint, songCircle.radius, percentage);
+  }
+
+  public static getPointOnCircleFromPercentage(
+    centerPoint: WorldPoint,
+    radius: number,
+    percentage: number,
+    rotationOffsetPercentage: number = this.rotationOffsetPercentage,
+  ) {
     const angleRadians = super.getAngleFromPercentage(percentage, rotationOffsetPercentage);
-    const circle = new Circle(centerPoint, songCircle.radius);
+    const circle = new Circle(centerPoint, radius);
 
     return circle.getPointOnCircle(angleRadians);
   }
@@ -89,6 +97,21 @@ class WorldPoint extends Primitive {
       this.y,
       this.z,
     );
+  }
+
+  /**
+   * Determines if a point lies outside, not on, the circle.
+   *
+   * Uses the equation: x^2 + y^2 = r, which is:
+   *   - x^2 + y^2 < r if lies within
+   *   - x^2 + y^2 = r if lies on
+   *   - x^2 + y^2 > r if lies outside
+   *
+   * @param point The point to check
+   * @param songCircle The circle to check
+   */
+  public static isPointOutsideCircle({ x, y }: WorldPoint, { radius }: SongCircle): boolean {
+    return Math.pow(x, 2) + Math.pow(y, 2) > radius;
   }
 }
 

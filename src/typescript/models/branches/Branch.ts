@@ -30,6 +30,10 @@ abstract class BranchModel extends ActionModel {
     return branch1.earliestBeat.order === branch2.earliestBeat.order
         && branch1.latestBeat.order === branch2.latestBeat.order;
   }
+
+  public get size() {
+    return this.latestBeat.order - this.earliestBeat.order;
+  }
 }
 
 export default BranchModel;

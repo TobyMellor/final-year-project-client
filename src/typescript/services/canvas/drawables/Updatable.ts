@@ -3,7 +3,7 @@ import WorldPoint from './utils/WorldPoint';
 import Scene from './Scene';
 import Rotation from './utils/Rotation';
 import config from '../../../config';
-import { AnimationType, AnimationCurve, SongCircleType } from '../../../types/enums';
+import { AnimationType, AnimationCurve, SongCircleType, NeedleType } from '../../../types/enums';
 import * as animations from '../../../utils/animations';
 import { RGB } from '../../../types/general';
 
@@ -289,8 +289,8 @@ type BaseAnimationOptions = {
   animationDecimal?: number,
   isFirstLoop?: boolean,
   isLastLoop?: boolean,
-  fromType?: SongCircleType,
-  toType?: SongCircleType,
+  fromType?: SongCircleType | NeedleType,
+  toType?: SongCircleType | NeedleType,
   startRGB?: RGB | null,
   endRGB?: RGB | null,
   startScale?: number,

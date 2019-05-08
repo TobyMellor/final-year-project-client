@@ -24,7 +24,7 @@ class BeatModel extends TimeIntervalModel {
 
   public get timbre(): number {
     const segments = this._segments;
-    const totalTimbre = segments.reduce((a, b) => a + b.timbre, 0);
+    const totalTimbre = segments.reduce((a, b) => a + b.averageTimbre, 0);
     const averageTimbre = totalTimbre / segments.length;
 
     return averageTimbre;

@@ -75,6 +75,10 @@ canvas {
       &.debug-panel {
         top: 0;
         bottom: initial;
+
+        .modal-body {
+          display: initial;
+        }
       }
 
       .modal-body {

@@ -1,4 +1,5 @@
 import BranchModel from '../../../models/branches/Branch';
+import config from '../../../config';
 
 export function getNextBranch(branches: BranchModel[], fromMs: number) {
   const futureBranches = getFutureBranches(branches, fromMs);
@@ -21,8 +22,16 @@ function getFutureBranches(
 }
 
 function getBestBranch(branches: BranchModel[]): BranchModel {
-  const randomIndex = Math.floor(Math.random() * branches.length);
-  const randomBranch = branches[randomIndex];
+  const sortedBranches = branches.sort((a, b) => a.originBeat.order - b.originBeat.order);
 
-  return randomBranch;
+  let currentProbability = config.choosing.minimumChanceProbability;
+  const probabilityIncreaseAmount = (1 - config.choosing.minimumChanceProbability) / branches.length;
+
+  for (let i = 0; i < sortedBranches.length; i += 1) {
+    currentProbability += probabilityIncreaseAmount;
+
+    if (Math.random() <= currentProbability) {
+      return sortedBranches[i];
+    }
+  }
 }

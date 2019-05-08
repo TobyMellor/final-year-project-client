@@ -4,6 +4,8 @@ import config from '../../../config';
 import SegmentModel from '../../../models/audio-analysis/Segment';
 import AudioAnalysisModel from '../../../models/audio-analysis/AudioAnalysis';
 
+const tf = require('@tensorflow/tfjs');
+
 // The un-normalized distance score, and the two beats
 type BeatPairInfo = {
   distanceScore: number,
@@ -26,6 +28,10 @@ export function getSimilarBeats({ beats }: AudioAnalysisModel): SimilarBeatPair[
       const secondBeat = filteredBeats[j];
 
       const distanceScore = getDistanceScore(firstBeat, secondBeat);
+      if (distanceScore > config.analysis.discardDistanceThreshold) {
+        continue;
+      }
+
       beatPairs.push({
         distanceScore,
         firstBeat,
@@ -34,9 +40,11 @@ export function getSimilarBeats({ beats }: AudioAnalysisModel): SimilarBeatPair[
     }
   }
 
-  const hydratedBeatPairs = hydrateBeatPairs(beatPairs);
+  const filteredBeatPairs = declutter(beatPairs.filter(isLong));
+
+  const hydratedBeatPairs = hydrateBeatPairs(filteredBeatPairs);
   return hydratedBeatPairs.filter(isSimilar)
-                          .map(({ firstBeat, secondBeat }, i) => {
+                          .map(({ firstBeat, secondBeat }) => {
                             return [firstBeat, secondBeat] as SimilarBeatPair;
                           });
 }
@@ -64,9 +72,9 @@ function hydrateBeatPairs(beatPairs: BeatPairInfo[]): BeatPairInfo[] {
   });
 }
 
-function isSimilar({ normalizedDistanceScore }: BeatPairInfo) {
-  const distanceThreshold = config.analysis.distanceThreshold;
-  return distanceThreshold !== -1 && normalizedDistanceScore <= distanceThreshold;
+function isSimilar({ normalizedDistanceScore }: BeatPairInfo): boolean {
+  const threshold = config.analysis.normalizedDistanceThreshold;
+  return threshold !== -1 && normalizedDistanceScore <= threshold;
 }
 
 function getDistanceScore(firstBeat: BeatModel, secondBeat: BeatModel): number {
@@ -106,33 +114,32 @@ function getSegmentsDistance(
 ): number {
   function getSegmentDistance(firstSegment: SegmentModel, secondSegment: SegmentModel) {
     const {
+      confidence,
       duration,
-      startLoudnessMs,
+      endLoudnessMs,
       maxTimeLoudnessMs,
       maxLoudness,
-      endLoudnessMs,
+      pitches,
+      timbre,
+      startLoudnessMs,
     } = config.analysis.distance_weights.beat;
 
-    return math.distance(firstSegment.durationMs, secondSegment.durationMs, duration) +
+    return math.distance(firstSegment.confidence, secondSegment.confidence, confidence) +
+           math.distance(firstSegment.durationMs, secondSegment.durationMs, duration) +
+           math.distance(firstSegment.endLoudnessMs, secondSegment.endLoudnessMs, endLoudnessMs) +
            math.distance(firstSegment.maxTimeLoudnessMs, secondSegment.maxTimeLoudnessMs, maxTimeLoudnessMs) +
-           math.distance(firstSegment.maxLoudness, secondSegment.maxLoudness, maxLoudness);
+           math.distance(firstSegment.maxLoudness, secondSegment.maxLoudness, maxLoudness) +
+           math.euclideanDistance(firstSegment.pitches, secondSegment.pitches, pitches) +
+           math.euclideanDistance(firstSegment.timbre, secondSegment.timbre, timbre) +
+           math.distance(firstSegment.startLoudnessMs, secondSegment.startLoudnessMs, startLoudnessMs);
   }
-
-  // loudness
-  // - start (time)
-  // - maxTime (time)
-  // - max
-  // - end (time)
-  // pitch
-  // timbre
-  // We can also use the duration of the beat,
 
   // Iterate over the beat's segments with the most segments
   const [mostSegments, fewestSegments] = firstSegments.length >= secondSegments.length
                                        ? [firstSegments, secondSegments]
                                        : [secondSegments, firstSegments];
 
-  return mostSegments.reduce((distance, segment, i) => {
+  const totalDistance = mostSegments.reduce((distance, segment, i) => {
     const otherSegment = fewestSegments[i];
 
     if (!otherSegment) {
@@ -141,6 +148,9 @@ function getSegmentsDistance(
 
     return distance + getSegmentDistance(segment, otherSegment);
   }, 0);
+  const meanDistance = totalDistance / mostSegments.length;
+
+  return meanDistance;
 }
 
 export function getMockedSimilarBeats(
@@ -150,10 +160,11 @@ export function getMockedSimilarBeats(
 
   if (trackID === '4RVbK6cV0VqWdpCDcx3hiT') { // Reborn
     beatPairs.push([beats[52], beats[100]]);
-    // beatPairs.push([beats[53], beats[325]]);
-    // beatPairs.push([beats[194], beats[242]]);
-    // beatPairs.push([beats[86], beats[214]]);
-    // beatPairs.push([beats[106], beats[203]]);
+    beatPairs.push([beats[53], beats[325]]);
+    beatPairs.push([beats[194], beats[242]]);
+    beatPairs.push([beats[86], beats[214]]);
+    beatPairs.push([beats[106], beats[203]]);
+    beatPairs.push([beats[205], beats[300]]);
   } else if (trackID === '3aUFrxO1B8EW63QchEl3wX') { // Feel The Love
     // Mock goes here
   } else if (trackID === '2hmHlBM0kPBm17Y7nVIW9f') { // My Propeller
@@ -175,4 +186,44 @@ export function getMockedSimilarBeats(
   }
 
   return beatPairs;
+}
+
+/**
+ * Determines if a branch is not too short
+ *
+ * @param beatPairs Pairs of potentially similar beats
+ */
+function isLong({ firstBeat, secondBeat }: BeatPairInfo): boolean {
+  return math.distance(secondBeat.order, firstBeat.order) >= config.analysis.minimumBranchBeatSize;
+}
+
+/**
+ * Declutters branches that start and end roughly in the same location.
+ *
+ * It will keep only the best branches
+ *
+ * @param beatPairs Pairs of potentially similar beats
+ */
+function declutter(beatPairs: BeatPairInfo[]): BeatPairInfo[] {
+  const declutteredBeatPairs: Set<BeatPairInfo> = new Set();
+
+  beatPairs.forEach((thisBeatPair) => {
+    const clutteredBeatPairs = beatPairs.filter(otherBeatPair => isRoughlySame(thisBeatPair, otherBeatPair));
+    const bestBeatPair = clutteredBeatPairs.sort((a, b) => a.distanceScore - b.distanceScore)[0];
+
+    declutteredBeatPairs.add(bestBeatPair);
+  });
+
+  return [...declutteredBeatPairs];
+}
+
+/**
+ * Determines if two branches roughly head towards the same direction
+ */
+function isRoughlySame(firstBeatPair: BeatPairInfo, secondBeatPair: BeatPairInfo): boolean {
+  const firstBeatDistance = math.distance(firstBeatPair.firstBeat.order, secondBeatPair.firstBeat.order);
+  const secondBeatDistance = math.distance(firstBeatPair.secondBeat.order, secondBeatPair.secondBeat.order);
+
+  return firstBeatDistance <= config.analysis.minimumBranchBeatSize
+      && secondBeatDistance <= config.analysis.minimumBranchBeatSize;
 }

@@ -66,7 +66,7 @@ function getTimbreAndLoudness(
 ) {
   const { timbreDataset, loudnessDataset } = segments.reduce(
     (acc, segment) => {
-      acc.timbreDataset.push(segment.timbre);
+      acc.timbreDataset.push(segment.averageTimbre);
       acc.loudnessDataset.push(segment.maxLoudness);
 
       return acc;

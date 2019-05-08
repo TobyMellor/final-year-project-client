@@ -43,6 +43,8 @@ export enum FYPEvent {
   // Fired when the audio needs to be stopped, e.g. when the user starts previewing in the BranchNav
   // Triggers the stopping of the needle animation and audio
   BeatBatchStopped = 'beat_batch_stopped',
+
+  SeekRequested = 'seek_requested',
 }
 
 export enum BranchNavStatus {
@@ -80,6 +82,10 @@ export enum NeedleType {
   // Always present when BranchNav is shown
   // Focused when BranchNav.state !== PREVIEWING
   BRANCH_NAV = 'branch_nav',
+
+  SEEKING = 'seeking',
+
+  HIDDEN = 'hidden',
 }
 
 export enum BranchType {
@@ -145,4 +151,5 @@ export enum AnimationCurve {
   EASE_IN = 'ease_in',
   EASE_OUT = 'ease_out',
   LINEAR = 'linear',
+  BOUNCE = 'bounce',
 }

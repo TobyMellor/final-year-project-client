@@ -96,8 +96,8 @@ class SongCircle extends Updatable {
       canChangeType: true,
       changeType: (options: MeshAnimationOptions) => {
         const { fromType: from, toType: to, animationDecimal, material } = options;
-        const isTransitioningToChild = this.isTransitioningToChild(from, to);
-        const isTransitioningtoParent = this.isTransitioningToParent(from, to);
+        const isTransitioningToChild = this.isTransitioningToChild(from as SongCircleType, to as SongCircleType);
+        const isTransitioningtoParent = this.isTransitioningToParent(from as SongCircleType, to as SongCircleType);
 
         if (isTransitioningToChild || isTransitioningtoParent) {
           const colours = config.drawables.songCircle.colour;
@@ -325,8 +325,10 @@ class SongCircle extends Updatable {
   }
 
   private fadeChildParentMeshes(options: MeshAnimationOptions) {
-    const isTransitioningToChild = this.isTransitioningToChild(options.fromType, options.toType);
-    const isTransitioningtoParent = this.isTransitioningToParent(options.fromType, options.toType);
+    const to = options.toType as SongCircleType;
+    const from = options.fromType as SongCircleType;
+    const isTransitioningToChild = this.isTransitioningToChild(from, to);
+    const isTransitioningtoParent = this.isTransitioningToParent(from, to);
 
     if (isTransitioningtoParent) {
       animations.defaultFadeOut(options);

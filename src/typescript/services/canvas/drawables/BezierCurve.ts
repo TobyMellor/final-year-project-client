@@ -33,7 +33,6 @@ type Input = {
  * the circle
  */
 class BezierCurve extends Updatable {
-  private _curve: THREE.CubicBezierCurve3 = null;
   private _positionNeedsUpdate: boolean = false;
 
   private _type: BezierCurveType;
@@ -103,25 +102,20 @@ class BezierCurve extends Updatable {
     // The 4 control points (center is used twice)
     // If a 0 percentage is given, it will be anchored to the bottom of the SongCircle
     const centerPoint = WorldPoint.getOrigin().alignToSceneBase();
-    const fromPoint = WorldPoint.getPointOnCircleFromPercentage(centerPoint, songCircle, fromPercentage);
-    const toPoint = WorldPoint.getPointOnCircleFromPercentage(centerPoint, songCircle, toPercentage);
+    const fromPoint = WorldPoint.getPointOnSongCircleFromPercentage(centerPoint, songCircle, fromPercentage);
+    const toPoint = WorldPoint.getPointOnSongCircleFromPercentage(centerPoint, songCircle, toPercentage);
+    const controlRadius = songCircle.radius * Math.max((1 - ((Math.abs(toPercentage - fromPercentage) * 12) / 100)), 0);
+    const firstControlPoint = WorldPoint.getPointOnCircleFromPercentage(centerPoint, controlRadius, fromPercentage);
+    const secondControlPoint = WorldPoint.getPointOnCircleFromPercentage(centerPoint, controlRadius, toPercentage);
 
     // From point is largest, to point is smallest
 
-    let curve = this._curve;
-    if (!curve) {
-      curve = this._curve = new THREE.CubicBezierCurve3(
-        new THREE.Vector3(fromPoint.x, fromPoint.y),
-        new THREE.Vector3(centerPoint.x, centerPoint.y),
-        new THREE.Vector3(centerPoint.x, centerPoint.y),
-        new THREE.Vector3(toPoint.x, toPoint.y),
-      );
-    } else {
-      curve.v0.x = fromPoint.x;
-      curve.v0.y = fromPoint.y;
-      curve.v3.x = toPoint.x;
-      curve.v3.y = toPoint.y;
-    }
+    const curve = new THREE.CubicBezierCurve3(
+      new THREE.Vector3(fromPoint.x, fromPoint.y),
+      new THREE.Vector3(firstControlPoint.x, firstControlPoint.y),
+      new THREE.Vector3(secondControlPoint.x, secondControlPoint.y),
+      new THREE.Vector3(toPoint.x, toPoint.y),
+    );
 
     return curve.getPoints(config.canvas.bezierCurve.points);
   }
@@ -182,16 +176,16 @@ class BezierCurve extends Updatable {
   }
 
   protected getRenderOrder() {
-    let renderOrder = 0;
+    let renderOrder = -Math.abs((this._fromPercentage - this._toPercentage));
 
     // Order of precedence: PREVIEW -> SCAFFOLD -> NEXT -> NORMAL
     switch (this._type) {
       case BezierCurveType.PREVIEW:
-        renderOrder += 1;
+        renderOrder += 1000;
       case BezierCurveType.SCAFFOLD:
-        renderOrder += 1;
+        renderOrder += 1000;
       case BezierCurveType.NEXT:
-        renderOrder += 1;
+        renderOrder += 1000;
     }
 
     return renderOrder;

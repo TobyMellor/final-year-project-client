@@ -133,6 +133,7 @@ class App extends React.Component<AppProps, AppState> {
           toggleBranchNavButton,
         ],
         dropdowns: [],
+        sliders: [],
       },
     };
   }
@@ -145,6 +146,14 @@ class App extends React.Component<AppProps, AppState> {
       options: childTracks,
       onClick: (ID: string) => this.handleRequestTrackChange(ID),
     };
+    const changeTransitionProbabilitySlider = {
+      label: 'Change Transition Probability',
+      min: 0,
+      max: 1,
+      step: 0.01,
+      initialValue: config.choosing.minimumTransitionProbability,
+      onSlide: (value: number) => (config.choosing.minimumTransitionProbability = value),
+    };
 
     return {
       isDebugPanel: true,
@@ -152,6 +161,9 @@ class App extends React.Component<AppProps, AppState> {
         buttons: [],
         dropdowns: [
           requestTrackChangeDropdown,
+        ],
+        sliders: [
+          changeTransitionProbabilitySlider,
         ],
       },
     };

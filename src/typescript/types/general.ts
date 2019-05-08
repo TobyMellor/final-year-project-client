@@ -9,6 +9,10 @@ import BackwardBranchModel from '../models/branches/BackwardBranch';
 import SongTransitionModel from '../models/SongTransition';
 import ActionModel from '../models/Action';
 import QueuedSampleModel from '../models/web-audio/QueuedBeat';
+import WorldPoint from '../services/canvas/drawables/utils/WorldPoint';
+import SongCircle from '../services/canvas/drawables/SongCircle';
+import BezierCurve from '../services/canvas/drawables/BezierCurve';
+import { Drawable } from '../services/canvas/drawables/Scene';
 
 export type TimeIdentifier = {
   ms: number;
@@ -141,10 +145,24 @@ export interface DropdownProps {
   onClick: (ID: string) => void;
 }
 
+export interface SliderProps {
+  label: string;
+  min: number;
+  max: number;
+  step: number;
+  initialValue: number;
+  onSlide: (value: number) => void;
+}
+
+export interface SliderState {
+  value: number;
+}
+
 export interface OptionsPanelProps {
   toggles: {
     buttons: ButtonProps[],
     dropdowns: DropdownProps[],
+    sliders: SliderProps[],
   };
   isDebugPanel?: boolean;
 }
@@ -196,7 +214,8 @@ export type FYPEventPayload = {
   };
   BeatBatchRequested: {
     track: TrackModel;
-    action: ActionModel; // Not present when previewing through BranchNav
+    fromMs: number;
+    action: ActionModel | null;
     beatBatchCount: number;
   };
   BeatBatchReady: {
@@ -212,6 +231,9 @@ export type FYPEventPayload = {
   BeatBatchStopped: {
     resetPercentage: number | null; // Where to move NeedleType.PLAYING after stopping
   };
+  SeekRequested: {
+    percentage: number,
+  },
 };
 
 export type BeatBatch = {
@@ -232,3 +254,9 @@ export type ForwardAndBackwardBranch = [ForwardBranchModel, BackwardBranchModel]
 export type ForwardAndBackwardBranches = [ForwardBranchModel[], BackwardBranchModel[]];
 
 export type RGB = [number, number, number];
+
+export interface Sample {
+  queuedSample: QueuedSampleModel;
+  onStartedTimer: NodeJS.Timer;
+  source: AudioBufferSourceNode;
+}

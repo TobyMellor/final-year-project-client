@@ -1,47 +1,47 @@
 import Scene from './Scene';
 import SongCircle from './SongCircle';
-import Updatable from './Updatable';
+import Updatable, { MeshAnimationOptions } from './Updatable';
 import * as THREE from 'three';
 import WorldPoint from './utils/WorldPoint';
 import Rotation from './utils/Rotation';
-import { NeedleType } from '../../../types/enums';
+import { NeedleType, AnimationType } from '../../../types/enums';
 import config from '../../../config';
+import * as conversions from '../../../utils/conversions';
+import * as animations from '../../../utils/animations';
 
 type Input = {
   scene: Scene;
   songCircle: SongCircle;
-  needleType: NeedleType;
+  type: NeedleType;
   percentage: number;
 };
 
 class Needle extends Updatable {
   private _songCircle: SongCircle;
-  public needleType: NeedleType;
+  private _type: NeedleType;
   private _percentage: number;
 
   constructor({
     scene,
     songCircle,
-    needleType,
+    type,
     percentage,
   }: Input) {
     super();
 
     this._songCircle = songCircle;
-    this.needleType = needleType;
+    this._type = type;
     this._percentage = percentage;
 
-    this.addNeedle(songCircle, needleType, percentage);
+    this.addNeedle(songCircle, type, percentage);
 
     super.addAll(scene);
   }
 
-  private addNeedle(songCircle: SongCircle, needleType: NeedleType, percentage: number) {
+  private addNeedle(songCircle: SongCircle, type: NeedleType, percentage: number) {
     const [height, width] = this.getHeightAndWidth(songCircle);
     const geometry = new THREE.PlaneGeometry(height, width);
-
-    const color = this.getColor(needleType);
-    const material = new THREE.MeshLambertMaterial({ color });
+    const material = new THREE.MeshLambertMaterial({ color: config.drawables.needle.colour[type] });
 
     const position = WorldPoint.getOrigin()
                                .translate(height / 2, 0);
@@ -50,20 +50,18 @@ class Needle extends Updatable {
       geometry,
       material,
       position,
-      renderOrder: 0,
+      renderOrder: 1000,
       shouldInversePercentage: true,
+      canChangeType: true,
+      shouldKeepVisible: this._type === NeedleType.BRANCH_NAV,
+      changeType: (options: MeshAnimationOptions) => {
+        if (options.fromType === NeedleType.HIDDEN) {
+          animations.defaultFadeIn(options);
+        } else {
+          animations.defaultFadeOut(options);
+        }
+      },
     });
-  }
-
-  private getColor(needleType: NeedleType): number {
-    switch (needleType) {
-      case NeedleType.PLAYING:
-        return 0xE74C3C;
-      case NeedleType.BRANCH_NAV:
-        return 0xF1C40F;
-      default:
-        throw new Error('Unknown NeedleType');
-    }
   }
 
   private getHeightAndWidth(songCircle: SongCircle): [number, number] {
@@ -75,9 +73,9 @@ class Needle extends Updatable {
   }
 
   protected get center() {
-    const position = WorldPoint.getPointOnCircleFromPercentage(this._songCircle.getCenter(),
-                                                               this._songCircle,
-                                                               this._percentage);
+    const position = WorldPoint.getPointOnSongCircleFromPercentage(this._songCircle.getCenter(),
+                                                                   this._songCircle,
+                                                                   this._percentage);
 
     return position.alignToSceneBase();
   }
@@ -86,12 +84,39 @@ class Needle extends Updatable {
     return Rotation.getRotationFromPercentage(this._percentage);
   }
 
+  public set songCircle(songCircle: SongCircle) {
+    this._songCircle = songCircle;
+  }
+
   protected getRenderOrder() {
-    return 10;
+    let renderOrder = 1000000;
+
+    // Order of precedence: PLAYING -> BRANCH_NAV -> SEEKING -> HIDDEN
+    switch (this._type) {
+      case NeedleType.PLAYING:
+        renderOrder += 1;
+      case NeedleType.BRANCH_NAV:
+        renderOrder += 1;
+      case NeedleType.SEEKING:
+        renderOrder += 1;
+    }
+
+    return renderOrder;
   }
 
   public set percentage(percentage: number) {
     this._percentage = percentage;
+  }
+
+  public set type(type: NeedleType) {
+    if (this._type !== type) {
+      super.animateWithOptions(AnimationType.CHANGE_TYPE, {
+        fromType: this._type,
+        toType: type,
+      });
+
+      this._type = type;
+    }
   }
 }
 
