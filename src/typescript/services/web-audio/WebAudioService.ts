@@ -199,7 +199,8 @@ class WebAudioService {
           if (!sample) {
             lastSample.source.onended = () => {
               this.dispatchTrackChanging(beatBatch.action as SongTransitionModel, queuedSample);
-              this.dispatchBeatBatchRequested((beatBatch.action as SongTransitionModel).destinationTrack, beatBatch.action);
+              this.dispatchBeatBatchRequested((beatBatch.action as SongTransitionModel).destinationTrack,
+                                              beatBatch.action);
             };
           } else {
             lastSample.source.onended = () => {
