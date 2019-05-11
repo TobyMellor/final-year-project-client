@@ -24,8 +24,8 @@ function getFutureBranches(
 function getBestBranch(branches: BranchModel[]): BranchModel {
   const sortedBranches = branches.sort((a, b) => a.originBeat.order - b.originBeat.order);
 
-  let currentProbability = config.choosing.minimumChanceProbability;
-  const probabilityIncreaseAmount = (1 - config.choosing.minimumChanceProbability) / branches.length;
+  let currentProbability = config.choosing.minimumBranchProbability;
+  const probabilityIncreaseAmount = (1 - config.choosing.minimumBranchProbability) / branches.length;
 
   for (let i = 0; i < sortedBranches.length; i += 1) {
     currentProbability += probabilityIncreaseAmount;

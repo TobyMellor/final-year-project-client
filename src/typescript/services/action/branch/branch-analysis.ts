@@ -155,18 +155,28 @@ export function getMockedSimilarBeats(
 ): SimilarBeatPair[] {
   const beatPairs: SimilarBeatPair[] = [];
 
-  if (trackID === '4RVbK6cV0VqWdpCDcx3hiT') { // Reborn
-    beatPairs.push([beats[52], beats[100]]);
-    beatPairs.push([beats[53], beats[325]]);
-    beatPairs.push([beats[194], beats[242]]);
-    beatPairs.push([beats[86], beats[214]]);
-    beatPairs.push([beats[106], beats[203]]);
-    beatPairs.push([beats[205], beats[300]]);
-  } else if (trackID === '3aUFrxO1B8EW63QchEl3wX') { // Feel The Love
+  const rebornID = '4RVbK6cV0VqWdpCDcx3hiT';
+  const feelTheLoveID = '3aUFrxO1B8EW63QchEl3wX';
+  const myPropellerID = '2hmHlBM0kPBm17Y7nVIW9f';
+  const cryingLightningID = '6wVWJl64yoTzU27EI8ep20';
+  const controllaID = '3O8NlPh2LByMU9lSRSHedm';
+  const hotlineBlingID = '0wwPcA6wtMf6HUMpIRdeP7';
+  const endGameID = '2zMMdC4xvRClYcWNFJBZ0j';
+  const lookWhatYouMadeMeDoID = '1JbR9RDP3ogVNEWFgNXAjh';
+
+  if (trackID === rebornID) { // Reborn
+    beatPairs.push([beats[25], beats[34]]);
+    // beatPairs.push([beats[52], beats[100]]);
+    // beatPairs.push([beats[53], beats[325]]);
+    // beatPairs.push([beats[194], beats[242]]);
+    // beatPairs.push([beats[86], beats[214]]);
+    // beatPairs.push([beats[106], beats[203]]);
+    // beatPairs.push([beats[205], beats[300]]);
+  } else if (trackID === feelTheLoveID) { // Feel The Love
     // Mock goes here
-  } else if (trackID === '2hmHlBM0kPBm17Y7nVIW9f') { // My Propeller
+  } else if (trackID === myPropellerID) { // My Propeller
     // Mock goes here
-  } else if (trackID === '6wVWJl64yoTzU27EI8ep20') { // Crying Lightning
+  } else if (trackID === cryingLightningID) { // Crying Lightning
     beatPairs.push([beats[43], beats[230]]);
     beatPairs.push([beats[253], beats[354]]);
     beatPairs.push([beats[100], beats[120]]);
@@ -174,12 +184,25 @@ export function getMockedSimilarBeats(
     beatPairs.push([beats[10], beats[205]]);
     beatPairs.push([beats[10], beats[205]]);
     beatPairs.push([beats[25], beats[75]]);
-  } else if (trackID === '3O8NlPh2LByMU9lSRSHedm') { // Controlla
+  } else if (trackID === controllaID) { // Controlla
     beatPairs.push([beats[65], beats[100]]);
     beatPairs.push([beats[4], beats[200]]);
     beatPairs.push([beats[150], beats[183]]);
-  } else {
-    // Mock goes here
+  } else if (trackID === hotlineBlingID) {
+    beatPairs.push([beats[11], beats[27]]);
+    beatPairs.push([beats[83], beats[195]]);
+    beatPairs.push([beats[90], beats[218]]);
+    beatPairs.push([beats[83], beats[227]]);
+    beatPairs.push([beats[83], beats[243]]);
+    beatPairs.push([beats[146], beats[274]]);
+    beatPairs.push([beats[163], beats[307]]);
+    beatPairs.push([beats[243], beats[259]]);
+    beatPairs.push([beats[320], beats[448]]);
+    beatPairs.push([beats[332], beats[460]]);
+    beatPairs.push([beats[335], beats[463]]);
+    beatPairs.push([beats[451], beats[467]]);
+    beatPairs.push([beats[483], beats[491]]);
+    beatPairs.push([beats[489], beats[505]]);
   }
 
   return beatPairs;

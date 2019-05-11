@@ -1,7 +1,7 @@
 import TrackModel from '../../models/audio-analysis/Track';
 import Dispatcher from '../../events/Dispatcher';
 import * as trackFactory from '../../factories/track';
-import { FYPEvent, NeedleType, BranchType } from '../../types/enums';
+import { FYPEvent, NeedleType, BranchType, TransitionType } from '../../types/enums';
 import SampleQueueManager from './SampleQueueManager';
 import { FYPEventPayload, BeatBatch, QueuedSampleBatch, Sample } from '../../types/general';
 import * as conversions from '../../utils/conversions';
@@ -58,7 +58,7 @@ class WebAudioService {
                 this.seek(percentage);
               });
 
-    const initialTrackID = '0wwPcA6wtMf6HUMpIRdeP7'; // TODO: Replace dynamically
+    const initialTrackID = '4RVbK6cV0VqWdpCDcx3hiT'; // TODO: Replace dynamically
     trackFactory.createTrack(initialTrackID)
                 .then((initialTrack: TrackModel) => {
                   Dispatcher.getInstance()
@@ -175,15 +175,16 @@ class WebAudioService {
       }
 
       if (isTransitionSample) {
-        const {
-          destinationTrackSubmittedCurrentTime,
-          destinationTrackBeats,
-          destinationTrackBeatsDurationSecs,
-        } = queuedSample;
-        const isImmediateTransition = !destinationTrackBeats.length;
         const transition = beatBatch.action as SongTransitionModel;
+        const isImmediateTransition = transition.type === TransitionType.IMMEDIATE;
 
-        if (isImmediateTransition) {
+        if (!isImmediateTransition) {
+          const {
+            destinationTrackSubmittedCurrentTime,
+            destinationTrackBeats,
+            destinationTrackBeatsDurationSecs,
+          } = queuedSample;
+
           sample = this.playSample(transition.destinationTrack,
                                    queuedSample,
                                    destinationTrackSubmittedCurrentTime,
@@ -193,10 +194,6 @@ class WebAudioService {
 
         lastSample.source.onended = () => {
           this.dispatchTrackChanging(transition, queuedSample);
-
-          if (isImmediateTransition) {
-            this.dispatchBeatBatchRequested(transition.destinationTrack, transition);
-          }
         };
       }
 

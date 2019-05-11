@@ -1,4 +1,4 @@
 export default {
-  minimumChanceProbability: 1,
-  minimumTransitionProbability: 0,
+  minimumBranchProbability: 0.75,
+  minimumTransitionProbability: 1,
 };

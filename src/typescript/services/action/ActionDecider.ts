@@ -62,11 +62,6 @@ class ActionDecider {
 
   private dispatchBeatBatchReady(track: TrackModel, fromBeat: BeatModel): [TrackModel, BeatModel] {
     const nextAction = this.getAndLoadNext(track, fromBeat.startMs);
-
-    if (!nextAction) {
-      debugger;
-    }
-
     const beatBatch = branchFactory.createBeatBatch(fromBeat, nextAction);
 
     Dispatcher.getInstance()
@@ -76,19 +71,19 @@ class ActionDecider {
 
     const lastBeatInThisBatch = nextAction.destinationBeat;
     const destinationTrack = nextAction instanceof SongTransitionModel ? nextAction.destinationTrack : track;
-  
+
     return [destinationTrack, lastBeatInThisBatch];
   }
 
   private getAndLoadNext(track: TrackModel, fromMs: number, actionType: ActionType = null): ActionModel {
     // If the track we requested to transition to has loaded, transition now
     if (this._isNextTransitionReady) { // TODO: Implement
-      if (track.ID === this._nextTransition.destinationTrack.ID) {
-        this._nextTransition = null;
-        this._isNextTransitionReady = false;
-      } else {
-        return this._nextTransition;
-      }
+      const nextTransition = this._nextTransition;
+
+      this._nextTransition = null;
+      this._isNextTransitionReady = false;
+
+      return nextTransition;
     }
 
     const nextActionType = actionType ? actionType : this.getNextActionType();
@@ -118,6 +113,7 @@ class ActionDecider {
 
     const random = Math.random();
     if (random < config.choosing.minimumTransitionProbability) {
+      config.choosing.minimumTransitionProbability = 0; // FIXME: Should be dynamic
       return ActionType.TRANSITION;
     }
 
