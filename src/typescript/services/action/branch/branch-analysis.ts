@@ -166,12 +166,12 @@ export function getMockedSimilarBeats(
 
   if (trackID === rebornID) { // Reborn
     beatPairs.push([beats[25], beats[34]]);
-    // beatPairs.push([beats[52], beats[100]]);
-    // beatPairs.push([beats[53], beats[325]]);
-    // beatPairs.push([beats[194], beats[242]]);
-    // beatPairs.push([beats[86], beats[214]]);
-    // beatPairs.push([beats[106], beats[203]]);
-    // beatPairs.push([beats[205], beats[300]]);
+    beatPairs.push([beats[52], beats[100]]);
+    beatPairs.push([beats[53], beats[325]]);
+    beatPairs.push([beats[194], beats[242]]);
+    beatPairs.push([beats[86], beats[214]]);
+    beatPairs.push([beats[106], beats[203]]);
+    beatPairs.push([beats[205], beats[300]]);
   } else if (trackID === feelTheLoveID) { // Feel The Love
     // Mock goes here
   } else if (trackID === myPropellerID) { // My Propeller
