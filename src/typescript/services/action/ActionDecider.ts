@@ -9,6 +9,8 @@ import ActionService from './ActionService';
 import BeatModel from '../../models/audio-analysis/Beat';
 import * as branchFactory from '../../factories/branch';
 import { FYPEventPayload } from '../../types/general';
+import * as misc from '../../utils/misc';
+import config from '../../config';
 
 enum ActionType {
   BRANCH = 'branch',
@@ -26,8 +28,9 @@ class ActionDecider {
                 track,
                 action,
                 beatBatchCount,
+                fromMs,
               }: FYPEventPayload['BeatBatchRequested']) => {
-                return this.dispatchBeatBatches(track, action, beatBatchCount);
+                return this.dispatchBeatBatches(track, action, beatBatchCount, fromMs);
               });
 
     Dispatcher.getInstance()
@@ -48,16 +51,16 @@ class ActionDecider {
     return this._instance || (this._instance = new this());
   }
 
-  private async dispatchBeatBatches(playingTrack: TrackModel, action: ActionModel, beatBatchCount: number) {
-    const track = action instanceof SongTransitionModel ? action.destinationTrack : playingTrack;
-    let fromBeat = action && action.destinationBeat || track.beats[0];
+  private async dispatchBeatBatches(track: TrackModel, action: ActionModel, beatBatchCount: number, fromMs?: number) {
+    let fromTrack = track;
+    let fromBeat = action ? action.destinationBeat : misc.getBeatFromMs(track.beats, fromMs || 0);
 
     for (let i = 0; i < beatBatchCount; i += 1) {
-      fromBeat = this.dispatchBeatBatchReady(track, fromBeat);
+      [fromTrack, fromBeat] = this.dispatchBeatBatchReady(fromTrack, fromBeat);
     }
   }
 
-  private dispatchBeatBatchReady(track: TrackModel, fromBeat: BeatModel): BeatModel {
+  private dispatchBeatBatchReady(track: TrackModel, fromBeat: BeatModel): [TrackModel, BeatModel] {
     const nextAction = this.getAndLoadNext(track, fromBeat.startMs);
 
     if (!nextAction) {
@@ -72,18 +75,20 @@ class ActionDecider {
               } as FYPEventPayload['BeatBatchReady']);
 
     const lastBeatInThisBatch = nextAction.destinationBeat;
-    return lastBeatInThisBatch;
+    const destinationTrack = nextAction instanceof SongTransitionModel ? nextAction.destinationTrack : track;
+  
+    return [destinationTrack, lastBeatInThisBatch];
   }
 
   private getAndLoadNext(track: TrackModel, fromMs: number, actionType: ActionType = null): ActionModel {
     // If the track we requested to transition to has loaded, transition now
-    if (this._isNextTransitionReady) {
-      const nextAction = this._nextTransition;
-
-      this._nextTransition = null;
-      this._isNextTransitionReady = false;
-
-      return nextAction;
+    if (this._isNextTransitionReady) { // TODO: Implement
+      if (track.ID === this._nextTransition.destinationTrack.ID) {
+        this._nextTransition = null;
+        this._isNextTransitionReady = false;
+      } else {
+        return this._nextTransition;
+      }
     }
 
     const nextActionType = actionType ? actionType : this.getNextActionType();
@@ -112,7 +117,7 @@ class ActionDecider {
     }
 
     const random = Math.random();
-    if (random < 1) {
+    if (random < config.choosing.minimumTransitionProbability) {
       return ActionType.TRANSITION;
     }
 

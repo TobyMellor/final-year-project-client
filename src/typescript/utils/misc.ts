@@ -83,3 +83,21 @@ export function getBeatsBetween(
 export function getBeatsThrough(beats: BeatModel[], fromBeat: BeatModel, toBeat: BeatModel): BeatModel[] {
   return getBeatsBetween(beats, fromBeat, toBeat, true);
 }
+
+export function getBeatsFromMs(beats: BeatModel[], fromMs: number): BeatModel[] {
+  return beats.filter(({ startMs }) => {
+    return startMs >= fromMs;
+  });
+}
+
+export function getBeatFromMs(beats: BeatModel[], fromMs: number): BeatModel {
+  for (let i = 0; i < beats.length; i += 1) {
+    const beat = beats[i];
+
+    if (beat.startMs >= fromMs) {
+      return beat;
+    }
+  }
+
+  throw new Error('No beat found!');
+}

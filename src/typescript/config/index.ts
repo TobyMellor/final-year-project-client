@@ -1,6 +1,7 @@
 import analysis from './analysis';
 import audio from './audio';
 import canvas from './canvas';
+import choosing from './choosing';
 import drawables from './drawables';
 import fyp from './fyp';
 import mock from './mock';
@@ -11,6 +12,7 @@ const config = {
   analysis,
   audio,
   canvas,
+  choosing,
   drawables,
   fyp,
   mock,

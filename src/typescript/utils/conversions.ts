@@ -1,6 +1,9 @@
 import { TimeIdentifier, RGB } from '../types/general';
 import Scene from '../services/canvas/drawables/Scene';
 import * as math from './math';
+import WorldPoint from '../services/canvas/drawables/utils/WorldPoint';
+import Rotation from '../services/canvas/drawables/utils/Rotation';
+import Updatable from '../services/canvas/drawables/Updatable';
 
 export function degreesToRadians(degrees: number) {
   const radians = degrees * (Math.PI / 180);
@@ -50,6 +53,13 @@ export function percentageToDecimal(percentage: number): number {
   return percentage / 100;
 }
 
+export function radiansToDecimal(radians: number): number {
+  const degrees = (radiansToDegrees(radians) + 360) % 360; // -180 to 180 -> 0 to 360
+  const percentage = degrees / 360;
+
+  return percentage;
+}
+
 export function secsToMs(seconds: number): number {
   return seconds * 1000;
 }
@@ -88,8 +98,19 @@ export function rgbToDecimal(r: number, g: number, b: number): number {
 // Edited from original function: https://stackoverflow.com/a/8469042/2957677
 export function decimalToRgb(decimal: number): RGB {
   return [
-    (decimal & 0xff0000) >> 16,
-    (decimal & 0x00ff00) >> 8,
-    (decimal & 0x0000ff),
+    (decimal & 0xFF0000) >> 16,
+    (decimal & 0x00FF00) >> 8,
+    (decimal & 0x0000FF),
   ];
+}
+
+export function pointToPercentage(
+  { x: centerX, y: centerY }: WorldPoint,
+  { x: pointX, y: pointY }: WorldPoint,
+): number {
+  const radians = Math.atan2(pointY - centerY, pointX - centerX) + (Math.PI / 2);
+  const decimal = radiansToDecimal(radians);
+  const percentage = decimalToPercentage(decimal);
+
+  return percentage;
 }

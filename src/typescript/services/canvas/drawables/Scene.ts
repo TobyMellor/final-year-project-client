@@ -1,11 +1,9 @@
 import Updatable from './Updatable';
 import * as THREE from 'three';
-import { OrbitControls } from 'three-orbitcontrols-ts';
 import WorldPoint from './utils/WorldPoint';
 import Rotation from './utils/Rotation';
 import * as conversions from '../../../utils/conversions';
 import config from '../../../config';
-import * as drawableFactory from '../../../factories/drawable';
 import { AnimationCurve } from '../../../types/enums';
 import * as animations from '../../../utils/animations';
 
@@ -15,12 +13,6 @@ export type Drawable = {
 
 class Scene {
   private static _instance: Scene = null;
-
-  public static Z_BASE_DISTANCE = -7;
-
-  private static CAMERA_FOV_DEGREES: number = 45;
-  public static CAMERA_Z_CLIP_NEAR: number = 0.1;
-  public static CAMERA_Z_CLIP_FAR: number = 3000.0;
 
   private _scene: THREE.Scene = null;
   private _camera: THREE.Camera = null;
@@ -36,16 +28,22 @@ class Scene {
   private _panActualX: number = 0;
   private _panActualY: number = 0;
 
-  private getCameraLocationPointFn = () => WorldPoint.getOrigin().alignToCameraBase();
-  private getCameraFocusPointFn = () => WorldPoint.getOrigin().alignToSceneBase();
+  private _mousePoint: WorldPoint = null;
+  private _currentRotationPercentage: number = 0;
 
-  private constructor(whereToDraw: HTMLCanvasElement) {
+  private getCameraLocationPointFn = () => WorldPoint.getOrigin();
+
+  private constructor(
+    whereToDraw: HTMLCanvasElement,
+    private _onMouseMove: (p: WorldPoint) => void,
+    private _onMouseDown: (p: WorldPoint) => void,
+  ) {
     const scene = new THREE.Scene();
     const aspectRatio = this.getAspectRatio();
-    const camera = new THREE.PerspectiveCamera(Scene.CAMERA_FOV_DEGREES,
+    const camera = new THREE.PerspectiveCamera(config.scene.cameraFOV,
                                                aspectRatio,
-                                               Scene.CAMERA_Z_CLIP_NEAR,
-                                               Scene.CAMERA_Z_CLIP_FAR);
+                                               config.scene.cameraClipNearDistance,
+                                               config.scene.cameraClipFarDistance);
 
     const renderer = new THREE.WebGLRenderer({
       canvas: whereToDraw,
@@ -63,6 +61,7 @@ class Scene {
     this._renderer = renderer;
 
     document.addEventListener('mousemove', (e: MouseEvent) => this.onMouseMove(e), false);
+    document.addEventListener('mousedown', (e: MouseEvent) => this.onMouseDown(e), false);
 
     // Starts the render loop
     requestAnimationFrame(() => this.render());
@@ -73,18 +72,48 @@ class Scene {
 
     this._panTargetX = x;
     this._panTargetY = y;
+
+    const vec = new THREE.Vector3(); // create once and reuse
+
+    vec.set(
+      (clientX / window.innerWidth) * 2 - 1,
+      -(clientY / window.innerHeight) * 2 + 1,
+      0.5,
+    );
+
+    vec.unproject(this._camera);
+
+    vec.sub(this._camera.position).normalize();
+
+    const { x: camX, y: camY, z: camZ } = this._camera.position;
+    const distance = (config.scene.sceneBaseDistance - camZ) / vec.z;
+
+    const { x: vecX, y: vecY, z: vecZ } = vec.multiplyScalar(distance);
+    const mousePoint = this._mousePoint = WorldPoint.getPoint(camX, camY, camZ).translate(vecX, vecY, vecZ);
+
+    this._onMouseMove(mousePoint);
+  }
+
+  private onMouseDown(e: MouseEvent) {
+    this.onMouseMove(e);
+
+    this._onMouseDown(this._mousePoint);
   }
 
   private getAspectRatio() {
     return window.innerWidth / window.innerHeight;
   }
 
-  public static getInstance(whereToDraw: HTMLCanvasElement): Scene {
+  public static getInstance(
+    whereToDraw: HTMLCanvasElement,
+    onMouseMove: (p: WorldPoint) => void,
+    onMouseDown: (p: WorldPoint) => void,
+  ): Scene {
     if (this._instance) {
       return this._instance;
     }
 
-    return this._instance = new this(whereToDraw);
+    return this._instance = new this(whereToDraw, onMouseMove, onMouseDown);
   }
 
   public add(...updatables: Updatable[]) {
@@ -113,17 +142,17 @@ class Scene {
     // Update position/rotation/colour etc of THREE.js meshes
     this.update();
 
-    // FIXME: This looks great, but transparent textures are fighting with eachother causing flickering
-    // this._panActualX += (this._panTargetX - this._panActualX) * config.scene.panCatchupSpeed;
-    // this._panActualY += (this._panTargetY - this._panActualY) * config.scene.panCatchupSpeed;
+    this._panActualX += (this._panTargetX - this._panActualX) * config.scene.panCatchupSpeed;
+    this._panActualY += (this._panTargetY - this._panActualY) * config.scene.panCatchupSpeed;
 
-    // const cameraFocusPoint = WorldPoint.getOrigin().alignToSceneBase();
-    // const cameraLocationPoint = WorldPoint.getPoint(
-    //   -this._panActualX * config.scene.panAmount,
-    //   this._panActualY * config.scene.panAmount,
-    //   this._camera.position.z,
-    // );
-    this.moveCamera(this.getCameraLocationPointFn(), this.getCameraFocusPointFn());
+    const defaultCameraLocationPoint = this.getCameraLocationPointFn();
+    const cameraLocationPoint = WorldPoint.getPoint(
+      defaultCameraLocationPoint.x + -this._panActualX * config.scene.panAmount,
+      defaultCameraLocationPoint.y + this._panActualY * config.scene.panAmount,
+      defaultCameraLocationPoint.z,
+    );
+
+    this.moveCamera(cameraLocationPoint);
 
     // Re-render everything on the scene through THREE.js
     this._renderer.render(this._scene, this._camera);
@@ -140,60 +169,70 @@ class Scene {
    * @param rotationCallbackFn Signals to the CanvasService to update the
    *                           rotation, and update the position of the Needle
    */
-  public animateRotation(
+  public async animateRotation(
     startRotationPercentage: number,
     endRotationPercentage: number,
     durationMs: number,
     rotationCallbackFn: (rotationPercentage: number) => boolean,
-  ) {
-    // Immediately rotate to the start percentage
-    rotationCallbackFn(startRotationPercentage);
+    animationCurve = config.scene.animationCurves[AnimationCurve.LINEAR],
+  ): Promise<void> {
+    if (this._currentRotationPercentage !== startRotationPercentage) {
+      await this.animateRotation(this._currentRotationPercentage,
+                           startRotationPercentage,
+                           Math.min(durationMs / 4, config.scene.maxRotationAnimationDurationMs),
+                           rotationCallbackFn,
+                           config.scene.animationCurves[AnimationCurve.EASE]);
+    }
 
-    let animationEndMs: number;
+    return new Promise((resolve) => {
+      // Immediately rotate to the start percentage
+      rotationCallbackFn(startRotationPercentage);
 
-    const renderFn = (nowMs: number) => {
-      const remainingMs = animationEndMs - nowMs;
+      let animationEndMs: number;
 
-      // If the animation has ended
-      if (remainingMs < 0) {
-        rotationCallbackFn(endRotationPercentage);
-        return;
-      }
+      const renderFn = (nowMs: number) => {
+        const remainingMs = animationEndMs - nowMs;
 
-      // TODO: Here I can apply easing formulas for the animation
-      const animationDecimal = 1 - (remainingMs / durationMs);
+        // If the animation has ended
+        if (remainingMs < 0) {
+          rotationCallbackFn(endRotationPercentage);
+          return resolve();
+        }
 
-      // Difference of startPercent (e.g. 30) and endPercent (e.g. 80), e.g. 80% - 30% = 50%
-      // Multiply by how far we are in the anim, e.g. 50% of the way through the animation gives 25%
-      // Add that number to the startRotationPercentage, e.g. 30% + 25% = 55%
-      const currentRotationPercentage = (endRotationPercentage - startRotationPercentage)
-                                      * animationDecimal
-                                      + startRotationPercentage;
+        const animationDecimal = animationCurve(1 - (remainingMs / durationMs));
 
-      // Fire the callback, letting the CanvasService know we've rotated
-      // (and need to, for example, update the playing needle)
-      const shouldContinueAnimation = rotationCallbackFn(currentRotationPercentage);
-      if (!shouldContinueAnimation) {
-        return;
-      }
+        // Difference of startPercent (e.g. 30) and endPercent (e.g. 80), e.g. 80% - 30% = 50%
+        // Multiply by how far we are in the anim, e.g. 50% of the way through the animation gives 25%
+        // Add that number to the startRotationPercentage, e.g. 30% + 25% = 55%
+        const currentRotationPercentage = this._currentRotationPercentage
+                                        = (endRotationPercentage - startRotationPercentage)
+                                        * animationDecimal
+                                        + startRotationPercentage;
 
-      // Repeat until the animation has finished
-      requestAnimationFrame(renderFn);
-    };
+        // Fire the callback, letting the CanvasService know we've rotated
+        // (and need to, for example, update the playing needle)
+        const shouldContinueAnimation = rotationCallbackFn(currentRotationPercentage);
+        if (!shouldContinueAnimation) {
+          return resolve();
+        }
 
-    requestAnimationFrame((startMs) => {
-      animationEndMs = startMs + durationMs;
+        // Repeat until the animation has finished
+        requestAnimationFrame(renderFn);
+      };
 
-      renderFn(startMs);
+      requestAnimationFrame((startMs) => {
+        animationEndMs = startMs + durationMs;
+
+        renderFn(startMs);
+      });
     });
   }
 
   public async animateCamera(
     getStartCameraLocationPointFn: () => WorldPoint,
-    getStartCameraFocusPointFn: () => WorldPoint,
     getEndCameraLocationPointFn: () => WorldPoint,
-    getEndCameraFocusPointFn: () => WorldPoint,
     durationMs: number,
+    animationCurve = config.scene.animationCurves[AnimationCurve.EASE],
   ): Promise<void> {
     return new Promise((resolve) => {
       let animationEndMs: number;
@@ -216,30 +255,22 @@ class Scene {
         // If the animation has ended
         if (remainingMs < 0) {
           this.getCameraLocationPointFn = getEndCameraLocationPointFn;
-          this.getCameraFocusPointFn = getEndCameraFocusPointFn;
           resolve();
           return;
         }
 
-        const easing = config.scene.animationCurves[AnimationCurve.EASE];
-        const animationDecimal = easing(1 - (remainingMs / durationMs));
+        const animationDecimal = animationCurve(1 - (remainingMs / durationMs));
 
         // We're using functions here as the start and end points can change
         // as the song rotates or circle sizes increase
         const startCameraLocationPoint = getStartCameraLocationPointFn();
-        const startCameraFocusPoint = getStartCameraFocusPointFn();
         const endCameraLocationPoint = getEndCameraLocationPointFn();
-        const endCameraFocusPoint = getEndCameraFocusPointFn();
 
         const currentCameraLocationPoint = getProgressToEndPoint(startCameraLocationPoint,
                                                                 endCameraLocationPoint,
                                                                 animationDecimal);
-        const currentCameraFocusPoint = getProgressToEndPoint(startCameraFocusPoint,
-                                                              endCameraFocusPoint,
-                                                              animationDecimal);
 
         this.getCameraLocationPointFn = () => currentCameraLocationPoint;
-        this.getCameraFocusPointFn = () => currentCameraFocusPoint;
 
         // Repeat until the animation has finished
         requestAnimationFrame(renderFn);
@@ -264,11 +295,10 @@ class Scene {
     Rotation.rotationOffsetPercentage = percentage;
   }
 
-  private moveCamera(cameraLocationPoint: WorldPoint, cameraFocusPoint: WorldPoint) {
+  private moveCamera(cameraLocationPoint: WorldPoint) {
     this._camera.position.x = cameraLocationPoint.x;
     this._camera.position.y = cameraLocationPoint.y;
     this._camera.position.z = cameraLocationPoint.z;
-    this._camera.lookAt(cameraFocusPoint.toVector3());
   }
 }
 

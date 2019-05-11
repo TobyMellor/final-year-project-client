@@ -30,11 +30,13 @@ class SegmentModel extends TimeIntervalModel {
   // A “chroma” vector representing the pitch content of the segment, corresponding to the
   // 12 pitch classes C, C#, D to B, with values ranging from 0 to 1 that describe the relative
   // dominance of every pitch in the chromatic scale.
-  private _pitch: number;
+  private _pitches: number[];
+  private _averagePitch: number;
 
   // Timbre is the quality of a musical note or sound that distinguishes different types of
   // musical instruments, or voices. Timbre vectors are best used in comparison with each other.
-  private _timbre: number;
+  private _timbre: number[];
+  private _averageTimbre: number;
 
   constructor({
     start,
@@ -46,7 +48,7 @@ class SegmentModel extends TimeIntervalModel {
     loudness_max,
     loudness_end,
     pitches,
-    timbre: timbres,
+    timbre,
   }: Input) {
     super({ start, duration, confidence, order });
     this._loudness = {
@@ -55,8 +57,10 @@ class SegmentModel extends TimeIntervalModel {
       max: loudness_max,
       end: conversions.getTimeIdentifierFromSecs(loudness_end),
     };
-    this._pitch = pitches.reduce((a, b) => a + b);
-    this._timbre = timbres.reduce((a, b) => a + b);
+    this._pitches = pitches;
+    this._averagePitch = pitches.reduce((a, b) => a + b);
+    this._timbre = timbre;
+    this._averageTimbre = timbre.reduce((a, b) => a + b);
   }
 
   public get startLoudnessMs(): number | null {
@@ -83,8 +87,19 @@ class SegmentModel extends TimeIntervalModel {
     return this._loudness.end.ms;
   }
 
-  public get timbre(): number {
+  public get pitches(): number[] {
+    return this._pitches;
+  }
+
+  public get averagePitch(): number {
+    return this._averagePitch;
+  }
+
+  public get timbre(): number[] {
     return this._timbre;
+  }
+  public get averageTimbre(): number {
+    return this._averageTimbre;
   }
 }
 

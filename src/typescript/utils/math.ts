@@ -43,6 +43,17 @@ export function distance(firstNumber: number, secondNumber: number, weight: numb
   return Math.abs(firstNumber - secondNumber) * weight;
 }
 
+export function euclideanDistance(firstNumbers: number[], secondNumbers: number[], weight: number = 1) {
+  let sum = 0;
+
+  firstNumbers.forEach((firstNumber, i) => {
+    const distance = firstNumber - secondNumbers[i];
+    sum += distance ** 2;
+  });
+
+  return Math.sqrt(sum) * weight;
+}
+
 export function getRandomInteger(from: number = 0, to: number = 100): number {
   return Math.round(Math.random() * to) + from;
 }

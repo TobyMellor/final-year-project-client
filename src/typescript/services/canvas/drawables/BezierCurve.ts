@@ -2,12 +2,15 @@ import config from '../../../config';
 import Scene from './Scene';
 import SongCircle from './SongCircle';
 import BranchModel from '../../../models/branches/Branch';
-import Updatable, { AnimatableMesh } from './Updatable';
+import Updatable from './Updatable';
 import * as THREE from 'three';
 import WorldPoint from './utils/WorldPoint';
 import Rotation from './utils/Rotation';
 import { BezierCurveType, AnimationType } from '../../../types/enums';
 import * as conversions from '../../../utils/conversions';
+import * as math from '../../../utils/math';
+import * as animations from '../../../utils/animations';
+
 const MeshLine = require('three.meshline');
 
 type MeshLineOptions = {
@@ -33,7 +36,6 @@ type Input = {
  * the circle
  */
 class BezierCurve extends Updatable {
-  private _curve: THREE.CubicBezierCurve3 = null;
   private _positionNeedsUpdate: boolean = false;
 
   private _type: BezierCurveType;
@@ -80,8 +82,8 @@ class BezierCurve extends Updatable {
     const material = new MeshLine.MeshLineMaterial({
       resolution: new THREE.Vector3(window.innerWidth, window.innerHeight, 10),
       sizeAttenuation: 0,
-      near: Scene.CAMERA_Z_CLIP_NEAR,
-      far: Scene.CAMERA_Z_CLIP_FAR,
+      near: config.scene.cameraClipNearDistance,
+      far: config.scene.cameraClipFarDistance,
       ...meshLineOptions,
     });
 
@@ -103,25 +105,22 @@ class BezierCurve extends Updatable {
     // The 4 control points (center is used twice)
     // If a 0 percentage is given, it will be anchored to the bottom of the SongCircle
     const centerPoint = WorldPoint.getOrigin().alignToSceneBase();
-    const fromPoint = WorldPoint.getPointOnCircleFromPercentage(centerPoint, songCircle, fromPercentage);
-    const toPoint = WorldPoint.getPointOnCircleFromPercentage(centerPoint, songCircle, toPercentage);
+    const fromPoint = WorldPoint.getPointOnSongCircleFromPercentage(centerPoint, songCircle, fromPercentage);
+    const toPoint = WorldPoint.getPointOnSongCircleFromPercentage(centerPoint, songCircle, toPercentage);
 
-    // From point is largest, to point is smallest
+    // Vary the depth of the bezier curve to the center, depending on the branch's length
+    // (longer branches go closer to the center, smaller branches stick to the outside)
+    const controlRadius = songCircle.radius * Math.max((1 - ((Math.abs(toPercentage - fromPercentage) * 12) / 100)), 0);
 
-    let curve = this._curve;
-    if (!curve) {
-      curve = this._curve = new THREE.CubicBezierCurve3(
-        new THREE.Vector3(fromPoint.x, fromPoint.y),
-        new THREE.Vector3(centerPoint.x, centerPoint.y),
-        new THREE.Vector3(centerPoint.x, centerPoint.y),
-        new THREE.Vector3(toPoint.x, toPoint.y),
-      );
-    } else {
-      curve.v0.x = fromPoint.x;
-      curve.v0.y = fromPoint.y;
-      curve.v3.x = toPoint.x;
-      curve.v3.y = toPoint.y;
-    }
+    const firstControlPoint = WorldPoint.getPointOnCircleFromPercentage(centerPoint, controlRadius, fromPercentage);
+    const secondControlPoint = WorldPoint.getPointOnCircleFromPercentage(centerPoint, controlRadius, toPercentage);
+
+    const curve = new THREE.CubicBezierCurve3(
+      new THREE.Vector3(fromPoint.x, fromPoint.y),
+      new THREE.Vector3(firstControlPoint.x, firstControlPoint.y),
+      new THREE.Vector3(secondControlPoint.x, secondControlPoint.y),
+      new THREE.Vector3(toPoint.x, toPoint.y),
+    );
 
     return curve.getPoints(config.canvas.bezierCurve.points);
   }
@@ -182,16 +181,16 @@ class BezierCurve extends Updatable {
   }
 
   protected getRenderOrder() {
-    let renderOrder = 0;
+    let renderOrder = -Math.abs((this._fromPercentage - this._toPercentage));
 
     // Order of precedence: PREVIEW -> SCAFFOLD -> NEXT -> NORMAL
     switch (this._type) {
       case BezierCurveType.PREVIEW:
-        renderOrder += 1;
+        renderOrder += 1000;
       case BezierCurveType.SCAFFOLD:
-        renderOrder += 1;
+        renderOrder += 1000;
       case BezierCurveType.NEXT:
-        renderOrder += 1;
+        renderOrder += 1000;
     }
 
     return renderOrder;

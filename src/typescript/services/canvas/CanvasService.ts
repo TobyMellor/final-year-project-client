@@ -1,7 +1,14 @@
 import Dispatcher from '../../events/Dispatcher';
 import Scene from '../canvas/drawables/Scene';
 import * as drawableFactory from '../../factories/drawable';
-import { FYPEvent, NeedleType, BezierCurveType, AnimationType, SongCircleType } from '../../types/enums';
+import {
+  FYPEvent,
+  NeedleType,
+  BezierCurveType,
+  AnimationType,
+  SongCircleType,
+  AnimationCurve,
+} from '../../types/enums';
 import { FYPEventPayload } from '../../types/general';
 import BezierCurve from './drawables/BezierCurve';
 import BranchModel from '../../models/branches/Branch';
@@ -12,6 +19,9 @@ import TrackModel from '../../models/audio-analysis/Track';
 import SongTransitionModel from '../../models/SongTransition';
 import Updatable from './drawables/Updatable';
 import config from '../../config';
+import * as conversions from '../../utils/conversions';
+import WorldPoint from './drawables/utils/WorldPoint';
+import Rotation from './drawables/utils/Rotation';
 
 class CanvasService {
   private static _instance: CanvasService = null;
@@ -20,13 +30,14 @@ class CanvasService {
   private _playingTrackID: string;
   private _songCircles: { [trackID: string]: SongCircle } = {};
   private _bezierCurves: { [trackID: string]: BezierCurve[] } = {};
-  private _playingNeedle: Needle | null = null;
-  private _branchNavNeedle: Needle | null = null;
+  private _needles: { [type: string]: Needle } = {};
   private _branchNavBezierCurve: BezierCurve | null = null;
   private _isAnimating = false;
 
   private constructor(canvas: HTMLCanvasElement) {
-    this.scene = Scene.getInstance(canvas);
+    this.scene = Scene.getInstance(canvas,
+                                  (p: WorldPoint) => this.handleMouseMove(p),
+                                  (p: WorldPoint) => this.handleMouseClick(p));
 
     Dispatcher.getInstance()
               .on(FYPEvent.TrackChangeRequested, ({ track }: FYPEventPayload['TrackChangeRequested']) => {
@@ -102,6 +113,39 @@ class CanvasService {
               });
   }
 
+  public handleMouseMove(mousePoint: WorldPoint) {
+    const parentSongCircle = this.getParentSongCircle();
+    if (!parentSongCircle) {
+      return;
+    }
+
+    const percentageInSong = this.getMousePercentage(mousePoint, parentSongCircle);
+    this.updateSeekingNeedle(mousePoint, percentageInSong, parentSongCircle);
+  }
+
+  public handleMouseClick(mousePoint: WorldPoint) {
+    const parentSongCircle = this.getParentSongCircle();
+    const isPointOutsideCircle = WorldPoint.isPointOutsideCircle(mousePoint, parentSongCircle);
+    if (isPointOutsideCircle) {
+      return;
+    }
+
+    const percentageInSong = this.getMousePercentage(mousePoint, parentSongCircle);
+    Dispatcher.getInstance()
+              .dispatch(FYPEvent.SeekRequested, {
+                percentage: percentageInSong,
+              });
+  }
+
+  private getMousePercentage(mousePoint: WorldPoint, songCircle: SongCircle): number {
+    const percentage = conversions.pointToPercentage(songCircle.getCenter(), mousePoint);
+
+    // Undo the rotationOffsetPercentage
+    const percentageInSong = percentage + Rotation.rotationOffsetPercentage;
+
+    return percentageInSong % 100;
+  }
+
   public static getInstance(canvas?: HTMLCanvasElement): CanvasService {
     if (this._instance) {
       return this._instance;
@@ -118,21 +162,22 @@ class CanvasService {
     transitionInStartMs: number,
     transitionInDurationMs: number,
   ) {
-    const getStartCameraFocusPointFn = () => this.getParentSongCircle().getAdjustedCenter();
-    const getStartCameraLocationPointFn = () => getStartCameraFocusPointFn().alignToCameraBase();
-    const getEndCameraFocusPointFn = () => this.getSongCircle(destinationTrack).getAdjustedCenter();
-    const getEndCameraLocationPointFn = () => getEndCameraFocusPointFn().alignToCameraBase();
+    const getStartCameraLocationPointFn = () => this.getParentSongCircle()
+                                                    .getAdjustedCenter()
+                                                    .alignToCameraBase();
+    const getEndCameraLocationPointFn = () => this.getSongCircle(destinationTrack)
+                                                  .getAdjustedCenter()
+                                                  .alignToCameraBase();
 
     this.scene.animateCamera(getStartCameraLocationPointFn,
-                             getStartCameraFocusPointFn,
                              getEndCameraLocationPointFn,
-                             getEndCameraFocusPointFn,
                              transitionDurationMs);
 
     const parentBezierCurves = this.getParentBezierCurves();
     const nextParentBezierCurves = this.getBezierCurves(destinationTrack);
     const parentSongCircle = this.getParentSongCircle();
     const nextParentSongCircle = this.getSongCircle(destinationTrack);
+    const needles = Object.values(this._needles);
 
     const childSongCircles = Object.values(this._songCircles)
                                    .filter(({ track: childTrack }) => {
@@ -144,7 +189,8 @@ class CanvasService {
                                             nextParentSongCircle,
                                             childSongCircles,
                                             parentBezierCurves,
-                                            nextParentBezierCurves);
+                                            nextParentBezierCurves,
+                                            needles);
 
     // TODO: Things we have to do here:
     // 1. Render in the BezierCurves immediately in BranchesAnalyzed, but hide them
@@ -164,9 +210,13 @@ class CanvasService {
     Updatable.animate(AnimationType.FADE_IN, songCircle, playingNeedle);
 
     this._songCircles[track.ID] = songCircle;
-    this._playingNeedle = playingNeedle;
+    this._needles[NeedleType.PLAYING] = playingNeedle;
 
     this.updateParentSong(track);
+
+    setTimeout(() => {
+      this.loadingAnimation();
+    }, 1500);
   }
 
   public renderBezierCurves(track: TrackModel, type: BezierCurveType, ...branches: BranchModel[]) {
@@ -277,7 +327,10 @@ class CanvasService {
     }
 
     const parentSongCircle = this.getParentSongCircle();
-    this._branchNavNeedle = drawableFactory.renderNeedle(this.scene, parentSongCircle, NeedleType.BRANCH_NAV, 0);
+    this._needles[NeedleType.BRANCH_NAV] = drawableFactory.renderNeedle(this.scene,
+                                                                        parentSongCircle,
+                                                                        NeedleType.BRANCH_NAV,
+                                                                        0);
     this._branchNavBezierCurve = drawableFactory.renderBezierCurveFromPercentages(this.scene,
                                                                                   parentSongCircle,
                                                                                   BezierCurveType.SCAFFOLD,
@@ -290,18 +343,41 @@ class CanvasService {
       return;
     }
 
-    this.scene.remove(this._branchNavBezierCurve, this._branchNavNeedle);
+    this.scene.remove(this._branchNavBezierCurve, this._needles[NeedleType.BRANCH_NAV]);
     this._branchNavBezierCurve = null;
   }
 
   public updateNeedle(needleType: NeedleType, percentage: number) {
-    const needle = needleType === NeedleType.PLAYING ? this._playingNeedle : this._branchNavNeedle;
+    const needle = this._needles[needleType];
 
     if (!needle) {
       throw new Error('Needle has not been rendered yet!');
     }
 
     drawableFactory.updateNeedle(needle, percentage);
+  }
+
+  private updateSeekingNeedle(mousePoint: WorldPoint, percentageInSong: number, songCircle: SongCircle) {
+    const isOutsideCircle = WorldPoint.isPointOutsideCircle(mousePoint, songCircle);
+    const seekingNeedle = this._needles[NeedleType.SEEKING];
+
+    if (isOutsideCircle) {
+      if (!seekingNeedle) {
+        return;
+      }
+
+      seekingNeedle.type = NeedleType.HIDDEN;
+    } else {
+      if (!seekingNeedle) {
+        this._needles[NeedleType.SEEKING] = drawableFactory.renderNeedle(this.scene,
+                                                                         songCircle,
+                                                                         NeedleType.SEEKING,
+                                                                         percentageInSong);
+      } else {
+        seekingNeedle.type = NeedleType.SEEKING;
+        seekingNeedle.percentage = percentageInSong;
+      }
+    }
   }
 
   private updateChildSongCircle(track: TrackModel, type: SongCircleType) {
@@ -328,6 +404,18 @@ class CanvasService {
 
   private getBezierCurves({ ID }: TrackModel | null): BezierCurve[] {
     return this._bezierCurves[ID];
+  }
+
+  private loadingAnimation() {
+    const defaultCameraLocationPoint = WorldPoint.getOrigin().translate(0, 0, -5);
+    const startCameraLocationPointFn = () => defaultCameraLocationPoint;
+    const endCameraLocationPointFn = () => WorldPoint.getOrigin().alignToCameraBase();
+    const animationCurve = config.scene.animationCurves[AnimationCurve.EASE_IN];
+
+    this.scene.animateCamera(startCameraLocationPointFn,
+                             endCameraLocationPointFn,
+                             500,
+                             animationCurve);
   }
 }
 

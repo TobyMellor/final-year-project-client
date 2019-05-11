@@ -1,4 +1,4 @@
-import { BezierCurveType, AnimationType, SongCircleType } from '../types/enums';
+import { BezierCurveType, AnimationType, SongCircleType, NeedleType } from '../types/enums';
 
 const background = {
   colour: {
@@ -29,7 +29,7 @@ const songCircle = {
   // config.songCircle.childMaxAnimationDelayMs to config.songCircle.childMaxAnimationDelayMs
   childMinAnimationDelayMs: 2500,
   childMaxAnimationDelayMs: 7500,
-  minTransitionDurationMs: 1500,
+  minTransitionDurationMs: 5000,
   minSongCircleSize: 0.5,
   maxSongCircleSize: 1.5,
 
@@ -41,12 +41,18 @@ const songCircle = {
 };
 
 const needle = {
-  relativeWidth: 0.25,
+  relativeWidth: 0.15,
   relativeHeight: 4,
+  colour: {
+    [NeedleType.PLAYING]: 0xE74C3C,
+    [NeedleType.BRANCH_NAV]: 0xF1C40F,
+    [NeedleType.SEEKING]: 0x8E44AD,
+    [NeedleType.HIDDEN]: 0xFFFFFF,
+  },
 };
 
 const bezierCurve = {
-  lineWidth: 13,
+  lineWidth: 11,
   dashSize: 0.05,
   dashSpacing: 0.3,
   colour: {

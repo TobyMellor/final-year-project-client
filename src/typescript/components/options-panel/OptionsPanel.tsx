@@ -3,6 +3,7 @@ import { SuccessButton } from '../button/Button';
 import { OptionsPanelProps, OptionsPanelState } from '../../types/general';
 import Dropdown from '../dropdown/Dropdown';
 import cx from 'classnames';
+import Slider from '../slider/Slider';
 
 class OptionsPanel extends React.Component<OptionsPanelProps, OptionsPanelState> {
   constructor(props: OptionsPanelProps) {
@@ -19,6 +20,9 @@ class OptionsPanel extends React.Component<OptionsPanelProps, OptionsPanelState>
     const buttonElements = toggles.buttons.map((buttonProps, i) => {
       return <SuccessButton key={i} {...buttonProps} />;
     });
+    const sliderElements = toggles.sliders.map((sliderProps, i) => {
+      return <Slider key={i} {...sliderProps} />;
+    });
     const modalDialogClassNames = cx('modal-dialog', 'settings-panel', {
       'debug-panel': isDebugPanel,
     });
@@ -33,6 +37,7 @@ class OptionsPanel extends React.Component<OptionsPanelProps, OptionsPanelState>
             <div className="modal-body p-0">
               {dropdownElements}
               {buttonElements}
+              {sliderElements}
             </div>
           </div>
         </div>

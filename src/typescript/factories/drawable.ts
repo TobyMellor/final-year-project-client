@@ -103,11 +103,11 @@ export function updateBezierCurve(
   bezierCurve.updatePercentages(earliestPercentage, latestPercentage);
 }
 
-export function renderNeedle(scene: Scene, songCircle: SongCircle, needleType: NeedleType, percentage: number): Needle {
+export function renderNeedle(scene: Scene, songCircle: SongCircle, type: NeedleType, percentage: number): Needle {
   return new Needle({
     scene,
     songCircle,
-    needleType,
+    type,
     percentage,
   });
 }
@@ -126,10 +126,15 @@ export function transitionChildToParent(
   childSongCircles: SongCircle[],
   parentBezierCurves: BezierCurve[],
   childBezierCurves: BezierCurve[],
+  needles: Needle[],
 ) {
   Updatable.animate(AnimationType.FADE_OUT, ...parentBezierCurves, ...childSongCircles);
   Updatable.animate(AnimationType.FADE_IN, ...childBezierCurves);
 
   updateSongCircleType(parentSongCircle, SongCircleType.CHILD);
   updateSongCircleType(nextParentSongCircle, SongCircleType.PARENT);
+
+  needles.forEach((needle) => {
+    needle.songCircle = nextParentSongCircle;
+  });
 }

@@ -2,6 +2,7 @@ import BeatModel from '../audio-analysis/Beat';
 import { TimeIdentifier } from '../../types/general';
 import * as conversions from '../../utils/conversions';
 import * as utils from '../../utils/misc';
+import * as uuid from 'uuid/v4';
 
 type Input = {
   originTrackBeats: BeatModel[],
@@ -12,6 +13,7 @@ type Input = {
 };
 
 class QueuedSampleModel {
+  public uuid: string;
   public originTrackBeats: BeatModel[];
   public destinationTrackBeats?: BeatModel[];
   public originTrackSubmittedCurrentTime: number;
@@ -25,6 +27,7 @@ class QueuedSampleModel {
     destinationTrackSubmittedCurrentTime,
     durationSecs,
   }: Input) {
+    this.uuid = uuid();
     this.originTrackBeats = originTrackBeats;
     this.destinationTrackBeats = destinationTrackBeats;
     this.originTrackSubmittedCurrentTime = originTrackSubmittedCurrentTime;
