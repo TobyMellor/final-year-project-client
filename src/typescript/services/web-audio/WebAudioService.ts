@@ -138,7 +138,7 @@ class WebAudioService {
     source: NeedleType = NeedleType.PLAYING,
     onEndedCallbackFn = () => {
       const nextAction = SampleQueueManager.lastAction();
-      const nextTrack = nextAction instanceof SongTransitionModel ? nextAction.destinationTrack : this._playingTrack;
+      const nextTrack = nextAction instanceof SongTransitionModel ? nextAction.destinationTrack : nextAction.track;
 
       this.dispatchBeatBatchRequested(nextTrack, nextAction);
     },
