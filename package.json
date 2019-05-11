@@ -64,7 +64,6 @@
     "webpack-dev-server": "^3.2.1"
   },
   "dependencies": {
-    "@tensorflow/tfjs": "^1.1.0",
     "@types/uuid": "^3.4.4",
     "bezier-easing": "^2.1.0",
     "three-orbitcontrols-ts": "^0.1.2",

@@ -4,8 +4,6 @@ import config from '../../../config';
 import SegmentModel from '../../../models/audio-analysis/Segment';
 import AudioAnalysisModel from '../../../models/audio-analysis/AudioAnalysis';
 
-const tf = require('@tensorflow/tfjs');
-
 // The un-normalized distance score, and the two beats
 type BeatPairInfo = {
   distanceScore: number,
