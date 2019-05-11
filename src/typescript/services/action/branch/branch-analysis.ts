@@ -105,7 +105,6 @@ function isBeatOrderSame(firstBeat: BeatModel, secondBeat: BeatModel): boolean {
   return firstBeat.barOrder === secondBeat.barOrder;
 }
 
-// TODO: Return a value between 0 and 1
 function getSegmentsDistance(
   firstSegments: SegmentModel[],
   secondSegments: SegmentModel[],

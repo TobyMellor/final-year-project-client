@@ -58,7 +58,7 @@ class WebAudioService {
                 this.seek(percentage);
               });
 
-    const initialTrackID = '1JbR9RDP3ogVNEWFgNXAjh'; // TODO: Replace dynamically
+    const initialTrackID = '0wwPcA6wtMf6HUMpIRdeP7'; // TODO: Replace dynamically
     trackFactory.createTrack(initialTrackID)
                 .then((initialTrack: TrackModel) => {
                   Dispatcher.getInstance()
@@ -100,9 +100,8 @@ class WebAudioService {
     if (!this._playingTrack) {
       this.changePlayingTrack();
 
-      // Schedule two BeatBatches in advance
-      const SCHEDULE_BUFFER_COUNT = 2;
-      this.dispatchBeatBatchRequested(this._playingTrack, null, 0, SCHEDULE_BUFFER_COUNT);
+      // Schedule multiple BeatBatches in advance
+      this.dispatchBeatBatchRequested(this._playingTrack, null, 0, config.audio.schedulingAheadCount);
 
       return;
     }
@@ -181,36 +180,28 @@ class WebAudioService {
           destinationTrackBeats,
           destinationTrackBeatsDurationSecs,
         } = queuedSample;
+        const isImmediateTransition = !destinationTrackBeats.length;
+        const transition = beatBatch.action as SongTransitionModel;
 
-        if (destinationTrackBeats.length) {
-          const action = beatBatch.action as SongTransitionModel;
-
-          sample = this.playSample(action.destinationTrack,
+        if (isImmediateTransition) {
+          sample = this.playSample(transition.destinationTrack,
                                    queuedSample,
                                    destinationTrackSubmittedCurrentTime,
                                    destinationTrackBeats[0].startSecs,
                                    destinationTrackBeatsDurationSecs);
         }
+
+        lastSample.source.onended = () => {
+          this.dispatchTrackChanging(transition, queuedSample);
+
+          if (isImmediateTransition) {
+            this.dispatchBeatBatchRequested(transition.destinationTrack, transition);
+          }
+        };
       }
 
-      // TODO: Cleanup
-      if (i === queuedSamples.length - 1) {
-        if (isTransitionSample) {
-          if (!sample) {
-            lastSample.source.onended = () => {
-              this.dispatchTrackChanging(beatBatch.action as SongTransitionModel, queuedSample);
-              this.dispatchBeatBatchRequested((beatBatch.action as SongTransitionModel).destinationTrack,
-                                              beatBatch.action);
-            };
-          } else {
-            lastSample.source.onended = () => {
-              this.dispatchTrackChanging(beatBatch.action as SongTransitionModel, queuedSample);
-            };
-            sample.source.onended = onEndedCallbackFn;
-          }
-        } else {
-          sample.source.onended = onEndedCallbackFn;
-        }
+      if (i === queuedSamples.length - 1 && sample) {
+        sample.source.onended = onEndedCallbackFn;
       }
 
       lastSample = sample;
@@ -350,7 +341,7 @@ class WebAudioService {
     const track = this._playingTrack;
     const playthroughMs = track.duration.ms * conversions.percentageToDecimal(percentage);
 
-    this.dispatchBeatBatchRequested(track, null, playthroughMs, 2); // TODO: Make SCHEDULE COUNT GLOBAL
+    this.dispatchBeatBatchRequested(track, null, playthroughMs, config.audio.schedulingAheadCount);
   }
 
   private dispatchTrackChangeReady(track: TrackModel) {

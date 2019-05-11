@@ -143,7 +143,7 @@ class CanvasService {
     // Undo the rotationOffsetPercentage
     const percentageInSong = percentage + Rotation.rotationOffsetPercentage;
 
-    return percentageInSong % 100; // TODO: Shouldn't have to modulo this...
+    return percentageInSong % 100;
   }
 
   public static getInstance(canvas?: HTMLCanvasElement): CanvasService {

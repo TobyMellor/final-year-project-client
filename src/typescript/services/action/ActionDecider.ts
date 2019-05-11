@@ -76,6 +76,7 @@ class ActionDecider {
 
     const lastBeatInThisBatch = nextAction.destinationBeat;
     const destinationTrack = nextAction instanceof SongTransitionModel ? nextAction.destinationTrack : track;
+  
     return [destinationTrack, lastBeatInThisBatch];
   }
 
