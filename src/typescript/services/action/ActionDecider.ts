@@ -11,6 +11,7 @@ import * as branchFactory from '../../factories/branch';
 import { FYPEventPayload } from '../../types/general';
 import * as misc from '../../utils/misc';
 import config from '../../config';
+import Translator from '../../../translations/Translator';
 
 enum ActionType {
   BRANCH = 'branch',
@@ -127,7 +128,7 @@ class ActionDecider {
       case ActionType.TRANSITION:
         return TransitionService.getInstance();
       default:
-        throw new Error('ActionType not found!');
+        throw new Error(Translator.errors.action.not_found);
     }
   }
 

@@ -1,6 +1,7 @@
 import BeatModel from '../audio-analysis/Beat';
 import ActionModel, { Input as ActionInput } from '../Action';
 import TrackModel from '../audio-analysis/Track';
+import Translator from '../../../translations/Translator';
 
 export type BranchInput = {
   track: TrackModel,
@@ -19,7 +20,7 @@ abstract class BranchModel extends ActionModel {
     const latestBeatStartMs = latestBeat.startMs;
 
     if (earliestBeatStartMs === latestBeatStartMs) {
-      throw new Error('Attempted to create a Branch leading to the same place!');
+      throw new Error(Translator.errors.action.invalid_branch_input);
     }
 
     this.earliestBeat = earliestBeat;

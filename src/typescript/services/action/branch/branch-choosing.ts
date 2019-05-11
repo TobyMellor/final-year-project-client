@@ -1,10 +1,11 @@
 import BranchModel from '../../../models/branches/Branch';
 import config from '../../../config';
 import * as math from '../../../utils/math';
+import Translator from '../../../../translations/Translator';
 
 export function getNextBranch(branches: BranchModel[], fromMs: number, targetMs?: number) {
   if (targetMs) {
-    // TODO: getNextBranchTowardsTarget(branches, fromMs, targetMs);
+    return getNextBranchTowardsTarget(branches, fromMs, targetMs);
   }
 
   const futureBranches = getFutureBranches(branches, fromMs);
@@ -52,7 +53,11 @@ function getBestBranch(branches: BranchModel[]): BranchModel {
  * @param targetMs Where to end the sequence
  */
 function getNextBranchTowardsTarget(branches: BranchModel[], fromMs: number, targetMs: number): BranchModel | null {
-  const { choicePath } = getPathTowardsTarget(branches, fromMs, targetMs);
+  const { distanceToTarget, choicePath } = getPathTowardsTarget(branches, fromMs, targetMs);
+
+  if (distanceToTarget === Infinity) {
+    throw new Error(Translator.errors.action.invalid_branch_target);
+  }
 
   return choicePath.shift();
 }

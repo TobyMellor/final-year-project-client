@@ -3,6 +3,7 @@ import cx from 'classnames';
 import config from '../../config';
 import * as utils from '../../utils/misc';
 import { BeatProps, BeatState } from '../../types/general';
+import Translator from '../../../translations/Translator';
 
 class Beat extends React.Component<BeatProps, BeatState> {
   private beatElement: React.RefObject<HTMLDivElement>;
@@ -15,7 +16,7 @@ class Beat extends React.Component<BeatProps, BeatState> {
     // Only accept normalized Timbre and Loudness values between 0 and 1
     if (!utils.isNumberNormalized(timbreNormalized)
         || !utils.isNumberNormalized(loudnessNormalized)) {
-      throw new Error('Attempted to render beats from un-normalized values!');
+      throw new Error(Translator.errors.ui.not_normalized);
     }
 
     this.beatElement = React.createRef();

@@ -22,6 +22,7 @@ import config from '../../config';
 import * as conversions from '../../utils/conversions';
 import WorldPoint from './drawables/utils/WorldPoint';
 import Rotation from './drawables/utils/Rotation';
+import Translator from '../../../translations/Translator';
 
 class CanvasService {
   private static _instance: CanvasService = null;
@@ -349,11 +350,6 @@ class CanvasService {
 
   public updateNeedle(needleType: NeedleType, percentage: number) {
     const needle = this._needles[needleType];
-
-    if (!needle) {
-      throw new Error('Needle has not been rendered yet!');
-    }
-
     drawableFactory.updateNeedle(needle, percentage);
   }
 

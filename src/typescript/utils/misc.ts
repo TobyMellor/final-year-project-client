@@ -3,6 +3,7 @@ import { MeshAnimationOptions } from '../services/canvas/drawables/Updatable';
 import * as conversions from './conversions';
 import { RGB, TimeIdentifier } from '../types/general';
 import TimeIntervalModel from '../models/audio-analysis/TimeInterval';
+import Translator from '../../translations/Translator';
 
 export function areArraysEqual<T>(arr1: T[], arr2: T[]): boolean {
   if (arr1.length !== arr2.length) {
@@ -99,5 +100,5 @@ export function getBeatFromMs(beats: BeatModel[], fromMs: number): BeatModel {
     }
   }
 
-  throw new Error('No beat found!');
+  throw new Error(Translator.errors.not_found);
 }

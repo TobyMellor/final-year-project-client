@@ -1,6 +1,7 @@
 /* tslint:disable max-line-length */
 
 import { sample } from '../mocker';
+import Translator from '../../../../../translations/Translator';
 
 export function getAudioFeaturesMock(ID?: string) {
   const mocks = [
@@ -36,7 +37,7 @@ export function getAudioFeaturesMock(ID?: string) {
     const mockObjects = mocks.map(mock => JSON.parse(mock));
     const mockByID = mockObjects.find(mockObject => mockObject.id === ID) || null;
 
-    if (!mockByID) throw new Error('Could not find the desired Mock!');
+    if (!mockByID) throw new Error(Translator.errors.api.mock_not_found);
 
     return mockByID;
   }

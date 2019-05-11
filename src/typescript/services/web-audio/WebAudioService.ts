@@ -12,6 +12,7 @@ import ActionModel from '../../models/Action';
 import SongTransitionModel from '../../models/SongTransition';
 import QueuedSampleModel from '../../models/web-audio/QueuedBeat';
 import config from '../../config';
+import Translator from '../../../translations/Translator';
 
 class WebAudioService {
   private static _instance: WebAudioService;
@@ -89,7 +90,7 @@ class WebAudioService {
 
   private async finishLoadingNextTrack() {
     if (!this._nextTrack || !this._nextTrackAudioBufferPromise) {
-      throw new Error('You must start loading the next track through startLoadingNextTrack!');
+      throw new Error(Translator.errors.web_audio.next_track_not_found);
     }
 
     const nextTrackID = this._nextTrack.ID;
@@ -144,7 +145,7 @@ class WebAudioService {
     },
   ) {
     if (!beatBatch || !beatBatch.originTrackBeats || beatBatch.originTrackBeats.length === 0) {
-      throw new Error('Attempted to request no beats!');
+      throw new Error(Translator.errors.web_audio.empty_beat_batch);
     }
 
     const queuedSampleBatch = SampleQueueManager.add(this._audioContext, beatBatch);
