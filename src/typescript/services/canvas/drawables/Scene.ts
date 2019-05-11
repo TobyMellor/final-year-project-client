@@ -14,12 +14,6 @@ export type Drawable = {
 class Scene {
   private static _instance: Scene = null;
 
-  public static Z_BASE_DISTANCE = -5;
-
-  private static CAMERA_FOV_DEGREES: number = 45;
-  public static CAMERA_Z_CLIP_NEAR: number = 0.01;
-  public static CAMERA_Z_CLIP_FAR: number = 3000.0;
-
   private _scene: THREE.Scene = null;
   private _camera: THREE.Camera = null;
   private _renderer: THREE.WebGLRenderer = null;
@@ -37,8 +31,7 @@ class Scene {
   private _mousePoint: WorldPoint = null;
   private _currentRotationPercentage: number = 0;
 
-  private getCameraLocationPointFn = () => WorldPoint.getOrigin().alignToCameraBase().translate(0, 0, -50);
-  private getCameraFocusPointFn = () => WorldPoint.getOrigin().alignToSceneBase();
+  private getCameraLocationPointFn = () => WorldPoint.getOrigin();
 
   private constructor(
     whereToDraw: HTMLCanvasElement,
@@ -47,10 +40,10 @@ class Scene {
   ) {
     const scene = new THREE.Scene();
     const aspectRatio = this.getAspectRatio();
-    const camera = new THREE.PerspectiveCamera(Scene.CAMERA_FOV_DEGREES,
+    const camera = new THREE.PerspectiveCamera(config.scene.cameraFOV,
                                                aspectRatio,
-                                               Scene.CAMERA_Z_CLIP_NEAR,
-                                               Scene.CAMERA_Z_CLIP_FAR);
+                                               config.scene.cameraClipNearDistance,
+                                               config.scene.cameraClipFarDistance);
 
     const renderer = new THREE.WebGLRenderer({
       canvas: whereToDraw,
@@ -74,7 +67,7 @@ class Scene {
     requestAnimationFrame(() => this.render());
   }
 
-  private onMouseMove({ target, clientX, clientY }: MouseEvent) {
+  private onMouseMove({ clientX, clientY }: MouseEvent) {
     const [x, y] = conversions.canvasPointToNDC(clientX, clientY);
 
     this._panTargetX = x;
@@ -93,7 +86,7 @@ class Scene {
     vec.sub(this._camera.position).normalize();
 
     const { x: camX, y: camY, z: camZ } = this._camera.position;
-    const distance = (Scene.Z_BASE_DISTANCE - camZ) / vec.z;
+    const distance = (config.scene.sceneBaseDistance - camZ) / vec.z;
 
     const { x: vecX, y: vecY, z: vecZ } = vec.multiplyScalar(distance);
     const mousePoint = this._mousePoint = WorldPoint.getPoint(camX, camY, camZ).translate(vecX, vecY, vecZ);
@@ -149,11 +142,9 @@ class Scene {
     // Update position/rotation/colour etc of THREE.js meshes
     this.update();
 
-    // FIXME: This looks great, but transparent textures are fighting with eachother causing flickering
     this._panActualX += (this._panTargetX - this._panActualX) * config.scene.panCatchupSpeed;
     this._panActualY += (this._panTargetY - this._panActualY) * config.scene.panCatchupSpeed;
 
-    const defaultCameraFocusPoint = this.getCameraFocusPointFn();
     const defaultCameraLocationPoint = this.getCameraLocationPointFn();
     const cameraLocationPoint = WorldPoint.getPoint(
       defaultCameraLocationPoint.x + -this._panActualX * config.scene.panAmount,
@@ -161,7 +152,7 @@ class Scene {
       defaultCameraLocationPoint.z,
     );
 
-    this.moveCamera(cameraLocationPoint, defaultCameraFocusPoint);
+    this.moveCamera(cameraLocationPoint);
 
     // Re-render everything on the scene through THREE.js
     this._renderer.render(this._scene, this._camera);
@@ -188,7 +179,7 @@ class Scene {
     if (this._currentRotationPercentage !== startRotationPercentage) {
       await this.animateRotation(this._currentRotationPercentage,
                            startRotationPercentage,
-                           Math.min(durationMs / 4, 250), // TODO: Store in conf
+                           Math.min(durationMs / 4, config.scene.maxRotationAnimationDurationMs),
                            rotationCallbackFn,
                            config.scene.animationCurves[AnimationCurve.EASE]);
     }
@@ -239,9 +230,7 @@ class Scene {
 
   public async animateCamera(
     getStartCameraLocationPointFn: () => WorldPoint,
-    getStartCameraFocusPointFn: () => WorldPoint,
     getEndCameraLocationPointFn: () => WorldPoint,
-    getEndCameraFocusPointFn: () => WorldPoint,
     durationMs: number,
     animationCurve = config.scene.animationCurves[AnimationCurve.EASE],
   ): Promise<void> {
@@ -266,7 +255,6 @@ class Scene {
         // If the animation has ended
         if (remainingMs < 0) {
           this.getCameraLocationPointFn = getEndCameraLocationPointFn;
-          this.getCameraFocusPointFn = getEndCameraFocusPointFn;
           resolve();
           return;
         }
@@ -276,19 +264,13 @@ class Scene {
         // We're using functions here as the start and end points can change
         // as the song rotates or circle sizes increase
         const startCameraLocationPoint = getStartCameraLocationPointFn();
-        const startCameraFocusPoint = getStartCameraFocusPointFn();
         const endCameraLocationPoint = getEndCameraLocationPointFn();
-        const endCameraFocusPoint = getEndCameraFocusPointFn();
 
         const currentCameraLocationPoint = getProgressToEndPoint(startCameraLocationPoint,
                                                                 endCameraLocationPoint,
                                                                 animationDecimal);
-        const currentCameraFocusPoint = getProgressToEndPoint(startCameraFocusPoint,
-                                                              endCameraFocusPoint,
-                                                              animationDecimal);
 
         this.getCameraLocationPointFn = () => currentCameraLocationPoint;
-        this.getCameraFocusPointFn = () => currentCameraFocusPoint;
 
         // Repeat until the animation has finished
         requestAnimationFrame(renderFn);
@@ -313,11 +295,10 @@ class Scene {
     Rotation.rotationOffsetPercentage = percentage;
   }
 
-  private moveCamera(cameraLocationPoint: WorldPoint, cameraFocusPoint: WorldPoint) {
+  private moveCamera(cameraLocationPoint: WorldPoint) {
     this._camera.position.x = cameraLocationPoint.x;
     this._camera.position.y = cameraLocationPoint.y;
     this._camera.position.z = cameraLocationPoint.z;
-    // this._camera.lookAt(cameraFocusPoint.toVector3());
   }
 }
 

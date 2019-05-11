@@ -111,11 +111,6 @@ class CanvasService {
               .on(FYPEvent.TrackChanged, ({ track }: FYPEventPayload['TrackChanged']) => {
                 this.updateParentSong(track);
               });
-
-    // TODO: Cleanup
-    setTimeout(() => {
-      this.loadingAnimation();
-    }, 2000);
   }
 
   public handleMouseMove(mousePoint: WorldPoint) {
@@ -167,15 +162,15 @@ class CanvasService {
     transitionInStartMs: number,
     transitionInDurationMs: number,
   ) {
-    const getStartCameraFocusPointFn = () => this.getParentSongCircle().getAdjustedCenter();
-    const getStartCameraLocationPointFn = () => getStartCameraFocusPointFn().alignToCameraBase();
-    const getEndCameraFocusPointFn = () => this.getSongCircle(destinationTrack).getAdjustedCenter();
-    const getEndCameraLocationPointFn = () => getEndCameraFocusPointFn().alignToCameraBase();
+    const getStartCameraLocationPointFn = () => this.getParentSongCircle()
+                                                    .getAdjustedCenter()
+                                                    .alignToCameraBase();
+    const getEndCameraLocationPointFn = () => this.getSongCircle(destinationTrack)
+                                                  .getAdjustedCenter()
+                                                  .alignToCameraBase();
 
     this.scene.animateCamera(getStartCameraLocationPointFn,
-                             getStartCameraFocusPointFn,
                              getEndCameraLocationPointFn,
-                             getEndCameraFocusPointFn,
                              transitionDurationMs);
 
     const parentBezierCurves = this.getParentBezierCurves();
@@ -218,6 +213,10 @@ class CanvasService {
     this._needles[NeedleType.PLAYING] = playingNeedle;
 
     this.updateParentSong(track);
+
+    setTimeout(() => {
+      this.loadingAnimation();
+    }, 1500);
   }
 
   public renderBezierCurves(track: TrackModel, type: BezierCurveType, ...branches: BranchModel[]) {
@@ -408,29 +407,15 @@ class CanvasService {
   }
 
   private loadingAnimation() {
-    const defaultCameraLocationPoint = WorldPoint.getOrigin().alignToCameraBase().translate(0, 0, -100);
-    const defaultCameraFocusPoint = () => WorldPoint.getOrigin().alignToSceneBase();
+    const defaultCameraLocationPoint = WorldPoint.getOrigin().translate(0, 0, -5);
     const startCameraLocationPointFn = () => defaultCameraLocationPoint;
     const endCameraLocationPointFn = () => WorldPoint.getOrigin().alignToCameraBase();
-    const animationCurve = config.scene.animationCurves[AnimationCurve.BOUNCE];
+    const animationCurve = config.scene.animationCurves[AnimationCurve.EASE_IN];
 
     this.scene.animateCamera(startCameraLocationPointFn,
-                             defaultCameraFocusPoint,
                              endCameraLocationPointFn,
-                             defaultCameraFocusPoint,
-                             2500,
+                             500,
                              animationCurve);
-
-    this.scene.animateRotation(
-      50,
-      0,
-      2500,
-      (rotationPercentage: number) => {
-        this.setSongCircleRotation(rotationPercentage);
-        return true;
-      },
-      config.scene.animationCurves[AnimationCurve.BOUNCE],
-    );
   }
 }
 

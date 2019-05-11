@@ -11,4 +11,9 @@ export default {
     [AnimationCurve.LINEAR]: bezierEasing(0, 0, 1, 1),
     [AnimationCurve.BOUNCE]: bezierEasing(0.12, 0.02, 0.03, 1.22),
   },
+  sceneBaseDistance: -5,
+  cameraFOV: 45,
+  cameraClipNearDistance: 0.01,
+  cameraClipFarDistance: 3000,
+  maxRotationAnimationDurationMs: 250,
 };

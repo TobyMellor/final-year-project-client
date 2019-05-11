@@ -75,7 +75,8 @@ class ActionDecider {
               } as FYPEventPayload['BeatBatchReady']);
 
     const lastBeatInThisBatch = nextAction.destinationBeat;
-    return [nextAction instanceof SongTransitionModel ? nextAction.destinationTrack : track, lastBeatInThisBatch];
+    const destinationTrack = nextAction instanceof SongTransitionModel ? nextAction.destinationTrack : track;
+    return [destinationTrack, lastBeatInThisBatch];
   }
 
   private getAndLoadNext(track: TrackModel, fromMs: number, actionType: ActionType = null): ActionModel {
