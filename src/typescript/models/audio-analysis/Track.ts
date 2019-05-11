@@ -5,6 +5,7 @@ import * as trackFactory from '../../factories/track';
 import * as conversions from '../../utils/conversions';
 import { TimeIdentifier } from '../../types/general';
 import BeatModel from './Beat';
+import * as math from '../../utils/math';
 
 export type Input = {
   album: AlbumModel | AlbumInput;
@@ -29,6 +30,10 @@ class TrackModel {
   private _ID: string;
   private _name: string;
   private _URI: string;
+
+  // The value of the Web Audio API's audioCtx.currentTime when the user started listening
+  private _audioContext: AudioContext;
+  private _currentTimeStart: number;
 
   constructor({
     album,
@@ -86,6 +91,15 @@ class TrackModel {
 
   public get beats(): BeatModel[] {
     return this.audioAnalysis.beats;
+  }
+
+  public setupPlayingInformation(audioContext: AudioContext) {
+    this._audioContext = audioContext;
+    this._currentTimeStart = audioContext.currentTime;
+  }
+
+  public get listenDurationMs() {
+    return math.distance(this._currentTimeStart, this._audioContext.currentTime);
   }
 }
 

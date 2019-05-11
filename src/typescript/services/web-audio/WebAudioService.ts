@@ -115,6 +115,7 @@ class WebAudioService {
     this._playingTrack = this._nextTrack;
     this._nextTrack = null;
 
+    this._playingTrack.setupPlayingInformation(this._audioContext);
     this.dispatchTrackChanged(this._playingTrack);
   }
 

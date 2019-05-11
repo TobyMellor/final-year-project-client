@@ -3,7 +3,7 @@ import config from '../../../config';
 import * as math from '../../../utils/math';
 import Translator from '../../../../translations/Translator';
 
-export function getNextBranch(branches: BranchModel[], fromMs: number, targetMs?: number) {
+export function getNextBranch(branches: BranchModel[], fromMs: number, targetMs?: number): BranchModel | null {
   if (targetMs) {
     return getNextBranchTowardsTarget(branches, fromMs, targetMs);
   }
@@ -59,7 +59,7 @@ function getNextBranchTowardsTarget(branches: BranchModel[], fromMs: number, tar
     throw new Error(Translator.errors.action.invalid_branch_target);
   }
 
-  return choicePath.shift();
+  return choicePath.shift() || null;
 }
 
 type PathToTarget = {

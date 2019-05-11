@@ -5,7 +5,7 @@ import Rotation from './utils/Rotation';
 import * as conversions from '../../../utils/conversions';
 import config from '../../../config';
 import { AnimationCurve } from '../../../types/enums';
-import * as animations from '../../../utils/animations';
+import * as math from '../../../utils/math';
 
 export type Drawable = {
   meshes: THREE.Mesh[];
@@ -243,9 +243,9 @@ class Scene {
         animationDecimal: number,
       ): WorldPoint {
         return WorldPoint.getPoint(
-          animations.getProgressFromTo(startX, endX, animationDecimal),
-          animations.getProgressFromTo(startY, endY, animationDecimal),
-          animations.getProgressFromTo(startZ, endZ, animationDecimal),
+          math.getProgressFromTo(startX, endX, animationDecimal),
+          math.getProgressFromTo(startY, endY, animationDecimal),
+          math.getProgressFromTo(startZ, endZ, animationDecimal),
         );
       }
 

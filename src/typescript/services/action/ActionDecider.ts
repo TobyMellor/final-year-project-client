@@ -10,6 +10,7 @@ import BeatModel from '../../models/audio-analysis/Beat';
 import * as branchFactory from '../../factories/branch';
 import { FYPEventPayload } from '../../types/general';
 import * as misc from '../../utils/misc';
+import * as math from '../../utils/math';
 import config from '../../config';
 import Translator from '../../../translations/Translator';
 
@@ -41,11 +42,11 @@ class ActionDecider {
                 }
               });
 
-    Dispatcher.getInstance()
-              .on(FYPEvent.TrackChanged, () => {
-                this._isNextTransitionReady = false;
-                this._nextTransition = null;
-              });
+    // Dispatcher.getInstance()
+    //           .on(FYPEvent.TrackChanged, () => {
+    //             this._isNextTransitionReady = false;
+    //             this._nextTransition = null;
+    //           });
   }
 
   public static getInstance(): ActionDecider {
@@ -78,16 +79,15 @@ class ActionDecider {
 
   private getAndLoadNext(track: TrackModel, fromMs: number, actionType: ActionType = null): ActionModel {
     // If the track we requested to transition to has loaded, transition now
-    if (this._isNextTransitionReady) { // TODO: Implement
+    if (this._isNextTransitionReady) {
       const nextTransition = this._nextTransition;
 
-      this._nextTransition = null;
-      this._isNextTransitionReady = false;
+      this.resetState();
 
       return nextTransition;
     }
 
-    const nextActionType = actionType ? actionType : this.getNextActionType();
+    const nextActionType = actionType ? actionType : this.getNextActionType(track);
     const nextActionService = this.getActionService(nextActionType);
     const nextAction = nextActionService.getNext(track, fromMs);
 
@@ -106,15 +106,21 @@ class ActionDecider {
     return nextAction;
   }
 
-  private getNextActionType(): ActionType {
+  private getNextActionType(track: TrackModel): ActionType {
     // If we've requested to take a transition, but it's not loaded yet
     if (this._nextTransition) {
       return ActionType.BRANCH;
     }
 
+    const transitionProbability = math.getProgressFromTo(config.choosing.minimumTransitionStartMs,
+                                                         config.choosing.maximumTransitionStartMs,
+                                                         track.listenDurationMs);
+    const normalizedTransitionProbability = math.getProgressFromTo(config.choosing.minimumTransitionProbability,
+                                                                   config.choosing.maximumTransitionProbability,
+                                                                   transitionProbability);
+
     const random = Math.random();
-    if (random < config.choosing.minimumTransitionProbability) {
-      config.choosing.minimumTransitionProbability = 0; // FIXME: Should be dynamic
+    if (random < normalizedTransitionProbability) {
       return ActionType.TRANSITION;
     }
 
@@ -137,6 +143,11 @@ class ActionDecider {
               .dispatch(FYPEvent.TrackChangeRequested, {
                 track,
               } as FYPEventPayload['TrackChangeRequested']);
+  }
+
+  private resetState() {
+    this._nextTransition = null;
+    this._isNextTransitionReady = false;
   }
 }
 

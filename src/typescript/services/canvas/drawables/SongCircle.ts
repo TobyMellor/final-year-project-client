@@ -118,7 +118,7 @@ class SongCircle extends Updatable {
             endRGB: conversions.decimalToRgb(endColour),
           });
 
-          material.opacity = animations.getProgressFromTo(startOpacity, endOpacity, animationDecimal);
+          material.opacity = math.getProgressFromTo(startOpacity, endOpacity, animationDecimal);
         }
       },
     });

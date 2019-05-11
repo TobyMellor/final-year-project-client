@@ -1,5 +1,6 @@
 import * as conversions from './conversions';
 import { MeshAnimationOptions } from '../services/canvas/drawables/Updatable';
+import * as math from './math';
 
 export function defaultChangeType(options: MeshAnimationOptions) {
   if (options.startRGB != null && options.endRGB != null) {
@@ -18,9 +19,9 @@ export function defaultChangeColour({
   geometry,
   material,
 }: MeshAnimationOptions) {
-  const currentR = getProgressFromTo(startR, endR, animationDecimal);
-  const currentG = getProgressFromTo(startG, endG, animationDecimal);
-  const currentB = getProgressFromTo(startB, endB, animationDecimal);
+  const currentR = math.getProgressFromTo(startR, endR, animationDecimal);
+  const currentG = math.getProgressFromTo(startG, endG, animationDecimal);
+  const currentB = math.getProgressFromTo(startB, endB, animationDecimal);
 
   const currentHEX = conversions.rgbToDecimal(currentR, currentG, currentB);
 
@@ -29,7 +30,7 @@ export function defaultChangeColour({
 }
 
 export function defaultChangeScale({ animationDecimal, startScale, endScale, mesh }: MeshAnimationOptions) {
-  const scale = getProgressFromTo(startScale, endScale, animationDecimal);
+  const scale = math.getProgressFromTo(startScale, endScale, animationDecimal);
   mesh.scale.x = mesh.scale.y = scale;
 }
 
@@ -39,8 +40,4 @@ export function defaultFadeIn({ animationDecimal, material }: MeshAnimationOptio
 
 export function defaultFadeOut(options: MeshAnimationOptions) {
   defaultFadeIn({ ...options, animationDecimal: 1 - options.animationDecimal });
-}
-
-export function getProgressFromTo(from: number, to: number, animationDecimal: number) {
-  return from + (to - from) * animationDecimal;
 }
