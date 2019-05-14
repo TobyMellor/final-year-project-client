@@ -14,6 +14,7 @@ const HOST = process.env.HOST;
 const SPOTIFY_CLIENT_ID = process.env.SPOTIFY_CLIENT_ID;
 const SPOTIFY_CLIENT_SECRET = process.env.SPOTIFY_CLIENT_SECRET;
 const SPOTIFY_REDIRECT_URI = process.env.SPOTIFY_REDIRECT_URI;
+const SPOTIFY_AFTER_AUTHORIZATION_REDIRECT = "/spotify-authorization-redirect";
 const stateKey = "spotify_auth_state";
 const dist = path.join(__dirname, "..", "dist");
 const tracks = path.join(dist, "tracks");
@@ -41,6 +42,71 @@ app.get("/login", function(req, res) {
         state: state
       })
   );
+});
+
+app.get("/authorization_success", function(req, res, next) {
+  const code = req.query.code || null;
+  const state = req.query.state || null;
+  const storedState = req.cookies ? req.cookies[stateKey] : null;
+
+  if (state === null || state !== storedState) {
+    res.redirect(
+      `${SPOTIFY_AFTER_AUTHORIZATION_REDIRECT}${querystring.stringify({
+        error: "state_mismatch"
+      })}`
+    );
+  } else {
+    res.clearCookie(stateKey);
+    const authorizationOptions = {
+      url: "https://accounts.spotify.com/api/token",
+      form: {
+        code: code,
+        redirect_uri: SPOTIFY_REDIRECT_URI,
+        grant_type: "authorization_code"
+      },
+      headers: {
+        Authorization:
+          "Basic " +
+          new Buffer(`${SPOTIFY_CLIENT_ID}:${SPOTIFY_CLIENT_SECRET}`).toString(
+            "base64"
+          )
+      },
+      json: true
+    };
+
+    request.post(authorizationOptions, function(err, response, body) {
+      if (err) {
+        next(err);
+      } else if (!err && response.statusCode === 200) {
+        const accessToken = body.access_token,
+          refreshToken = body.refresh_token;
+
+        const options = {
+          url: "https://api.spotify.com/v1/me",
+          headers: { Authorization: "Bearer " + accessToken },
+          json: true
+        };
+
+        // use the access token to access the Spotify Web API
+        // request.get(options, function(error, response, body) {
+        //   console.log(body);
+        // });
+
+        // we can also pass the token to the browser to make requests from there
+        res.redirect(
+          `${SPOTIFY_AFTER_AUTHORIZATION_REDIRECT}${querystring.stringify({
+            access_token: accessToken,
+            refresh_token: refreshToken
+          })}`
+        );
+      } else {
+        res.redirect(`${SPOTIFY_AFTER_AUTHORIZATION_REDIRECT}
+            ${querystring.stringify({
+              error: "invalid_token"
+            })}`);
+      }
+    });
+  }
 });
 
 app.listen(PORT, HOST);
