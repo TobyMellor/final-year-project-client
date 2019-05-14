@@ -14,7 +14,7 @@ const HOST = process.env.HOST;
 const SPOTIFY_CLIENT_ID = process.env.SPOTIFY_CLIENT_ID;
 const SPOTIFY_CLIENT_SECRET = process.env.SPOTIFY_CLIENT_SECRET;
 const SPOTIFY_REDIRECT_URI = process.env.SPOTIFY_REDIRECT_URI;
-const SPOTIFY_AFTER_AUTHORIZATION_REDIRECT = "/spotify-authorization-redirect";
+const SPOTIFY_AFTER_AUTHORIZATION_REDIRECT = "/spotify-authorization-redirect/";
 const stateKey = "spotify_auth_state";
 const dist = path.join(__dirname, "..", "dist");
 const tracks = path.join(dist, "tracks");
@@ -51,7 +51,7 @@ app.get("/authorization_success", function(req, res, next) {
 
   if (state === null || state !== storedState) {
     res.redirect(
-      `${SPOTIFY_AFTER_AUTHORIZATION_REDIRECT}${querystring.stringify({
+      `${SPOTIFY_AFTER_AUTHORIZATION_REDIRECT}?${querystring.stringify({
         error: "state_mismatch"
       })}`
     );
@@ -81,26 +81,25 @@ app.get("/authorization_success", function(req, res, next) {
         const accessToken = body.access_token,
           refreshToken = body.refresh_token;
 
-        const options = {
-          url: "https://api.spotify.com/v1/me",
-          headers: { Authorization: "Bearer " + accessToken },
-          json: true
-        };
+        // call to get more information about the user.
+        // const options = {
+        //   url: "https://api.spotify.com/v1/me",
+        //   headers: { Authorization: "Bearer " + accessToken },
+        //   json: true
+        // };
 
-        // use the access token to access the Spotify Web API
         // request.get(options, function(error, response, body) {
         //   console.log(body);
         // });
 
-        // we can also pass the token to the browser to make requests from there
         res.redirect(
-          `${SPOTIFY_AFTER_AUTHORIZATION_REDIRECT}${querystring.stringify({
+          `${SPOTIFY_AFTER_AUTHORIZATION_REDIRECT}?${querystring.stringify({
             access_token: accessToken,
             refresh_token: refreshToken
           })}`
         );
       } else {
-        res.redirect(`${SPOTIFY_AFTER_AUTHORIZATION_REDIRECT}
+        res.redirect(`${SPOTIFY_AFTER_AUTHORIZATION_REDIRECT}?
             ${querystring.stringify({
               error: "invalid_token"
             })}`);
