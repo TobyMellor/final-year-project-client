@@ -5,6 +5,7 @@ const request = require("request");
 const cors = require("cors");
 const querystring = require("querystring");
 const cookieParser = require("cookie-parser");
+const bodyParser = require("body-parser");
 const randomString = require("randomstring");
 
 dotenv.config();
@@ -22,7 +23,9 @@ const app = express()
   .use("/dist", express.static(dist))
   .use("/tracks", express.static(tracks))
   .use(cors())
-  .use(cookieParser());
+  .use(cookieParser())
+  .use(bodyParser.urlencoded({ extended: false }))
+  .use(bodyParser.json());
 
 app.get("/", (_, res) => {
   res.sendFile(dist + "/index.html");
@@ -106,6 +109,36 @@ app.get("/authorization_success", function(req, res, next) {
       }
     });
   }
+});
+
+app.post("/refresh-token", function(req, res, next) {
+  const refreshToken = req.body.refresh_token;
+  const authorizationOptions = {
+    url: "https://accounts.spotify.com/api/token",
+    headers: {
+      Authorization:
+        "Basic " +
+        new Buffer(SPOTIFY_CLIENT_ID + ":" + SPOTIFY_CLIENT_SECRET).toString(
+          "base64"
+        )
+    },
+    form: {
+      grant_type: "refresh_token",
+      refresh_token: refreshToken
+    },
+    json: true
+  };
+
+  request.post(authorizationOptions, function(err, response, body) {
+    if (err) {
+      next(err);
+    } else if (response.statusCode === 200) {
+      const accessToken = body.access_token;
+      res.send({
+        access_token: accessToken
+      });
+    }
+  });
 });
 
 app.listen(PORT, HOST);
