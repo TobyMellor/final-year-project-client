@@ -70,9 +70,9 @@ app.get("/authorization_success", function(req, res, next) {
       headers: {
         Authorization:
           "Basic " +
-          new Buffer(`${SPOTIFY_CLIENT_ID}:${SPOTIFY_CLIENT_SECRET}`).toString(
-            "base64"
-          )
+          new Buffer.from(
+            `${SPOTIFY_CLIENT_ID}:${SPOTIFY_CLIENT_SECRET}`
+          ).toString("base64")
       },
       json: true
     };
@@ -118,9 +118,9 @@ app.post("/refresh-token", function(req, res, next) {
     headers: {
       Authorization:
         "Basic " +
-        new Buffer(SPOTIFY_CLIENT_ID + ":" + SPOTIFY_CLIENT_SECRET).toString(
-          "base64"
-        )
+        new Buffer.from(
+          SPOTIFY_CLIENT_ID + ":" + SPOTIFY_CLIENT_SECRET
+        ).toString("base64")
     },
     form: {
       grant_type: "refresh_token",
