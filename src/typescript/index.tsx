@@ -3,9 +3,9 @@ import '../sass/style.scss';
 
 import * as React from 'react';
 import { render } from 'react-dom';
-import App from './components/App';
+import AppRoutes from './routes';
 
 render(
-    <App />,
+    <AppRoutes />,
     document.getElementById('root'),
 );
