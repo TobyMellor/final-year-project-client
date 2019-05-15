@@ -27,10 +27,6 @@ const app = express()
   .use(bodyParser.urlencoded({ extended: false }))
   .use(bodyParser.json());
 
-app.get("/", (_, res) => {
-  res.sendFile(dist + "/index.html");
-});
-
 app.get("/login", function(req, res) {
   const state = randomString.generate(16);
   const scope = "user-read-private user-read-email";
@@ -139,6 +135,10 @@ app.post("/refresh-token", function(req, res, next) {
       });
     }
   });
+});
+
+app.get("*", (_, res) => {
+  res.sendFile(dist + "/index.html");
 });
 
 app.listen(PORT, HOST);
