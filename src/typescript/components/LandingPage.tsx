@@ -11,9 +11,9 @@ import config from '../config';
 import SongTransitionModel from '../models/SongTransition';
 import TrackModel from '../models/audio-analysis/Track';
 
-interface AppProps {}
+interface LandingPageProps { }
 
-interface AppState {
+interface LandingPageState {
   UIBars: UIBarType[];
   isBranchNavHidden: boolean;
   isBranchNavDisabled: boolean;
@@ -26,8 +26,8 @@ interface AppState {
   }[];
 }
 
-class App extends React.Component<AppProps, AppState> {
-  constructor(props: AppProps) {
+class LandingPage extends React.Component<LandingPageProps, LandingPageState> {
+  constructor(props: LandingPageProps) {
     super(props);
 
     this.state = {
@@ -42,15 +42,15 @@ class App extends React.Component<AppProps, AppState> {
 
     // When a new song has been loaded and analyzed
     Dispatcher.getInstance()
-              .on(FYPEvent.TrackChanged, ({ track }: FYPEventPayload['TrackChanged']) => {
-                this.updateBars(track);
-              });
+      .on(FYPEvent.TrackChanged, ({ track }: FYPEventPayload['TrackChanged']) => {
+        this.updateBars(track);
+      });
 
     if (config.fyp.debug) {
       Dispatcher.getInstance()
-                .on(FYPEvent.TransitionsAnalyzed, ({ transitions }: FYPEventPayload['TransitionsAnalyzed']) => {
-                  this.setChildTracks(transitions);
-                });
+        .on(FYPEvent.TransitionsAnalyzed, ({ transitions }: FYPEventPayload['TransitionsAnalyzed']) => {
+          this.setChildTracks(transitions);
+        });
     }
   }
 
@@ -63,9 +63,9 @@ class App extends React.Component<AppProps, AppState> {
         <Nav />
         <CircleCanvas />
         <BranchNav key={branchNavKey}
-                   UIBars={UIBars}
-                   isHidden={isBranchNavHidden}
-                   onRequestClose={(status: BranchNavStatus) => this.handleToggleBranchNav(status)} />
+          UIBars={UIBars}
+          isHidden={isBranchNavHidden}
+          onRequestClose={(status: BranchNavStatus) => this.handleToggleBranchNav(status)} />
         {debugPanel}
         <OptionsPanel {...this.getOptionsPanelProps()} />
       </React.Fragment>
@@ -185,4 +185,4 @@ class App extends React.Component<AppProps, AppState> {
   }
 }
 
-export default App;
+export default LandingPage;
