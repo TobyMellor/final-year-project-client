@@ -8,7 +8,7 @@
     "build": "npm run clean && npm run webpack",
     "clean": "rm -rf dist && mkdir -p dist",
     "lint": "node ./node_modules/.bin/tslint --config tslint.json --project tsconfig.json 'src/typescript/**/*.ts{,x}'",
-    "local": "webpack-dev-server --host 0.0.0.0 --port 80 --mode=\"development\" --watch --progress --colors",
+    "local": "webpack-dev-server --host 0.0.0.0 --port 8888 --mode=\"development\" --watch-content-base --progress --colors --content-base dist/",
     "prod": "npm run webpack && npm start",
     "test": "jest",
     "watch": "npm run local",
