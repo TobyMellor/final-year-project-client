@@ -1,15 +1,15 @@
 import * as React from 'react';
-import Nav from './Nav';
-import CircleCanvas from './CircleCanvas';
-import BranchNav from './branch-nav/BranchNav';
-import * as uiService from '../services/ui/ui';
-import { FYPEvent, BranchNavStatus } from '../types/enums';
-import Dispatcher from '../events/Dispatcher';
-import { UIBarType, FYPEventPayload, OptionsPanelProps } from '../types/general';
-import OptionsPanel from './options-panel/OptionsPanel';
-import config from '../config';
-import SongTransitionModel from '../models/SongTransition';
-import TrackModel from '../models/audio-analysis/Track';
+import Nav from '../Nav';
+import CircleCanvas from '../CircleCanvas';
+import BranchNav from '../branch-nav/BranchNav';
+import * as uiService from '../../services/ui/ui';
+import { FYPEvent, BranchNavStatus } from '../../types/enums';
+import Dispatcher from '../../events/Dispatcher';
+import { UIBarType, FYPEventPayload, OptionsPanelProps } from '../../types/general';
+import OptionsPanel from '../options-panel/OptionsPanel';
+import config from '../../config';
+import SongTransitionModel from '../../models/SongTransition';
+import TrackModel from '../../models/audio-analysis/Track';
 
 interface LandingPageProps { }
 
