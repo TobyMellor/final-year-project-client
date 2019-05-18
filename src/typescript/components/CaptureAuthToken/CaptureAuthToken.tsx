@@ -10,9 +10,16 @@ class CaptureAuthToken extends React.Component<RouteComponentProps> {
   }
 
   saveAuthToken() {
-    console.log(this.props);
-    localStorage.set('spotify_auth_token', 'ac');
-    localStorage.set('spotify_refresh_token', 'abc');
+    const searchParams = new URLSearchParams(this.props.location.search);
+    const accessToken = searchParams.get('access_token');
+    const refreshToken = searchParams.get('refresh_token');
+    localStorage.set('spotify_acess_token', accessToken);
+    localStorage.set('spotify_refresh_token', refreshToken);
+    if (accessToken && refreshToken) {
+      this.props.history.replace('/');
+    } else {
+      window.location.assign(`${window.location.origin}/login`);
+    }
   }
 
   render() {
