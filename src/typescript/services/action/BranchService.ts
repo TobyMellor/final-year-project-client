@@ -37,6 +37,10 @@ class BranchService extends ActionService {
                                   .accessibleBranches;
     const nextBranch = branchChooser.getNextBranch(branches, fromMs);
 
+    if (!nextBranch) {
+      throw new Error(`"${track.name}" has no branches beyond ${fromMs}ms`);
+    }
+
     return nextBranch;
   }
 

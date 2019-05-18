@@ -4,6 +4,7 @@ import ActionModel, { Input as ActionInput } from './Action';
 import BeatModel from './audio-analysis/Beat';
 import * as conversions from '../utils/conversions';
 import { TimeIdentifier } from '../types/general';
+import Translator from '../../translations/Translator';
 
 export type Input = {
   track: TrackModel;
@@ -46,8 +47,6 @@ class SongTransitionModel extends ActionModel {
     transitionInEndBeat,
     transitionInEntryOffsetMs,
   }: Input) {
-    // const [originBeat] = utils.getEarliestAndLatestBeat(transitionOutStartBeat, transitionInStartBeat);
-    // const [_, destinationBeat] = utils.getEarliestAndLatestBeat(transitionOutEndBeat, transitionInEndBeat);
     const originBeat = transitionOutStartBeat;
     const destinationBeat = transitionInEndBeat;
 
@@ -58,7 +57,7 @@ class SongTransitionModel extends ActionModel {
     });
 
     if (track.ID === destinationTrack.ID) {
-      throw new Error('The originTrack and destinationTrack must be different!');
+      throw new Error(Translator.errors.action.invalid_transition_input);
     }
 
     this.type = type;

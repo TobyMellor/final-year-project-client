@@ -10,7 +10,9 @@ import BeatModel from '../../models/audio-analysis/Beat';
 import * as branchFactory from '../../factories/branch';
 import { FYPEventPayload } from '../../types/general';
 import * as misc from '../../utils/misc';
+import * as math from '../../utils/math';
 import config from '../../config';
+import Translator from '../../../translations/Translator';
 
 enum ActionType {
   BRANCH = 'branch',
@@ -40,11 +42,11 @@ class ActionDecider {
                 }
               });
 
-    Dispatcher.getInstance()
-              .on(FYPEvent.TrackChanged, () => {
-                this._isNextTransitionReady = false;
-                this._nextTransition = null;
-              });
+    // Dispatcher.getInstance()
+    //           .on(FYPEvent.TrackChanged, () => {
+    //             this._isNextTransitionReady = false;
+    //             this._nextTransition = null;
+    //           });
   }
 
   public static getInstance(): ActionDecider {
@@ -62,11 +64,6 @@ class ActionDecider {
 
   private dispatchBeatBatchReady(track: TrackModel, fromBeat: BeatModel): [TrackModel, BeatModel] {
     const nextAction = this.getAndLoadNext(track, fromBeat.startMs);
-
-    if (!nextAction) {
-      debugger;
-    }
-
     const beatBatch = branchFactory.createBeatBatch(fromBeat, nextAction);
 
     Dispatcher.getInstance()
@@ -75,21 +72,22 @@ class ActionDecider {
               } as FYPEventPayload['BeatBatchReady']);
 
     const lastBeatInThisBatch = nextAction.destinationBeat;
-    return [nextAction instanceof SongTransitionModel ? nextAction.destinationTrack : track, lastBeatInThisBatch];
+    const destinationTrack = nextAction instanceof SongTransitionModel ? nextAction.destinationTrack : track;
+
+    return [destinationTrack, lastBeatInThisBatch];
   }
 
   private getAndLoadNext(track: TrackModel, fromMs: number, actionType: ActionType = null): ActionModel {
     // If the track we requested to transition to has loaded, transition now
-    if (this._isNextTransitionReady) { // TODO: Implement
-      if (track.ID === this._nextTransition.destinationTrack.ID) {
-        this._nextTransition = null;
-        this._isNextTransitionReady = false;
-      } else {
-        return this._nextTransition;
-      }
+    if (this._isNextTransitionReady) {
+      const nextTransition = this._nextTransition;
+
+      this.resetState();
+
+      return nextTransition;
     }
 
-    const nextActionType = actionType ? actionType : this.getNextActionType();
+    const nextActionType = actionType ? actionType : this.getNextActionType(track);
     const nextActionService = this.getActionService(nextActionType);
     const nextAction = nextActionService.getNext(track, fromMs);
 
@@ -108,14 +106,21 @@ class ActionDecider {
     return nextAction;
   }
 
-  private getNextActionType(): ActionType {
+  private getNextActionType(track: TrackModel): ActionType {
     // If we've requested to take a transition, but it's not loaded yet
     if (this._nextTransition) {
       return ActionType.BRANCH;
     }
 
+    const transitionProbability = math.getProgressFromTo(config.choosing.minimumTransitionStartMs,
+                                                         config.choosing.maximumTransitionStartMs,
+                                                         track.listenDurationMs);
+    const normalizedTransitionProbability = math.getProgressFromTo(config.choosing.minimumTransitionProbability,
+                                                                   config.choosing.maximumTransitionProbability,
+                                                                   transitionProbability);
+
     const random = Math.random();
-    if (random < config.choosing.minimumTransitionProbability) {
+    if (random < normalizedTransitionProbability) {
       return ActionType.TRANSITION;
     }
 
@@ -129,7 +134,7 @@ class ActionDecider {
       case ActionType.TRANSITION:
         return TransitionService.getInstance();
       default:
-        throw new Error('ActionType not found!');
+        throw new Error(Translator.errors.action.not_found);
     }
   }
 
@@ -138,6 +143,11 @@ class ActionDecider {
               .dispatch(FYPEvent.TrackChangeRequested, {
                 track,
               } as FYPEventPayload['TrackChangeRequested']);
+  }
+
+  private resetState() {
+    this._nextTransition = null;
+    this._isNextTransitionReady = false;
   }
 }
 

@@ -1,3 +1,4 @@
 export default {
-  schedulingDelaySecs: 2,
+  schedulingDelaySecs: 3,
+  schedulingAheadCount: 1,
 };

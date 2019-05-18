@@ -2,12 +2,15 @@ import config from '../../../config';
 import Scene from './Scene';
 import SongCircle from './SongCircle';
 import BranchModel from '../../../models/branches/Branch';
-import Updatable, { AnimatableMesh } from './Updatable';
+import Updatable from './Updatable';
 import * as THREE from 'three';
 import WorldPoint from './utils/WorldPoint';
 import Rotation from './utils/Rotation';
 import { BezierCurveType, AnimationType } from '../../../types/enums';
 import * as conversions from '../../../utils/conversions';
+import * as math from '../../../utils/math';
+import * as animations from '../../../utils/animations';
+
 const MeshLine = require('three.meshline');
 
 type MeshLineOptions = {
@@ -79,8 +82,8 @@ class BezierCurve extends Updatable {
     const material = new MeshLine.MeshLineMaterial({
       resolution: new THREE.Vector3(window.innerWidth, window.innerHeight, 10),
       sizeAttenuation: 0,
-      near: Scene.CAMERA_Z_CLIP_NEAR,
-      far: Scene.CAMERA_Z_CLIP_FAR,
+      near: config.scene.cameraClipNearDistance,
+      far: config.scene.cameraClipFarDistance,
       ...meshLineOptions,
     });
 
@@ -104,11 +107,13 @@ class BezierCurve extends Updatable {
     const centerPoint = WorldPoint.getOrigin().alignToSceneBase();
     const fromPoint = WorldPoint.getPointOnSongCircleFromPercentage(centerPoint, songCircle, fromPercentage);
     const toPoint = WorldPoint.getPointOnSongCircleFromPercentage(centerPoint, songCircle, toPercentage);
+
+    // Vary the depth of the bezier curve to the center, depending on the branch's length
+    // (longer branches go closer to the center, smaller branches stick to the outside)
     const controlRadius = songCircle.radius * Math.max((1 - ((Math.abs(toPercentage - fromPercentage) * 12) / 100)), 0);
+
     const firstControlPoint = WorldPoint.getPointOnCircleFromPercentage(centerPoint, controlRadius, fromPercentage);
     const secondControlPoint = WorldPoint.getPointOnCircleFromPercentage(centerPoint, controlRadius, toPercentage);
-
-    // From point is largest, to point is smallest
 
     const curve = new THREE.CubicBezierCurve3(
       new THREE.Vector3(fromPoint.x, fromPoint.y),

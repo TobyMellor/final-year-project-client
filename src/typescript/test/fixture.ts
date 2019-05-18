@@ -5,6 +5,7 @@ import { ForwardAndBackwardBranches } from '../types/general';
 import Dispatcher from '../events/Dispatcher';
 import { FYPEvent } from '../types/enums';
 import * as branchFactory from '../factories/branch';
+import Translator from '../../translations/Translator';
 
 export function track(options: AddTrackOptions = {}): TrackModel {
   const trackMock = getATrackMock('4RVbK6cV0VqWdpCDcx3hiT');
@@ -25,7 +26,7 @@ export function forwardAndBackwardBranches(
   const beats = track.beats;
 
   if (quantity > beats.length / 2) {
-    throw new Error('Not enough beats for desired quantity');
+    throw new Error(Translator.errors.fixture.not_enough_beats);
   }
 
   const [forwardBranches, backwardBranches]: ForwardAndBackwardBranches = [[], []];

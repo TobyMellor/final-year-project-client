@@ -17,7 +17,7 @@ export async function getMockedTransitions(originTrack: TrackModel): Promise<Son
     myPropeller,
     cryingLightning,
     controlla,
-    hotlingBling,
+    hotlineBling,
     endGame,
     lookWhatYouMadeMeDo,
   ] = await Promise.all([
@@ -46,8 +46,8 @@ export async function getMockedTransitions(originTrack: TrackModel): Promise<Son
     // push(feelTheLove, 400, 100);
     // push(myPropeller, 175, 76);
     // push(cryingLightning, 312, 200);
-    push(hotlingBling, 135, 135);
-    // push(hotlingBling, 253, 122);
+    push(hotlineBling, 40, 40);
+    // push(hotlineBling, 253, 122);
   } else if (originTrack.ID === feelTheLove.ID) {
     push(myPropeller, 124, 76);
     push(cryingLightning, 50, 200);
@@ -59,7 +59,7 @@ export async function getMockedTransitions(originTrack: TrackModel): Promise<Son
     push(controlla, 175, 234);
   } else if (originTrack.ID === controlla.ID) {
     // Mock goes here
-  } else if (originTrack.ID === hotlingBling.ID) {
+  } else if (originTrack.ID === hotlineBling.ID) {
     push(myPropeller, 124, 76);
     push(cryingLightning, 50, 200);
     push(controlla, 175, 234);

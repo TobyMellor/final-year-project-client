@@ -44,6 +44,8 @@ export enum FYPEvent {
   // Triggers the stopping of the needle animation and audio
   BeatBatchStopped = 'beat_batch_stopped',
 
+  // Fired when the user clicked on a part of the parent song circle
+  // Triggers a seek to that bar in the song, when the current bar of the song has ended
   SeekRequested = 'seek_requested',
 }
 

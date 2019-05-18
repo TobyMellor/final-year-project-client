@@ -46,8 +46,8 @@ class SongCircle extends Updatable {
     this._childDepth = this.getChildDepth(this.parentSongCircle);
 
     this.addCircle(track, this.radius);
-    this.addCircleOutline(type, this.radius, this.lineWidth);
-    this.addText(track, this.radius, this.lineWidth);
+    this.addCircleOutline(type);
+    this.addText(track);
 
     super.addAll(scene);
   }
@@ -118,13 +118,13 @@ class SongCircle extends Updatable {
             endRGB: conversions.decimalToRgb(endColour),
           });
 
-          material.opacity = animations.getProgressFromTo(startOpacity, endOpacity, animationDecimal);
+          material.opacity = math.getProgressFromTo(startOpacity, endOpacity, animationDecimal);
         }
       },
     });
   }
 
-  private addCircleOutline(type: SongCircleType, radius: number, lineWidth: number) {
+  private addCircleOutline(type: SongCircleType) {
     const innerRadius = this.radius;
     const outerRadius = this.radius + this.lineWidth;
     const geometry = new THREE.RingGeometry(innerRadius, outerRadius, config.drawables.songCircle.resolution);
@@ -141,7 +141,7 @@ class SongCircle extends Updatable {
     });
   }
 
-  private addText(track: TrackModel, radius: number, lineWidth: number) {
+  private addText(track: TrackModel) {
     const loader = new THREE.FontLoader();
 
     loader.load('/dist/fonts/san-fransisco/regular.json', (font: any) => {

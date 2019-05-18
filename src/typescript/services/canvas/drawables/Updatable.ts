@@ -6,6 +6,7 @@ import config from '../../../config';
 import { AnimationType, AnimationCurve, SongCircleType, NeedleType } from '../../../types/enums';
 import * as animations from '../../../utils/animations';
 import { RGB } from '../../../types/general';
+import Translator from '../../../../translations/Translator';
 
 abstract class Updatable {
   protected _group: AnimatableGroup;
@@ -234,7 +235,7 @@ abstract class Updatable {
       case AnimationType.CHANGE_TYPE:
         return (options: MeshAnimationOptions) => options.mesh.changeType && options.mesh.changeType(options);
       default:
-        throw new Error('AnimationType not found!');
+        throw new Error(Translator.errors.canvas.animation_not_found);
     }
   }
 }

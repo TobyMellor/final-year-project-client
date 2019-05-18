@@ -7,6 +7,7 @@ import ForwardBranchModel from '../../../models/branches/ForwardBranch';
 import BackwardBranchModel from '../../../models/branches/BackwardBranch';
 import * as branchFactory from '../../../factories/branch';
 import * as math from '../../../utils/math';
+import Translator from '../../../../translations/Translator';
 
 export class BranchManager {
   private static _managers: { [trackID: string]: BranchManager } = {};
@@ -61,7 +62,7 @@ export class BranchManager {
 
   private getAccessibleBranches([forwardBranches, backwardBranches]: ForwardAndBackwardBranches): BranchModel[] {
     if (forwardBranches.length !== backwardBranches.length) {
-      throw new Error('The forward and backwards branch counts must be the same!');
+      throw new Error(Translator.errors.action.invalid_branch_manager);
     }
 
     const allBranches = [...forwardBranches, ...backwardBranches];

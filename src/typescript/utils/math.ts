@@ -57,3 +57,7 @@ export function euclideanDistance(firstNumbers: number[], secondNumbers: number[
 export function getRandomInteger(from: number = 0, to: number = 100): number {
   return Math.round(Math.random() * to) + from;
 }
+
+export function getProgressFromTo(from: number, to: number, animationDecimal: number) {
+  return from + (to - from) * animationDecimal;
+}

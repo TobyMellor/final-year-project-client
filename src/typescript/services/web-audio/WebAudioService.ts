@@ -1,7 +1,7 @@
 import TrackModel from '../../models/audio-analysis/Track';
 import Dispatcher from '../../events/Dispatcher';
 import * as trackFactory from '../../factories/track';
-import { FYPEvent, NeedleType, BranchType } from '../../types/enums';
+import { FYPEvent, NeedleType, BranchType, TransitionType } from '../../types/enums';
 import SampleQueueManager from './SampleQueueManager';
 import { FYPEventPayload, BeatBatch, QueuedSampleBatch, Sample } from '../../types/general';
 import * as conversions from '../../utils/conversions';
@@ -12,6 +12,7 @@ import ActionModel from '../../models/Action';
 import SongTransitionModel from '../../models/SongTransition';
 import QueuedSampleModel from '../../models/web-audio/QueuedBeat';
 import config from '../../config';
+import Translator from '../../../translations/Translator';
 
 class WebAudioService {
   private static _instance: WebAudioService;
@@ -58,7 +59,7 @@ class WebAudioService {
                 this.seek(percentage);
               });
 
-    const initialTrackID = '1JbR9RDP3ogVNEWFgNXAjh'; // TODO: Replace dynamically
+    const initialTrackID = '4RVbK6cV0VqWdpCDcx3hiT'; // TODO: Replace dynamically
     trackFactory.createTrack(initialTrackID)
                 .then((initialTrack: TrackModel) => {
                   Dispatcher.getInstance()
@@ -89,7 +90,7 @@ class WebAudioService {
 
   private async finishLoadingNextTrack() {
     if (!this._nextTrack || !this._nextTrackAudioBufferPromise) {
-      throw new Error('You must start loading the next track through startLoadingNextTrack!');
+      throw new Error(Translator.errors.web_audio.next_track_not_found);
     }
 
     const nextTrackID = this._nextTrack.ID;
@@ -100,9 +101,8 @@ class WebAudioService {
     if (!this._playingTrack) {
       this.changePlayingTrack();
 
-      // Schedule two BeatBatches in advance
-      const SCHEDULE_BUFFER_COUNT = 2;
-      this.dispatchBeatBatchRequested(this._playingTrack, null, 0, SCHEDULE_BUFFER_COUNT);
+      // Schedule multiple BeatBatches in advance
+      this.dispatchBeatBatchRequested(this._playingTrack, null, 0, config.audio.schedulingAheadCount);
 
       return;
     }
@@ -115,6 +115,7 @@ class WebAudioService {
     this._playingTrack = this._nextTrack;
     this._nextTrack = null;
 
+    this._playingTrack.setupPlayingInformation(this._audioContext);
     this.dispatchTrackChanged(this._playingTrack);
   }
 
@@ -139,13 +140,13 @@ class WebAudioService {
     source: NeedleType = NeedleType.PLAYING,
     onEndedCallbackFn = () => {
       const nextAction = SampleQueueManager.lastAction();
-      const nextTrack = nextAction instanceof SongTransitionModel ? nextAction.destinationTrack : this._playingTrack;
+      const nextTrack = nextAction instanceof SongTransitionModel ? nextAction.destinationTrack : nextAction.track;
 
       this.dispatchBeatBatchRequested(nextTrack, nextAction);
     },
   ) {
     if (!beatBatch || !beatBatch.originTrackBeats || beatBatch.originTrackBeats.length === 0) {
-      throw new Error('Attempted to request no beats!');
+      throw new Error(Translator.errors.web_audio.empty_beat_batch);
     }
 
     const queuedSampleBatch = SampleQueueManager.add(this._audioContext, beatBatch);
@@ -176,40 +177,30 @@ class WebAudioService {
       }
 
       if (isTransitionSample) {
-        const {
-          destinationTrackSubmittedCurrentTime,
-          destinationTrackBeats,
-          destinationTrackBeatsDurationSecs,
-        } = queuedSample;
+        const transition = beatBatch.action as SongTransitionModel;
+        const isImmediateTransition = transition.type === TransitionType.IMMEDIATE;
 
-        if (destinationTrackBeats.length) {
-          const action = beatBatch.action as SongTransitionModel;
+        if (!isImmediateTransition) {
+          const {
+            destinationTrackSubmittedCurrentTime,
+            destinationTrackBeats,
+            destinationTrackBeatsDurationSecs,
+          } = queuedSample;
 
-          sample = this.playSample(action.destinationTrack,
+          sample = this.playSample(transition.destinationTrack,
                                    queuedSample,
                                    destinationTrackSubmittedCurrentTime,
                                    destinationTrackBeats[0].startSecs,
                                    destinationTrackBeatsDurationSecs);
         }
+
+        lastSample.source.onended = () => {
+          this.dispatchTrackChanging(transition, queuedSample);
+        };
       }
 
-      // TODO: Cleanup
-      if (i === queuedSamples.length - 1) {
-        if (isTransitionSample) {
-          if (!sample) {
-            lastSample.source.onended = () => {
-              this.dispatchTrackChanging(beatBatch.action as SongTransitionModel, queuedSample);
-              this.dispatchBeatBatchRequested((beatBatch.action as SongTransitionModel).destinationTrack, beatBatch.action);
-            };
-          } else {
-            lastSample.source.onended = () => {
-              this.dispatchTrackChanging(beatBatch.action as SongTransitionModel, queuedSample);
-            };
-            sample.source.onended = onEndedCallbackFn;
-          }
-        } else {
-          sample.source.onended = onEndedCallbackFn;
-        }
+      if (i === queuedSamples.length - 1 && sample) {
+        sample.source.onended = onEndedCallbackFn;
       }
 
       lastSample = sample;
@@ -349,7 +340,7 @@ class WebAudioService {
     const track = this._playingTrack;
     const playthroughMs = track.duration.ms * conversions.percentageToDecimal(percentage);
 
-    this.dispatchBeatBatchRequested(track, null, playthroughMs, 2); // TODO: Make SCHEDULE COUNT GLOBAL
+    this.dispatchBeatBatchRequested(track, null, playthroughMs, config.audio.schedulingAheadCount);
   }
 
   private dispatchTrackChangeReady(track: TrackModel) {
