@@ -2,7 +2,7 @@ import * as React from 'react';
 import { withRouter, RouteComponentProps } from 'react-router-dom';
 import localStorage from '../../utils/localStorage';
 
-class CaptureAuthToken extends React.Component<RouteComponentProps> {
+class CaptureAccessToken extends React.Component<RouteComponentProps> {
   constructor(props: RouteComponentProps) {
     super(props);
     this.saveAuthToken = this.saveAuthToken.bind(this);
@@ -13,7 +13,7 @@ class CaptureAuthToken extends React.Component<RouteComponentProps> {
     const searchParams = new URLSearchParams(this.props.location.search);
     const accessToken = searchParams.get('access_token');
     const refreshToken = searchParams.get('refresh_token');
-    localStorage.set('spotify_acess_token', accessToken);
+    localStorage.set('spotify_access_token', accessToken);
     localStorage.set('spotify_refresh_token', refreshToken);
     if (accessToken && refreshToken) {
       this.props.history.replace('/');
@@ -29,4 +29,4 @@ class CaptureAuthToken extends React.Component<RouteComponentProps> {
   }
 }
 
-export default withRouter(CaptureAuthToken);
+export default withRouter(CaptureAccessToken);
