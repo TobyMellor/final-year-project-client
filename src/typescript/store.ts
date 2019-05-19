@@ -7,12 +7,12 @@ declare global {
 import { createStore, combineReducers, applyMiddleware } from 'redux';
 import appReducer from './reducers/appReducer';
 
-// const combinedReducers = combineReducers({
-//   app: appReducer,
-// });
+const combinedReducers = combineReducers({
+  app: appReducer,
+});
 
 const store = createStore(
-  appReducer,
+  combinedReducers,
   window.__REDUX_DEVTOOLS_EXTENSION__ && window.__REDUX_DEVTOOLS_EXTENSION__(),
 );
 

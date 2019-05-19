@@ -25,6 +25,8 @@ function appReducer(state = initialState, action: actionType) {
         accessToken,
         refreshToken,
       });
+    default:
+      return state;
   }
 }
 
