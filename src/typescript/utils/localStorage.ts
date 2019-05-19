@@ -22,5 +22,5 @@ export default {
     }
     localStorage.removeItem(key);
     return true;
-  }
+  },
 };

@@ -7,7 +7,7 @@ import { saveAccessToken, saveAccessTokenType } from '../../actions/appActions';
 
 interface CaptureAccessTokenProps extends RouteComponentProps {
   saveAccessAndRefreshToken: (data: saveAccessTokenType) => void;
-};
+}
 
 class CaptureAccessToken extends React.Component<CaptureAccessTokenProps> {
   constructor(props: CaptureAccessTokenProps) {
