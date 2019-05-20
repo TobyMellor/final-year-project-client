@@ -21,10 +21,11 @@ function appReducer(state = initialState, action: actionType) {
   switch (action.type) {
     case SAVE_SPOTIFY_ACCESS_TOKEN:
       const { accessToken, refreshToken } = action.data;
-      return Object.assign({}, state, {
+      return {
+        ...state,
         accessToken,
         refreshToken,
-      });
+      };
     default:
       return state;
   }
