@@ -10,13 +10,9 @@ export type saveAccessTokenActionType = {
   data: saveAccessTokenType;
 };
 
-const saveAccessToken = (data: saveAccessTokenType): saveAccessTokenActionType => {
+export const saveAccessToken = (data: saveAccessTokenType): saveAccessTokenActionType => {
   return {
     data,
     type: SAVE_SPOTIFY_ACCESS_TOKEN,
   };
-};
-
-export {
-  saveAccessToken,
 };
