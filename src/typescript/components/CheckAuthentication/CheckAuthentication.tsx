@@ -4,7 +4,7 @@ import localStorage from '../../utils/localStorage';
 import LandingPage from '../LandingPage/LandingPage';
 import LoginPage from '../LoginPage/LoginPage';
 
-class CheckAuthentication extends React.Component {
+class CheckAuthentication extends React.Component<null, null> {
   render() {
     const accessToken = localStorage.get('spotify_access_token');
     const refreshToken = localStorage.get('spotify_refresh_token');
