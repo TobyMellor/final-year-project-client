@@ -9,7 +9,7 @@ type appState = {
 
 type actionType = {
   type: string;
-  data: saveAccessTokenType
+  data: saveAccessTokenType;
 };
 
 const initialState: appState = {
