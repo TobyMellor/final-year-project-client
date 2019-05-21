@@ -3,7 +3,7 @@ import { withRouter, RouteComponentProps } from 'react-router-dom';
 import { Dispatch } from 'redux';
 import { connect } from 'react-redux';
 import * as localStorage from '../../utils/localStorage';
-import { saveAccessToken, saveAccessTokenType } from '../../actions/appActions';
+import { saveAccessToken, saveAccessTokenType } from '../../actions/app-actions';
 
 interface CaptureAccessTokenProps extends RouteComponentProps {
   saveAccessAndRefreshToken: (data: saveAccessTokenType) => void;

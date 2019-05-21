@@ -1,5 +1,5 @@
 import { SAVE_SPOTIFY_ACCESS_TOKEN } from '../constants/appConstants';
-import { saveAccessTokenType } from '../actions/appActions';
+import { saveAccessTokenType } from '../actions/app-actions';
 import * as localStorage from '../utils/localStorage';
 
 type appState = {
