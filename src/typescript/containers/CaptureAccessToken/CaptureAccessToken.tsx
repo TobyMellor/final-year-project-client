@@ -2,7 +2,7 @@ import * as React from 'react';
 import { withRouter, RouteComponentProps } from 'react-router-dom';
 import { Dispatch } from 'redux';
 import { connect } from 'react-redux';
-import localStorage from '../../utils/localStorage';
+import * as localStorage from '../../utils/localStorage';
 import { saveAccessToken, saveAccessTokenType } from '../../actions/appActions';
 
 interface CaptureAccessTokenProps extends RouteComponentProps {
