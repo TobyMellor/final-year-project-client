@@ -1,0 +1,13 @@
+.login-page {
+  height: 100vh;
+  min-height: 100vh;
+  overflow: hidden;
+
+  .login-card {
+    padding: 30px;
+    
+    .login-button {
+      margin-top: 30px;
+    }
+  }
+}
