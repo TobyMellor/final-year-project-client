@@ -79,18 +79,6 @@ app.get("/authorization_success", function(req, res, next) {
       } else if (!err && response.statusCode === 200) {
         const accessToken = body.access_token,
           refreshToken = body.refresh_token;
-
-        // call to get more information about the user.
-        // const options = {
-        //   url: "https://api.spotify.com/v1/me",
-        //   headers: { Authorization: "Bearer " + accessToken },
-        //   json: true
-        // };
-
-        // request.get(options, function(error, response, body) {
-        //   console.log(body);
-        // });
-
         res.redirect(
           `${SPOTIFY_AFTER_AUTHORIZATION_REDIRECT}?${querystring.stringify({
             access_token: accessToken,
