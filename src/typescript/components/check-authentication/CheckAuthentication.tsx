@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { Route } from 'react-router-dom';
 import * as localStorage from '../../utils/localStorage';
-import LandingPage from '../LandingPage/LandingPage';
+import LandingPage from '../landing-page/LandingPage';
 import LoginPage from '../LoginPage/LoginPage';
 
 class CheckAuthentication extends React.Component {
