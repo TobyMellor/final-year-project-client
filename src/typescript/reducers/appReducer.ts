@@ -1,4 +1,4 @@
-import { SAVE_SPOTIFY_ACCESS_TOKEN } from '../constants/app-constants';
+import { SAVE_SPOTIFY_ACCESS_TOKEN } from '../config/redux';
 import { saveAccessTokenType } from '../actions/app-actions';
 import * as localStorage from '../utils/localStorage';
 
