@@ -11,7 +11,7 @@ import config from '../../config';
 import SongTransitionModel from '../../models/SongTransition';
 import TrackModel from '../../models/audio-analysis/Track';
 
-interface LandingPageProps { }
+interface LandingPageProps {}
 
 interface LandingPageState {
   UIBars: UIBarType[];

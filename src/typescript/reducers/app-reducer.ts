@@ -1,23 +1,23 @@
 import { SAVE_SPOTIFY_ACCESS_TOKEN } from '../config/redux';
 import * as localStorage from '../utils/localStorage';
-import { saveAccessTokenActionDataType } from '../types/redux-actions';
+import { SaveAccessTokenActionDataType } from '../types/redux-actions';
 
-type appState = {
+type AppState = {
   accessToken: string | null;
   refreshToken: string | null;
 };
 
-type actionType = {
+type ActionType = {
   type: string;
-  data: saveAccessTokenActionDataType;
+  data: SaveAccessTokenActionDataType;
 };
 
-const initialState: appState = {
+const initialState: AppState = {
   accessToken: localStorage.get('spotify_access_token') || null,
   refreshToken: localStorage.get('spotify_refresh_token') || null,
 };
 
-function appReducer(state = initialState, action: actionType) {
+function appReducer(state = initialState, action: ActionType) {
   switch (action.type) {
     case SAVE_SPOTIFY_ACCESS_TOKEN:
       const { accessToken, refreshToken } = action.data;

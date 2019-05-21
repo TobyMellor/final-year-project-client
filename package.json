@@ -63,7 +63,6 @@
     "webpack-dev-server": "^3.2.1"
   },
   "dependencies": {
-    "@tensorflow/tfjs": "^1.1.0",
     "axios": "^0.18.0",
     "bezier-easing": "^2.1.0",
     "bootstrap": "^4.3.1",

@@ -4,8 +4,8 @@ declare global {
   }
 }
 
-import { createStore, combineReducers, applyMiddleware } from 'redux';
-import appReducer from './reducers/appReducer';
+import { createStore, combineReducers } from 'redux';
+import appReducer from './reducers/app-reducer';
 
 const combinedReducers = combineReducers({
   app: appReducer,

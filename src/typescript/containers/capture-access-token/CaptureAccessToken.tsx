@@ -4,10 +4,10 @@ import { Dispatch } from 'redux';
 import { connect } from 'react-redux';
 import * as localStorage from '../../utils/localStorage';
 import { saveAccessToken } from '../../actions/app-actions';
-import { saveAccessTokenActionDataType } from '../../types/redux-actions';
+import { SaveAccessTokenActionDataType } from '../../types/redux-actions';
 
 interface CaptureAccessTokenProps extends RouteComponentProps {
-  saveAccessAndRefreshToken: (data: saveAccessTokenActionDataType) => void;
+  saveAccessAndRefreshToken: (data: SaveAccessTokenActionDataType) => void;
 }
 
 class CaptureAccessToken extends React.Component<CaptureAccessTokenProps> {
@@ -40,7 +40,7 @@ class CaptureAccessToken extends React.Component<CaptureAccessTokenProps> {
 
 const mapDispatchToProps = (dispatch: Dispatch) => {
   return {
-    saveAccessAndRefreshToken: (data: saveAccessTokenActionDataType) => dispatch(saveAccessToken(data)),
+    saveAccessAndRefreshToken: (data: SaveAccessTokenActionDataType) => dispatch(saveAccessToken(data)),
   };
 };
 
