@@ -1,4 +1,4 @@
-import { SAVE_SPOTIFY_ACCESS_TOKEN } from '../constants/appConstants';
+import { SAVE_SPOTIFY_ACCESS_TOKEN } from '../constants/app-constants';
 
 export type saveAccessTokenType = {
   accessToken: string;

@@ -1,0 +1,1 @@
+export const SAVE_SPOTIFY_ACCESS_TOKEN: string = 'app/SAVE_SPOTIFY_ACCESS_TOKEN';
