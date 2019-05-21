@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
-import CheckAuthentication from './components/CheckAuthentication/CheckAuthentication';
+import CheckAuthentication from './components/check-authentication/CheckAuthentication';
 import CaptureAccessToken from './containers/CaptureAccessToken/CaptureAccessToken';
 
 const AppRoutes = () => (
