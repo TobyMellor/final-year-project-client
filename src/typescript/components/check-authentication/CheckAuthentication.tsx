@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { Route } from 'react-router-dom';
 import * as localStorage from '../../utils/localStorage';
-import LandingPage from '../landing-page/LandingPage';
+import SearchPage from '../../containers/search-page/SearchPage';
 import LoginPage from '../login-page/LoginPage';
 
 class CheckAuthentication extends React.Component {
@@ -15,7 +15,7 @@ class CheckAuthentication extends React.Component {
     }
     return (
       <>
-        <Route path="/" exact component={LandingPage} />
+        <Route path="/" exact component={SearchPage} />
       </>
     );
   }
