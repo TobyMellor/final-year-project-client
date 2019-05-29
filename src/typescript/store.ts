@@ -1,6 +1,7 @@
 import { applyMiddleware, createStore, combineReducers, compose } from 'redux';
 import thunk from 'redux-thunk';
 import appReducer from './reducers/app-reducer';
+import searchReducer from './reducers/search-reducer';
 
 declare global {
   interface Window {
@@ -10,6 +11,7 @@ declare global {
 
 const combinedReducers = combineReducers({
   app: appReducer,
+  search: searchReducer,
 });
 
 const composeEnhancers =
