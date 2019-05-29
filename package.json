@@ -67,11 +67,13 @@
     "bezier-easing": "^2.1.0",
     "bootstrap": "^4.3.1",
     "classnames": "^2.2.6",
+    "lodash-es": "^4.17.11",
     "react": "^16.8.6",
     "react-dom": "^16.8.6",
     "react-redux": "^7.0.3",
     "react-router-dom": "^5.0.0",
     "redux": "^4.0.1",
+    "redux-thunk": "^2.3.0",
     "three-orbitcontrols-ts": "^0.1.2",
     "uuid": "^3.3.2"
   }
