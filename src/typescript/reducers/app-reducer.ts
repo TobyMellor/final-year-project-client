@@ -1,11 +1,7 @@
 import { SAVE_SPOTIFY_ACCESS_TOKEN } from '../config/redux';
 import * as localStorage from '../utils/localStorage';
 import { SaveAccessTokenActionDataType } from '../types/redux-actions';
-
-type AppState = {
-  accessToken: string | null;
-  refreshToken: string | null;
-};
+import { AppState } from '../types/redux-state';
 
 type ActionType = {
   type: string;

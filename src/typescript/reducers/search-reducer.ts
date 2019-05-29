@@ -1,12 +1,9 @@
 import { SEARCH_SPOTIFY_TRACK_SUCCESS, SEARCH_SPOTIFY_TRACK_FAILURE } from '../config/redux';
+import { SearchState } from '../types/redux-state';
 
 type ActionType = {
   type: string;
   data: object;
-};
-
-type SearchState = {
-  tracks: object[];
 };
 
 const initialState: SearchState = {
