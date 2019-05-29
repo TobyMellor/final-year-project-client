@@ -1,19 +1,29 @@
+import { applyMiddleware, createStore, combineReducers, compose } from 'redux';
+import thunk from 'redux-thunk';
+import appReducer from './reducers/app-reducer';
+
 declare global {
   interface Window {
-    __REDUX_DEVTOOLS_EXTENSION__?: () => {};
+    __REDUX_DEVTOOLS_EXTENSION_COMPOSE__?: typeof compose;
   }
 }
-
-import { createStore, combineReducers } from 'redux';
-import appReducer from './reducers/app-reducer';
 
 const combinedReducers = combineReducers({
   app: appReducer,
 });
 
+const composeEnhancers =
+  typeof window === 'object' &&
+  window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ ?
+    window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ : compose;
+
+const enhancer = composeEnhancers(
+  applyMiddleware(thunk),
+);
+
 const store = createStore(
   combinedReducers,
-  window.__REDUX_DEVTOOLS_EXTENSION__ && window.__REDUX_DEVTOOLS_EXTENSION__(),
+  enhancer,
 );
 
 export default store;
