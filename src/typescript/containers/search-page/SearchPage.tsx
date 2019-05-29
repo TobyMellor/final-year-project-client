@@ -11,8 +11,8 @@ class SearchPage extends React.Component {
   }
 
   handleSearchChange(event: React.ChangeEvent<HTMLInputElement>) {
-    console.log(event.target.value);
-    // debounce(searchSpotifyTrack);
+    const searchText:string = event.target.value;
+    debounce(searchSpotifyTrack(searchText), 500);
   }
 
   render() {
