@@ -5,14 +5,17 @@ import { searchSpotifyTrack } from '../../actions/search-actions';
 import { CombinedState } from '../../types/redux-state';
 
 class SearchPage extends React.Component {
+  private delayedSearch: any;
   constructor(props: null) {
     super(props);
     this.handleSearchChange = this.handleSearchChange.bind(this);
+    this.delayedSearch = debounce(searchSpotifyTrack, 1000);
   }
 
   handleSearchChange(event: React.ChangeEvent<HTMLInputElement>) {
     const searchText:string = event.target.value;
-    debounce(searchSpotifyTrack(searchText), 500);
+    event.persist();
+    this.delayedSearch(event.target.value);
   }
 
   render() {
