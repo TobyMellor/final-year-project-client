@@ -1,3 +1,4 @@
+
 export type SearchState = {
   tracks: object[];
 };
@@ -5,4 +6,9 @@ export type SearchState = {
 export type AppState = {
   accessToken: string | null;
   refreshToken: string | null;
+};
+
+export type CombinedState = {
+  app: AppState;
+  search: SearchState;
 };
