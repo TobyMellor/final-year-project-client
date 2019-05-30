@@ -114,3 +114,9 @@ export function pointToPercentage(
 
   return percentage;
 }
+
+export function objectToQueryParams(params: object) {
+  return Object.keys(params).map(
+      (key: string) => `${key}=${(<{[key: string]: string | number}>params)[key]}`,
+    ).join('&');
+}
