@@ -1,3 +1,31 @@
 .search-page {
   padding: 40px 5px;
 }
+
+.search-item {
+  border-bottom: 1px solid #EAEAEA;
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  padding: 10px;
+  .thumbnail {
+    border-radius: 5px;
+    img {
+      width: 40px;
+      height: 40px;
+    }
+  }
+  .info {
+    padding: 0px 10px;
+    .title {
+      font-weight: 600;
+      font-size: 20px;
+    }
+    .duration {
+      font-size: 12px;
+    }
+  }
+  &:last-child {
+    border-bottom: none;
+  }
+}
