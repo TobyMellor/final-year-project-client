@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { msToMinutes } from '../../utils/misc';
 
 interface SearchItemProps {
   name: string;
@@ -19,7 +20,7 @@ const SearchItem: React.FC<SearchItemProps> = (props: SearchItemProps) => (
           {props.name}
         </div>
         <div className="duration">
-          Duration: {props.duration}
+          Duration: {msToMinutes(parseInt(props.duration, 10))}
         </div>
       </div>
   </div>
