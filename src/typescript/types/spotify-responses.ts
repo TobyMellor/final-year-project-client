@@ -1,4 +1,13 @@
 
+interface BaseSpotifyServerResponse {
+  config: object;
+  data: object;
+  headers: object;
+  request: object;
+  status: number;
+  statusText: string;
+}
+
 type Image = {
   height: number;
   url: string;
@@ -689,7 +698,7 @@ export type Track = {
   duration_ms: string;
 };
 
-export interface SearchTrackResponse {
+export interface SearchTrackResponseData {
   tracks: {
     href: string;
     items: Track[];
@@ -699,4 +708,8 @@ export interface SearchTrackResponse {
     previous: string | null;
     total:  number;
   };
+}
+
+export interface SearchTrackResponse extends BaseSpotifyServerResponse {
+  data: SearchTrackResponseData;
 }
