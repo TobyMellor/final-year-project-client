@@ -8,6 +8,10 @@
   flex-direction: row;
   align-items: flex-start;
   padding: 10px;
+  cursor: pointer;
+  &.active {
+    background-color: #F5F5F5;
+  }
   .thumbnail {
     border-radius: 5px;
     img {
