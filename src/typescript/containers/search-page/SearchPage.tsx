@@ -11,6 +11,7 @@ import { withRouter, RouteComponentProps } from 'react-router';
 interface SearchPageProps extends RouteComponentProps {
   searchResult: OutputTrack[];
   searchSpotify: () => {};
+  setSelectedTrackID: (id: string) => {};
 };
 
 type SearchPageState = {
@@ -74,6 +75,7 @@ class SearchPage extends React.Component<SearchPageProps, SearchPageState> {
     const selectedItem: OutputTrack = this.props.searchResult.find(track => track.id === this.state.selectedItemID);
     if (Math.abs(parseInt(selectedItem.duration, 10) - this.state.uploadedFileDuration) <= 1000) {
       // if the selected items doesnt differ by more than 1 second
+      this.props.setSelectedTrackID(this.state.selectedItemID);
       this.props.history.push('/studio');
     }
   }
