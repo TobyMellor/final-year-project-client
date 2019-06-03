@@ -12,7 +12,7 @@ export function searchSpotifyTrack(query: string) {
     }
     return dispatch(searchSpotifyTrackFailure());
   };
-} 
+};
 
 export const searchSpotifyTrackSuccess = (data: OutputTrack[]) => {
   return {
