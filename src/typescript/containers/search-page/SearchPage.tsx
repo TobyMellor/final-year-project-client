@@ -5,6 +5,7 @@ import { searchSpotifyTrack } from '../../actions/search-actions';
 import { CombinedState } from '../../types/redux-state';
 import SearchItem from '../../components/search-item/SearchItem';
 import { OutputTrack } from '../../models/search-track';
+import FileUploader from '../../components/file-uploader/FileUploader';
 
 type SearchPageProps = {
   searchResult: OutputTrack[];
@@ -21,6 +22,7 @@ class SearchPage extends React.Component<SearchPageProps, SearchPageState> {
     super(props);
     this.handleSearchChange = this.handleSearchChange.bind(this);
     this.handleClick = this.handleClick.bind(this);
+    this.handleFileChange = this.handleFileChange.bind(this);
     this.delayedSearch = debounce(this.props.searchSpotify, 1000);
     this.state = {
       selectedItemID: null,
@@ -29,12 +31,18 @@ class SearchPage extends React.Component<SearchPageProps, SearchPageState> {
 
   handleSearchChange(event: React.ChangeEvent<HTMLInputElement>) {
     const searchText:string = event.target.value;
-    event.persist();
-    this.delayedSearch(event.target.value);
+    if (searchText.length) {
+      event.persist();
+      this.delayedSearch(event.target.value);
+    }
   }
 
   handleClick(id: string) {
     this.setState({ selectedItemID: id });
+  }
+
+  handleFileChange() {
+
   }
 
   render() {
@@ -52,17 +60,28 @@ class SearchPage extends React.Component<SearchPageProps, SearchPageState> {
                 onChange={this.handleSearchChange}
               />
               {
-                searchResult.map(track => (
-                  <SearchItem
-                    id={track.id}
-                    name={track.name}
-                    thumbnail={track.images[0].url}
-                    duration={track.duration}
-                    key={track.id}
-                    handleClick={this.handleClick}
-                    active={track.id === selectedItemID}
-                  />
-                ))
+                searchResult.length ? (
+                  <div className="search-item-container">
+                    <div className="search-item-list">
+                      {
+                        searchResult.map(track => (
+                          <SearchItem
+                            id={track.id}
+                            name={track.name}
+                            thumbnail={track.images[0].url}
+                            duration={track.duration}
+                            key={track.id}
+                            handleClick={this.handleClick}
+                            active={track.id === selectedItemID}
+                          />
+                        ))
+                      }
+                    </div>
+                    <div className="footer">
+                      <FileUploader handleFileChange={this.handleFileChange} disabled={!selectedItemID} />
+                    </div>
+                  </div>
+                ) : null
               }
             </div>
           </div>
