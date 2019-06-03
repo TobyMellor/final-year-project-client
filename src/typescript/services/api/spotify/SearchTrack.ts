@@ -2,7 +2,7 @@ import SpotifyAPI from './SpotifyAPI';
 import Request from '../Request';
 import { objectToQueryParams } from '../../../utils/conversions';
 import SearchTrackModel, { OutputTrack } from '../../../models/search-track';
-import { SearchTrackResponseData, Track, SearchTrackResponse } from '../../../types/spotify-responses';
+import { SearchTrackResponseData, Track, SearchTrackSuccessResponse } from '../../../types/spotify-responses';
 import * as localStorage from '../../../utils/localStorage';
 
 class SearchTrack extends Request {
@@ -26,8 +26,8 @@ class SearchTrack extends Request {
   static async request(query: string): Promise<OutputTrack[]> {
     const response = await SpotifyAPI.get(
       new SearchTrack(query),
-    ) as SearchTrackResponse;
-    if (response.status === 200) {
+    ) as SearchTrackSuccessResponse;
+    if (response && response.status === 200) {
       const tracks: Track[] = response.data.tracks.items;
       return new SearchTrackModel(tracks).tracks;
     }
