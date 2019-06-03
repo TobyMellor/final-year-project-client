@@ -4,12 +4,16 @@ import debounce from 'lodash-es/debounce';
 import { searchSpotifyTrack } from '../../actions/search-actions';
 import { CombinedState } from '../../types/redux-state';
 
-class SearchPage extends React.Component {
+type SearchPageProps = {
+  searchSpotify: () => {};
+};
+
+class SearchPage extends React.Component<SearchPageProps> {
   private delayedSearch: any;
   constructor(props: null) {
     super(props);
     this.handleSearchChange = this.handleSearchChange.bind(this);
-    this.delayedSearch = debounce(searchSpotifyTrack, 1000);
+    this.delayedSearch = debounce(this.props.searchSpotify, 1000);
   }
 
   handleSearchChange(event: React.ChangeEvent<HTMLInputElement>) {
@@ -44,4 +48,10 @@ const mapStateToProps = (state:CombinedState) => {
   };
 };
 
-export default connect(mapStateToProps, null)(SearchPage);
+const mapDispatchToProps = (dispatch: any) => {
+  return {
+    searchSpotify: (query: string) => dispatch(searchSpotifyTrack(query)),
+  };
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(SearchPage);
