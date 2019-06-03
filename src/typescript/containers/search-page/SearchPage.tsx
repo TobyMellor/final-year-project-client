@@ -18,15 +18,20 @@ type SearchPageState = {
 
 class SearchPage extends React.Component<SearchPageProps, SearchPageState> {
   private delayedSearch: any;
+  private audioRef: React.RefObject<HTMLAudioElement>;
+  private fileURL: string;
   constructor(props: null) {
     super(props);
     this.handleSearchChange = this.handleSearchChange.bind(this);
     this.handleClick = this.handleClick.bind(this);
     this.handleFileChange = this.handleFileChange.bind(this);
+    this.calculateAudioDuration = this.calculateAudioDuration.bind(this);
+    this.handlePlayThrough = this.handlePlayThrough.bind(this);
     this.delayedSearch = debounce(this.props.searchSpotify, 1000);
     this.state = {
       selectedItemID: null,
     };
+    this.audioRef = React.createRef();
   }
 
   handleSearchChange(event: React.ChangeEvent<HTMLInputElement>) {
@@ -41,8 +46,26 @@ class SearchPage extends React.Component<SearchPageProps, SearchPageState> {
     this.setState({ selectedItemID: id });
   }
 
-  handleFileChange() {
+  handleFileChange(event: React.ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files[0];
+    const audioNode = this.audioRef.current;
+    this.fileURL = URL.createObjectURL(file);
+    this.calculateAudioDuration();
+    audioNode.setAttribute('src', this.fileURL);
+  }
 
+  calculateAudioDuration() {
+    this.audioRef.current.addEventListener('canplaythrough', this.handlePlayThrough);
+  }
+
+  handlePlayThrough(event: any) {
+    const seconds = event.currentTarget.duration;
+    console.log(seconds);
+    URL.revokeObjectURL(this.fileURL);
+  }
+
+  componentWillUnmount() {
+    this.audioRef.current.removeEventListener('canplaythrough', this.handlePlayThrough);
   }
 
   render() {
@@ -80,6 +103,7 @@ class SearchPage extends React.Component<SearchPageProps, SearchPageState> {
                     <div className="footer">
                       <FileUploader handleFileChange={this.handleFileChange} disabled={!selectedItemID} />
                     </div>
+                    <audio ref={this.audioRef} />}
                   </div>
                 ) : null
               }
