@@ -3,8 +3,11 @@ import { connect } from 'react-redux';
 import debounce from 'lodash-es/debounce';
 import { searchSpotifyTrack } from '../../actions/search-actions';
 import { CombinedState } from '../../types/redux-state';
+import SearchItem from '../../components/search-item/SearchItem';
+import { OutputTrack } from '../../models/search-track';
 
 type SearchPageProps = {
+  searchResult: OutputTrack[];
   searchSpotify: () => {};
 };
 
@@ -23,6 +26,7 @@ class SearchPage extends React.Component<SearchPageProps> {
   }
 
   render() {
+    const { searchResult } = this.props;
     return (
       <div>
         <div className="container">
@@ -34,6 +38,11 @@ class SearchPage extends React.Component<SearchPageProps> {
                 placeholder="Search Track"
                 onChange={this.handleSearchChange}
               />
+              {
+                searchResult.map((track, index) => (
+                  <SearchItem name={track.name} thumbnail={track.images[0].url} duration={track.duration} key={index}/>
+                ))
+              }
             </div>
           </div>
         </div>
