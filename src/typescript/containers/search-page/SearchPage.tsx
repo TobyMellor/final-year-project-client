@@ -11,12 +11,20 @@ type SearchPageProps = {
   searchSpotify: () => {};
 };
 
-class SearchPage extends React.Component<SearchPageProps> {
+type SearchPageState = {
+  selectedItemID: string;
+}
+
+class SearchPage extends React.Component<SearchPageProps, SearchPageState> {
   private delayedSearch: any;
   constructor(props: null) {
     super(props);
     this.handleSearchChange = this.handleSearchChange.bind(this);
+    this.handleClick = this.handleClick.bind(this);
     this.delayedSearch = debounce(this.props.searchSpotify, 1000);
+    this.state = {
+      selectedItemID: null,
+    };
   }
 
   handleSearchChange(event: React.ChangeEvent<HTMLInputElement>) {
@@ -25,8 +33,13 @@ class SearchPage extends React.Component<SearchPageProps> {
     this.delayedSearch(event.target.value);
   }
 
+  handleClick(id: string) {
+    this.setState({ selectedItemID: id });
+  }
+
   render() {
     const { searchResult } = this.props;
+    const { selectedItemID } = this.state;
     return (
       <div>
         <div className="container">
@@ -39,8 +52,16 @@ class SearchPage extends React.Component<SearchPageProps> {
                 onChange={this.handleSearchChange}
               />
               {
-                searchResult.map((track, index) => (
-                  <SearchItem name={track.name} thumbnail={track.images[0].url} duration={track.duration} key={index}/>
+                searchResult.map(track => (
+                  <SearchItem
+                    id={track.id}
+                    name={track.name}
+                    thumbnail={track.images[0].url}
+                    duration={track.duration}
+                    key={track.id}
+                    handleClick={this.handleClick}
+                    active={track.id === selectedItemID}
+                  />
                 ))
               }
             </div>
