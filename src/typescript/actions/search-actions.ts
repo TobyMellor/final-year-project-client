@@ -1,4 +1,8 @@
-import { SEARCH_SPOTIFY_TRACK_SUCCESS, SEARCH_SPOTIFY_TRACK_FAILURE } from '../config/redux';
+import { 
+  SEARCH_SPOTIFY_TRACK_SUCCESS,
+  SEARCH_SPOTIFY_TRACK_FAILURE,
+  SET_SELECTED_SPOTIFY_TRACK_ID,
+ } from '../config/redux';
 import SpotifyAPI from '../services/api/spotify/SpotifyAPI';
 import SearchTrack from '../services/api/spotify/SearchTrack';
 import { Dispatch } from 'redux';
@@ -26,3 +30,10 @@ export const searchSpotifyTrackFailure = () => {
     type: SEARCH_SPOTIFY_TRACK_FAILURE,
   };
 };
+
+export const setSelectedSpotifyTrackID = (id: string) => {
+  return {
+    id,
+    type: SET_SELECTED_SPOTIFY_TRACK_ID,
+  };
+}
