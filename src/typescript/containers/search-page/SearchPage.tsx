@@ -1,19 +1,21 @@
 import * as React from 'react';
 import { connect } from 'react-redux';
 import debounce from 'lodash-es/debounce';
-import { searchSpotifyTrack } from '../../actions/search-actions';
+import { searchSpotifyTrack, setSelectedSpotifyTrackID } from '../../actions/search-actions';
 import { CombinedState } from '../../types/redux-state';
 import SearchItem from '../../components/search-item/SearchItem';
 import { OutputTrack } from '../../models/search-track';
 import FileUploader from '../../components/file-uploader/FileUploader';
+import { withRouter, RouteComponentProps } from 'react-router';
 
-type SearchPageProps = {
+interface SearchPageProps extends RouteComponentProps {
   searchResult: OutputTrack[];
   searchSpotify: () => {};
 };
 
 type SearchPageState = {
   selectedItemID: string;
+  uploadedFileDuration: number;
 }
 
 class SearchPage extends React.Component<SearchPageProps, SearchPageState> {
@@ -27,9 +29,11 @@ class SearchPage extends React.Component<SearchPageProps, SearchPageState> {
     this.handleFileChange = this.handleFileChange.bind(this);
     this.calculateAudioDuration = this.calculateAudioDuration.bind(this);
     this.handlePlayThrough = this.handlePlayThrough.bind(this);
+    this.compareDurations = this.compareDurations.bind(this);
     this.delayedSearch = debounce(this.props.searchSpotify, 1000);
     this.state = {
       selectedItemID: null,
+      uploadedFileDuration: 0,
     };
     this.audioRef = React.createRef();
   }
@@ -59,9 +63,19 @@ class SearchPage extends React.Component<SearchPageProps, SearchPageState> {
   }
 
   handlePlayThrough(event: any) {
-    const seconds = event.currentTarget.duration;
-    console.log(seconds);
+    const durationInseconds = event.currentTarget.duration;
+    const durationInMilliSeconds = Math.ceil(durationInseconds) * 1000;
+    this.setState({ uploadedFileDuration: durationInMilliSeconds });
     URL.revokeObjectURL(this.fileURL);
+    this.compareDurations();
+  }
+
+  compareDurations() {
+    const selectedItem: OutputTrack = this.props.searchResult.find(track => track.id === this.state.selectedItemID);
+    if (Math.abs(parseInt(selectedItem.duration, 10) - this.state.uploadedFileDuration) <= 1000) {
+      // if the selected items doesnt differ by more than 1 second
+      this.props.history.push('/studio');
+    }
   }
 
   componentWillUnmount() {
@@ -124,7 +138,8 @@ const mapStateToProps = (state:CombinedState) => {
 const mapDispatchToProps = (dispatch: any) => {
   return {
     searchSpotify: (query: string) => dispatch(searchSpotifyTrack(query)),
+    setSelectedTrackID: (id: string) => dispatch(setSelectedSpotifyTrackID(id)),
   };
 };
 
-export default connect(mapStateToProps, mapDispatchToProps)(SearchPage);
+export default connect(mapStateToProps, mapDispatchToProps)(withRouter(SearchPage));
