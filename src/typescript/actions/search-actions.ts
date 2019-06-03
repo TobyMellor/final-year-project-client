@@ -33,7 +33,7 @@ export const searchSpotifyTrackFailure = () => {
 
 export const setSelectedSpotifyTrackID = (id: string) => {
   return {
-    id,
+    data: id,
     type: SET_SELECTED_SPOTIFY_TRACK_ID,
   };
 }

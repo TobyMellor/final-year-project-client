@@ -1,6 +1,7 @@
 
 export type SearchState = {
   tracks: object[];
+  selectedSpotifyTrackID: string;
 };
 
 export type AppState = {
