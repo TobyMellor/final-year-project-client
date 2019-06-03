@@ -1,5 +1,8 @@
-
-interface BaseSpotifyServerResponse {
+type SpotifyErrorResponse = {
+  status: number;
+  message: string;
+}
+interface BaseSpotifyServerSuccessResponse {
   config: object;
   data: object;
   headers: object;
@@ -7,6 +10,7 @@ interface BaseSpotifyServerResponse {
   status: number;
   statusText: string;
 }
+
 
 type Image = {
   height: number;
@@ -710,6 +714,9 @@ export interface SearchTrackResponseData {
   };
 }
 
-export interface SearchTrackResponse extends BaseSpotifyServerResponse {
+export interface SearchTrackSuccessResponse extends BaseSpotifyServerSuccessResponse {
   data: SearchTrackResponseData;
+}
+export interface SearchTrackFailureResponse {
+  error: SpotifyErrorResponse;
 }
