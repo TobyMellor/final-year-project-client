@@ -10,16 +10,16 @@ const SearchItem: React.FC<SearchItemProps> = (props: SearchItemProps) => (
   <div className="search-item">
       <div className="thumbnail">
         <img
-          src="https://cdn3.iconfinder.com/data/icons/website-panel-icons/128/test1-10-512.png"
+          src={props.thumbnail}
           alt="thumbnail"
           />
       </div>
       <div className="info">
         <div className="title">
-          Sample title
+          {props.name}
         </div>
         <div className="duration">
-          Duration: 12min
+          Duration: {props.duration}
         </div>
       </div>
   </div>
