@@ -1,4 +1,4 @@
-import { 
+import {
   SEARCH_SPOTIFY_TRACK_SUCCESS,
   SEARCH_SPOTIFY_TRACK_FAILURE,
   SET_SELECTED_SPOTIFY_TRACK_ID,
@@ -16,7 +16,7 @@ export function searchSpotifyTrack(query: string) {
     }
     return dispatch(searchSpotifyTrackFailure());
   };
-};
+}
 
 export const searchSpotifyTrackSuccess = (data: OutputTrack[]) => {
   return {
@@ -36,4 +36,4 @@ export const setSelectedSpotifyTrackID = (id: string) => {
     data: id,
     type: SET_SELECTED_SPOTIFY_TRACK_ID,
   };
-}
+};

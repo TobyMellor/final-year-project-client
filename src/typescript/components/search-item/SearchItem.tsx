@@ -34,7 +34,7 @@ const SearchItem: React.FC<SearchItemProps> = (props: SearchItemProps) => {
           </div>
       </div>
     )
-  )
+  );
 };
 
 export default SearchItem;

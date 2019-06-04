@@ -12,12 +12,12 @@ interface SearchPageProps extends RouteComponentProps {
   searchResult: OutputTrack[];
   searchSpotify: () => {};
   setSelectedTrackID: (id: string) => {};
-};
+}
 
 type SearchPageState = {
   selectedItemID: string;
   uploadedFileDuration: number;
-}
+};
 
 class SearchPage extends React.Component<SearchPageProps, SearchPageState> {
   private delayedSearch: any;

@@ -1,7 +1,7 @@
 type SpotifyErrorResponse = {
   status: number;
   message: string;
-}
+};
 interface BaseSpotifyServerSuccessResponse {
   config: object;
   data: object;
@@ -10,7 +10,6 @@ interface BaseSpotifyServerSuccessResponse {
   status: number;
   statusText: string;
 }
-
 
 type Image = {
   height: number;

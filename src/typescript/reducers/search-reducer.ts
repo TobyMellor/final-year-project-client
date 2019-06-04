@@ -1,4 +1,8 @@
-import { SEARCH_SPOTIFY_TRACK_SUCCESS, SEARCH_SPOTIFY_TRACK_FAILURE, SET_SELECTED_SPOTIFY_TRACK_ID } from '../config/redux';
+import {
+  SEARCH_SPOTIFY_TRACK_SUCCESS,
+  SEARCH_SPOTIFY_TRACK_FAILURE,
+  SET_SELECTED_SPOTIFY_TRACK_ID,
+} from '../config/redux';
 import { SearchState } from '../types/redux-state';
 
 type ActionType = {
@@ -27,7 +31,7 @@ function searchReducer(state = initialState, action: ActionType) {
       return {
         ...state,
         selectedSpotifyTrackID: action.data,
-      }
+      };
     default:
       return state;
   }
