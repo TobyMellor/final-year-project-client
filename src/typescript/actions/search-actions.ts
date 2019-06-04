@@ -7,6 +7,11 @@ import SpotifyAPI from '../services/api/spotify/SpotifyAPI';
 import SearchTrack from '../services/api/spotify/SearchTrack';
 import { Dispatch } from 'redux';
 import { OutputTrack } from '../models/search-track';
+import {
+  SetSelectedSpotifyTrackIDType,
+  SearchSpotifyTrackFailureType,
+  SearchSpotifyTrackSuccessType,
+} from '../types/redux-actions';
 
 export function searchSpotifyTrack(query: string) {
   return async (dispatch: Dispatch) => {
@@ -18,20 +23,20 @@ export function searchSpotifyTrack(query: string) {
   };
 }
 
-export const searchSpotifyTrackSuccess = (data: OutputTrack[]) => {
+export const searchSpotifyTrackSuccess = (data: OutputTrack[]): SearchSpotifyTrackSuccessType => {
   return {
     data,
     type: SEARCH_SPOTIFY_TRACK_SUCCESS,
   };
 };
 
-export const searchSpotifyTrackFailure = () => {
+export const searchSpotifyTrackFailure = (): SearchSpotifyTrackFailureType => {
   return {
     type: SEARCH_SPOTIFY_TRACK_FAILURE,
   };
 };
 
-export const setSelectedSpotifyTrackID = (id: string) => {
+export const setSelectedSpotifyTrackID = (id: string): SetSelectedSpotifyTrackIDType => {
   return {
     data: id,
     type: SET_SELECTED_SPOTIFY_TRACK_ID,
