@@ -21,11 +21,11 @@ class GetAudioFeatures extends Request {
   }
 
   static async request(ID: string): Promise<AudioFeaturesModel> {
-    const response = <GetAudioFeaturesResponse> await API.get(
+    const response: any = <GetAudioFeaturesResponse> await API.get(
       new GetAudioFeatures(ID),
     );
 
-    return new AudioFeaturesModel(response);
+    return new AudioFeaturesModel(response.data);
   }
 
   async mockResponse(): Promise<AudioFeaturesModel> {

@@ -1,8 +1,8 @@
-import SpotifyAPI from './SpotifyAPI';
 import Request from '../Request';
 import { GetAnAudioAnalysisResponse } from '../../../types/spotify-responses';
 import AudioAnalysisModel from '../../../models/audio-analysis/AudioAnalysis';
 import * as localStorage from '../../../utils/localStorage';
+import API from '../API';
 
 class GetAnAudioAnalysis extends Request {
   private ID: string;
@@ -21,11 +21,10 @@ class GetAnAudioAnalysis extends Request {
   }
 
   static async request(ID: string): Promise<AudioAnalysisModel> {
-    const response = <GetAnAudioAnalysisResponse> await SpotifyAPI.get(
+    const response: any = <GetAnAudioAnalysisResponse> await API.get(
       new GetAnAudioAnalysis(ID),
     );
-
-    return new AudioAnalysisModel({ trackID: ID, ...response });
+    return new AudioAnalysisModel({ trackID: ID, ...response.data });
   }
 
   async mockResponse(): Promise<AudioAnalysisModel> {
