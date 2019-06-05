@@ -44,13 +44,6 @@ class LandingPage extends React.Component<LandingPageProps, LandingPageState> {
       branchNavClearTimer: null,
       childTracks: [],
     };
-    trackFactory.createTrack(props.spotifyTrackID)
-      .then((initialTrack: TrackModel) => {
-        Dispatcher.getInstance()
-          .dispatch(FYPEvent.TrackChangeRequested, {
-            track: initialTrack,
-          } as FYPEventPayload['TrackChangeRequested']);
-      });
     // When a new song has been loaded and analyzed
     Dispatcher.getInstance()
       .on(FYPEvent.TrackChanged, ({ track }: FYPEventPayload['TrackChanged']) => {
@@ -63,6 +56,16 @@ class LandingPage extends React.Component<LandingPageProps, LandingPageState> {
           this.setChildTracks(transitions);
         });
     }
+  }
+
+  componentDidMount() {
+    trackFactory.createTrack(this.props.spotifyTrackID)
+      .then((initialTrack: TrackModel) => {
+        Dispatcher.getInstance()
+          .dispatch(FYPEvent.TrackChangeRequested, {
+            track: initialTrack,
+          } as FYPEventPayload['TrackChangeRequested']);
+      });
   }
 
   render() {
