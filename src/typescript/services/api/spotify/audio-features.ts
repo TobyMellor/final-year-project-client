@@ -1,7 +1,8 @@
-import SpotifyAPI from './SpotifyAPI';
 import Request from '../Request';
 import { GetAudioFeaturesResponse } from '../../../types/spotify-responses';
 import AudioFeaturesModel from '../../../models/audio-features/AudioFeatures';
+import * as localStorage from '../../../utils/localStorage';
+import API from '../API';
 
 class GetAudioFeatures extends Request {
   private ID: string;
@@ -10,10 +11,17 @@ class GetAudioFeatures extends Request {
     super();
 
     this.ID = ID;
+    this.baseURL = 'https://api.spotify.com/v1';
+  }
+
+  get headers() {
+    return {
+      Authorization: `Bearer ${localStorage.get('spotify_access_token')}`,
+    };
   }
 
   static async request(ID: string): Promise<AudioFeaturesModel> {
-    const response = <GetAudioFeaturesResponse> await SpotifyAPI.get(
+    const response = <GetAudioFeaturesResponse> await API.get(
       new GetAudioFeatures(ID),
     );
 
@@ -24,8 +32,15 @@ class GetAudioFeatures extends Request {
     return require('../mocks/spotify/audio-features').getAudioFeaturesMock(this.ID);
   }
 
+  public getParams() {
+    const params = {
+      headers: this.headers,
+    };
+    return params;
+  }
+
   getEndpoint() {
-    return `audio-features/${this.ID}`;
+    return `${this.baseURL}/audio-features/${this.ID}`;
   }
 }
 

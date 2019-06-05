@@ -2,6 +2,7 @@ import SpotifyAPI from './SpotifyAPI';
 import Request from '../Request';
 import { GetAnAudioAnalysisResponse } from '../../../types/spotify-responses';
 import AudioAnalysisModel from '../../../models/audio-analysis/AudioAnalysis';
+import * as localStorage from '../../../utils/localStorage';
 
 class GetAnAudioAnalysis extends Request {
   private ID: string;
@@ -10,6 +11,13 @@ class GetAnAudioAnalysis extends Request {
     super();
 
     this.ID = ID;
+    this.baseURL = 'https://api.spotify.com/v1';
+  }
+
+  get headers() {
+    return {
+      Authorization: `Bearer ${localStorage.get('spotify_access_token')}`,
+    };
   }
 
   static async request(ID: string): Promise<AudioAnalysisModel> {
@@ -24,8 +32,15 @@ class GetAnAudioAnalysis extends Request {
     return require('../mocks/spotify/audio-analysis').getAnAudioAnalysisMock(this.ID);
   }
 
+  public getParams() {
+    const params = {
+      headers: this.headers,
+    };
+    return params;
+  }
+
   getEndpoint() {
-    return `audio-analysis/${this.ID}`;
+    return `${this.baseURL}/audio-analysis/${this.ID}`;
   }
 }
 
