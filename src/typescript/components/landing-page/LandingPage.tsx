@@ -3,6 +3,7 @@ import Nav from '../Nav';
 import CircleCanvas from '../CircleCanvas';
 import BranchNav from '../branch-nav/BranchNav';
 import * as uiService from '../../services/ui/ui';
+import * as trackFactory from '../../factories/track';
 import { FYPEvent, BranchNavStatus } from '../../types/enums';
 import Dispatcher from '../../events/Dispatcher';
 import { UIBarType, FYPEventPayload, OptionsPanelProps } from '../../types/general';
@@ -43,7 +44,13 @@ class LandingPage extends React.Component<LandingPageProps, LandingPageState> {
       branchNavClearTimer: null,
       childTracks: [],
     };
-
+    trackFactory.createTrack(props.spotifyTrackID)
+      .then((initialTrack: TrackModel) => {
+        Dispatcher.getInstance()
+          .dispatch(FYPEvent.TrackChangeRequested, {
+            track: initialTrack,
+          } as FYPEventPayload['TrackChangeRequested']);
+      });
     // When a new song has been loaded and analyzed
     Dispatcher.getInstance()
       .on(FYPEvent.TrackChanged, ({ track }: FYPEventPayload['TrackChanged']) => {
