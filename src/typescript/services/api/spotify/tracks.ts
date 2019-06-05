@@ -29,7 +29,7 @@ class GetATrack extends Request {
       GetAudioFeatures.request(ID),
     ]);
 
-    const getATrackResponseTyped = getATrackResponse as GetATrackResponse;
+    const getATrackResponseTyped = (getATrackResponse as any).data;
     return new TrackModel({
       ...getATrackResponseTyped,
       audioAnalysis,

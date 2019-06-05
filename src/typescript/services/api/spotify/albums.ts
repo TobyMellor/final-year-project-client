@@ -1,7 +1,7 @@
 import AlbumModel from '../../../models/Album';
-import SpotifyAPI from './SpotifyAPI';
 import Request from '../Request';
 import { GetAnAlbumResponse } from '../../../types/spotify-responses';
+import API from '../API';
 
 class GetAnAlbum extends Request {
   private id: number;
@@ -13,11 +13,11 @@ class GetAnAlbum extends Request {
   }
 
   static async request(id: number): Promise<AlbumModel> {
-    const response = <GetAnAlbumResponse> await SpotifyAPI.get(
+    const response:any = <GetAnAlbumResponse> await API.get(
       new GetAnAlbum(id),
     );
 
-    return new AlbumModel(response);
+    return new AlbumModel(response.data);
   }
 
   async mockResponse(): Promise<AlbumModel> {
