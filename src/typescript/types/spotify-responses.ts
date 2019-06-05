@@ -316,11 +316,15 @@ export interface GetAnAlbumResponse extends SimplifiedAlbum {
  *  }
  */
 
-export interface GetATrackResponse extends SimplifiedTrack {
+export interface GetATrackResponseData extends SimplifiedTrack {
   album: SimplifiedAlbum;
   external_ids: ExternalIdentifiers;
   is_local: boolean;
   popularity: number;
+}
+
+export interface GetATrackSuccessResponse extends BaseSpotifyServerSuccessResponse {
+  data: GetATrackResponseData;
 }
 
 /**

@@ -1,5 +1,5 @@
 import Request from '../Request';
-import { GetATrackResponse } from '../../../types/spotify-responses';
+import { GetATrackResponse, GetATrackSuccessResponse } from '../../../types/spotify-responses';
 import TrackModel from '../../../models/audio-analysis/Track';
 import GetAnAudioAnalysis from './audio-analysis';
 import GetAudioFeatures from './audio-features';
@@ -29,7 +29,7 @@ class GetATrack extends Request {
       GetAudioFeatures.request(ID),
     ]);
 
-    const getATrackResponseTyped = (getATrackResponse as any).data;
+    const getATrackResponseTyped = (getATrackResponse as GetATrackSuccessResponse).data;
     return new TrackModel({
       ...getATrackResponseTyped,
       audioAnalysis,
