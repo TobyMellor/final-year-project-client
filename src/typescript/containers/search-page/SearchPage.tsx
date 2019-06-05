@@ -119,7 +119,7 @@ class SearchPage extends React.Component<SearchPageProps, SearchPageState> {
                     <div className="footer">
                       <FileUploader handleFileChange={this.handleFileChange} disabled={!selectedItemID} />
                     </div>
-                    <audio ref={this.audioRef} />}
+                    <audio ref={this.audioRef} />
                   </div>
                 ) : null
               }
