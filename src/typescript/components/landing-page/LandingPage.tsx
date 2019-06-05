@@ -10,8 +10,12 @@ import OptionsPanel from '../options-panel/OptionsPanel';
 import config from '../../config';
 import SongTransitionModel from '../../models/SongTransition';
 import TrackModel from '../../models/audio-analysis/Track';
+import { connect } from 'react-redux';
+import { CombinedState } from '../../types/redux-state';
 
-interface LandingPageProps {}
+interface LandingPageProps {
+  spotifyTrackID: string;
+}
 
 interface LandingPageState {
   UIBars: UIBarType[];
@@ -185,4 +189,10 @@ class LandingPage extends React.Component<LandingPageProps, LandingPageState> {
   }
 }
 
-export default LandingPage;
+const mapStateToProps = (state: CombinedState) => {
+  return {
+    spotifyTrackID: state.search.selectedSpotifyTrackID,
+  };
+};
+
+export default connect(mapStateToProps, null)(LandingPage);
