@@ -17,7 +17,6 @@ class SearchTrack extends SpotifyRequest {
       new SearchTrack(query),
     ) as SearchTrackSuccessResponse;
     if (response && response.status === 200) {
-      console.log(response);
       const tracks: Track[] = response.data.tracks.items;
       return new SearchTrackModel(tracks).tracks;
     }
