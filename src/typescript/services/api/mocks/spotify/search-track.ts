@@ -60,16 +60,16 @@ export function searchTracksMock() {
             },
           ],
           disc_number: 1,
-          duration_ms: 304840,
+          duration_ms: 70000,
           explicit: false,
           external_ids: {
             isrc: 'GBAHT0900320',
           },
           external_urls: {
-            spotify: 'https://open.spotify.com/track/4VqPOruhp5EdPBeR92t6lQ',
+            spotify: 'https://open.spotify.com/track/2zMMdC4xvRClYcWNFJBZ0j',
           },
-          href: 'https://api.spotify.com/v1/tracks/4VqPOruhp5EdPBeR92t6lQ',
-          id: '4VqPOruhp5EdPBeR92t6lQ',
+          href: 'https://api.spotify.com/v1/tracks/2zMMdC4xvRClYcWNFJBZ0j',
+          id: '2zMMdC4xvRClYcWNFJBZ0j',
           is_local: false,
           is_playable: true,
           name: 'Uprising',
@@ -78,7 +78,7 @@ export function searchTracksMock() {
           'https://p.scdn.co/mp3-preview/104ad0ea32356b9f3b2e95a8610f504c90b0026b?cid=774b29d4f13844c495f206cafdad9c86',
           track_number: 1,
           type: 'track',
-          uri: 'spotify:track:4VqPOruhp5EdPBeR92t6lQ',
+          uri: 'spotify:track:2zMMdC4xvRClYcWNFJBZ0j',
         },
         {
           album: {
@@ -96,10 +96,10 @@ export function searchTracksMock() {
               },
             ],
             external_urls: {
-              spotify: 'https://open.spotify.com/album/0lw68yx3MhKflWFqCsGkIs',
+              spotify: 'https://open.spotify.com/album/2zMMdC4xvRClYcWNFJBZ0j',
             },
-            href: 'https://api.spotify.com/v1/albums/0lw68yx3MhKflWFqCsGkIs',
-            id: '0lw68yx3MhKflWFqCsGkIs',
+            href: 'https://api.spotify.com/v1/albums/2zMMdC4xvRClYcWNFJBZ0j',
+            id: '2zMMdC4xvRClYcWNFJBZ0j',
             images: [
               {
                 height: 640,
@@ -122,7 +122,7 @@ export function searchTracksMock() {
             release_date_precision: 'day',
             total_tracks: 12,
             type: 'album',
-            uri: 'spotify:album:0lw68yx3MhKflWFqCsGkIs',
+            uri: 'spotify:album:2zMMdC4xvRClYcWNFJBZ0j',
           },
           artists: [
             {
