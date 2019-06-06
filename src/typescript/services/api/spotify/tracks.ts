@@ -1,5 +1,5 @@
 import Request from '../Request';
-import { GetATrackSuccessResponse } from '../../../types/spotify-responses';
+import { GetATrackSuccessResponse, GetATrackResponseData } from '../../../types/spotify-responses';
 import TrackModel from '../../../models/audio-analysis/Track';
 import GetAnAudioAnalysis from './audio-analysis';
 import GetAudioFeatures from './audio-features';
@@ -29,8 +29,13 @@ class GetATrack extends SpotifyRequest {
     });
   }
 
-  async mockResponse(): Promise<TrackModel> {
-    return require('../mocks/spotify/tracks').getATrackMock(this.ID);
+  async mockResponse(): Promise<GetATrackSuccessResponse> {
+    const responseData: GetATrackResponseData =
+    await require('../mocks/spotify/tracks').getATrackMock(this.ID);
+    return {
+      ...this.mockSampleResponse,
+      data: responseData,
+    };
   }
 
   getEndpoint() {

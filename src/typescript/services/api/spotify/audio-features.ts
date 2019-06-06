@@ -1,5 +1,5 @@
 import Request from '../Request';
-import { GetAudioFeaturesSuccessResponse } from '../../../types/spotify-responses';
+import { GetAudioFeaturesSuccessResponse, GetAudioFeaturesData } from '../../../types/spotify-responses';
 import AudioFeaturesModel from '../../../models/audio-features/AudioFeatures';
 import SpotifyRequest from './SpotifyRequest';
 import API from '../API';
@@ -20,8 +20,13 @@ class GetAudioFeatures extends SpotifyRequest {
     return new AudioFeaturesModel(response.data);
   }
 
-  async mockResponse(): Promise<AudioFeaturesModel> {
-    return require('../mocks/spotify/audio-features').getAudioFeaturesMock(this.ID);
+  async mockResponse(): Promise<GetAudioFeaturesSuccessResponse> {
+    const responseData: GetAudioFeaturesData =
+    await require('../mocks/spotify/audio-features').getAudioFeaturesMock(this.ID);
+    return {
+      ...this.mockSampleResponse,
+      data: responseData,
+    };
   }
 
   getEndpoint() {

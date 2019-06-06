@@ -1,5 +1,5 @@
 export default {
-  shouldMockAPIResponses: false,
+  shouldMockAPIResponses: true,
   shouldMockBranchCreation: true,
   shouldMockTransitionCreation: true,
 };

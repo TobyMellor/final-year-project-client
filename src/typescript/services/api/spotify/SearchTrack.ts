@@ -17,16 +17,19 @@ class SearchTrack extends SpotifyRequest {
       new SearchTrack(query),
     ) as SearchTrackSuccessResponse;
     if (response && response.status === 200) {
+      console.log(response);
       const tracks: Track[] = response.data.tracks.items;
       return new SearchTrackModel(tracks).tracks;
     }
     return null;
   }
 
-  async mockResponse(): Promise<OutputTrack[]> {
-    const response: SearchTrackResponseData = require('../mocks/spotify/search-track').searchTracksMock();
-    const tracks : Track[] = (response as SearchTrackResponseData).tracks.items;
-    return new SearchTrackModel(tracks).tracks;
+  async mockResponse(): Promise<SearchTrackSuccessResponse> {
+    const responseData: SearchTrackResponseData = await require('../mocks/spotify/search-track').searchTracksMock();
+    return {
+      ...this.mockSampleResponse,
+      data: responseData,
+    };
   }
 
   get queryParams() {

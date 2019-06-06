@@ -1,6 +1,6 @@
 import AlbumModel from '../../../models/Album';
 import Request from '../Request';
-import { GetAnAlbumSuccessResponse } from '../../../types/spotify-responses';
+import { GetAnAlbumSuccessResponse, GetAnAlbumResponseData } from '../../../types/spotify-responses';
 import API from '../API';
 import SpotifyRequest from './SpotifyRequest';
 
@@ -21,8 +21,12 @@ class GetAnAlbum extends SpotifyRequest {
     return new AlbumModel(response.data);
   }
 
-  async mockResponse(): Promise<AlbumModel> {
-    return require('../mocks/spotify/albums').getAnAlbumMock();
+  async mockResponse(): Promise<GetAnAlbumSuccessResponse> {
+    const responseData: GetAnAlbumResponseData = await require('../mocks/spotify/albums').getAnAlbumMock();
+    return {
+      ...this.mockSampleResponse,
+      data: responseData,
+    };
   }
 
   getEndpoint() {
