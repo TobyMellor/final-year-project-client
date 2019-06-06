@@ -74,7 +74,7 @@ class SearchPage extends React.Component<SearchPageProps, SearchPageState> {
 
   compareDurations() {
     const selectedItem: OutputTrack = this.props.searchResult.find(track => track.id === this.state.selectedItemID);
-    if (Math.abs(parseInt(selectedItem.duration, 10) - this.state.uploadedFileDurationMs) <= 5000) {
+    if (Math.abs(parseInt(selectedItem.durationMs, 10) - this.state.uploadedFileDurationMs) <= 5000) {
       // if the selected items doesnt differ by more than 5 second
       this.props.setSelectedTrackID(this.state.selectedItemID);
       this.props.history.push('/studio');
@@ -109,7 +109,7 @@ class SearchPage extends React.Component<SearchPageProps, SearchPageState> {
                             id={track.id}
                             name={track.name}
                             thumbnailURL={track.images[0].url}
-                            durationMs={track.duration}
+                            durationMs={track.durationMs}
                             key={track.id}
                             handleClick={this.handleClick}
                             active={track.id === selectedItemID}
