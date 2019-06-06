@@ -139,7 +139,7 @@ export interface GetAnAudioAnalysisResponseSegment extends GetAnAudioAnalysisRes
  *  }
  */
 
-export interface GetAnArtistResponse extends SimplifiedArtist {
+export interface GetAnArtistResponseData extends SimplifiedArtist {
   followers: {
     href: string;
     total: number;
@@ -147,6 +147,10 @@ export interface GetAnArtistResponse extends SimplifiedArtist {
   genres: string[];
   images: Image[];
   popularity: number;
+}
+
+export interface GetAnArtistSuccessResponse extends BaseSpotifyServerSuccessResponse {
+  data: GetAnArtistResponseData;
 }
 
 /**
@@ -229,11 +233,15 @@ export interface GetAnArtistResponse extends SimplifiedArtist {
  *  }
  */
 
-export interface GetAnAlbumResponse extends SimplifiedAlbum {
+export interface GetAnAlbumResponseData extends SimplifiedAlbum {
   copyrights: Copyright[];
   genres: string[];
   popularity: number;
   tracks: SimplifiedTracksPaginated[];
+}
+
+export interface GetAnAlbumSuccessResponse extends BaseSpotifyServerSuccessResponse {
+  data: GetAnAlbumResponseData;
 }
 
 /**
@@ -453,7 +461,7 @@ export interface GetATrackSuccessResponse extends BaseSpotifyServerSuccessRespon
  * }
  */
 
-export interface GetAnAudioAnalysisResponse {
+export interface GetAnAudioAnalysisData {
   track: {
     end_of_fade_in: number,
     start_of_fade_out: number,
@@ -471,6 +479,10 @@ export interface GetAnAudioAnalysisResponse {
   tatums: GetAnAudioAnalysisResponseTimeInterval[];
   sections: GetAnAudioAnalysisResponseSection[];
   segments: GetAnAudioAnalysisResponseSegment[];
+}
+
+export interface GetAnAudioAnalysisSuccessResponse {
+  data: GetAnAudioAnalysisData;
 }
 
 /**
@@ -500,7 +512,7 @@ export interface GetAnAudioAnalysisResponse {
  * }
  */
 
-export interface GetAudioFeaturesResponse {
+export interface GetAudioFeaturesData {
   danceability: number;
   energy: number;
   key: number;
@@ -519,6 +531,10 @@ export interface GetAudioFeaturesResponse {
   analysis_url: string;
   duration_ms: number;
   time_signature: number;
+}
+
+export interface GetAudioFeaturesSuccessResponse extends BaseSpotifyServerSuccessResponse {
+  data: GetAudioFeaturesData;
 }
 
 /**

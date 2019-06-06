@@ -1,5 +1,5 @@
 import Request from '../Request';
-import { GetAnArtistResponse } from '../../../types/spotify-responses';
+import { GetAnArtistSuccessResponse } from '../../../types/spotify-responses';
 import ArtistModel from '../../../models/Artist';
 import API from '../API';
 import SpotifyRequest from './SpotifyRequest';
@@ -13,7 +13,7 @@ class GetAnArtist extends SpotifyRequest {
   }
 
   static async request(id: number): Promise<ArtistModel> {
-    const response: any = <GetAnArtistResponse> await API.get(
+    const response = <GetAnArtistSuccessResponse> await API.get(
       new GetAnArtist(id),
     );
 

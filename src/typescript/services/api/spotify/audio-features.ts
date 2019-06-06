@@ -1,5 +1,5 @@
 import Request from '../Request';
-import { GetAudioFeaturesResponse } from '../../../types/spotify-responses';
+import { GetAudioFeaturesSuccessResponse } from '../../../types/spotify-responses';
 import AudioFeaturesModel from '../../../models/audio-features/AudioFeatures';
 import SpotifyRequest from './SpotifyRequest';
 import API from '../API';
@@ -13,7 +13,7 @@ class GetAudioFeatures extends SpotifyRequest {
   }
 
   static async request(ID: string): Promise<AudioFeaturesModel> {
-    const response: any = <GetAudioFeaturesResponse> await API.get(
+    const response = <GetAudioFeaturesSuccessResponse> await API.get(
       new GetAudioFeatures(ID),
     );
 
