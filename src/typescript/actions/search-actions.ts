@@ -3,7 +3,6 @@ import {
   SEARCH_SPOTIFY_TRACK_FAILURE,
   SET_SELECTED_SPOTIFY_TRACK_ID,
  } from '../config/redux';
-import SpotifyAPI from '../services/api/spotify/SpotifyAPI';
 import SearchTrack from '../services/api/spotify/SearchTrack';
 import { Dispatch } from 'redux';
 import { OutputTrack } from '../models/search-track';
