@@ -2,25 +2,14 @@ import Request from '../Request';
 import { objectToQueryParams } from '../../../utils/conversions';
 import SearchTrackModel, { OutputTrack } from '../../../models/search-track';
 import { SearchTrackResponseData, Track, SearchTrackSuccessResponse } from '../../../types/spotify-responses';
-import * as localStorage from '../../../utils/localStorage';
 import API from '../API';
+import SpotifyRequest from './SpotifyRequest';
 
-class SearchTrack extends Request {
+class SearchTrack extends SpotifyRequest {
   private query: string;
   constructor(query: string) {
     super();
     this.query = query;
-    this.baseURL = 'https://api.spotify.com/v1';
-  }
-
-  getEndpoint() {
-    return `${this.baseURL}/search?${this.queryParams}`;
-  }
-
-  get headers() {
-    return {
-      Authorization: `Bearer ${localStorage.get('spotify_access_token')}`,
-    };
   }
 
   static async request(query: string): Promise<OutputTrack[]> {
@@ -50,12 +39,10 @@ class SearchTrack extends Request {
     return objectToQueryParams(queryParamObject);
   }
 
-  public getParams() {
-    const params = {
-      headers: this.headers,
-    };
-    return params;
+  getEndpoint() {
+    return `${this.baseURL}/search?${this.queryParams}`;
   }
+
 }
 
 export default SearchTrack;

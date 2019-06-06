@@ -1,25 +1,17 @@
 import Request from '../Request';
-import { GetATrackResponse, GetATrackSuccessResponse } from '../../../types/spotify-responses';
+import { GetATrackSuccessResponse } from '../../../types/spotify-responses';
 import TrackModel from '../../../models/audio-analysis/Track';
 import GetAnAudioAnalysis from './audio-analysis';
 import GetAudioFeatures from './audio-features';
-import * as localStorage from '../../../utils/localStorage';
 import API from '../API';
+import SpotifyRequest from './SpotifyRequest';
 
-class GetATrack extends Request {
+class GetATrack extends SpotifyRequest {
   private ID: string;
 
   constructor(ID: string) {
     super();
-
     this.ID = ID;
-    this.baseURL = 'https://api.spotify.com/v1';
-  }
-
-  get headers() {
-    return {
-      Authorization: `Bearer ${localStorage.get('spotify_access_token')}`,
-    };
   }
 
   static async request(ID: string): Promise<TrackModel> {
@@ -43,13 +35,6 @@ class GetATrack extends Request {
 
   getEndpoint() {
     return `${this.baseURL}/tracks/${this.ID}`;
-  }
-
-  public getParams() {
-    const params = {
-      headers: this.headers,
-    };
-    return params;
   }
 }
 

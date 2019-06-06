@@ -1,19 +1,10 @@
 abstract class Request {
-  protected baseURL: string;
+  protected abstract baseURL: string;
   public abstract mockResponse(): Promise<Object>;
   public abstract getEndpoint(): string;
-
-  public get queryParams(): string {
-    return '';
-  }
-
-  public get headers(): object {
-    return {};
-  }
-
-  public getParams(): Object {
-    return {};
-  }
+  public abstract get queryParams(): string;
+  public abstract get headers(): object;
+  public abstract get params(): object;
 }
 
 export default Request;

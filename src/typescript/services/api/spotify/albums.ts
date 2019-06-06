@@ -2,8 +2,9 @@ import AlbumModel from '../../../models/Album';
 import Request from '../Request';
 import { GetAnAlbumResponse } from '../../../types/spotify-responses';
 import API from '../API';
+import SpotifyRequest from './SpotifyRequest';
 
-class GetAnAlbum extends Request {
+class GetAnAlbum extends SpotifyRequest {
   private id: number;
 
   constructor(id: number) {
@@ -25,7 +26,7 @@ class GetAnAlbum extends Request {
   }
 
   getEndpoint() {
-    return `albums/${this.id}`;
+    return `${this.baseURL}/albums/${this.id}`;
   }
 }
 
