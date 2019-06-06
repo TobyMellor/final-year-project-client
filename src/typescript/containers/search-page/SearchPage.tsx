@@ -7,6 +7,7 @@ import SearchItem from '../../components/search-item/SearchItem';
 import { OutputTrack } from '../../models/search-track';
 import FileUploader from '../../components/file-uploader/FileUploader';
 import { withRouter, RouteComponentProps } from 'react-router';
+import { secsToMs } from '../../utils/conversions';
 
 interface SearchPageProps extends RouteComponentProps {
   searchResult: OutputTrack[];
@@ -64,9 +65,9 @@ class SearchPage extends React.Component<SearchPageProps, SearchPageState> {
   }
 
   handlePlayThrough(event: any) {
-    const durationInseconds = event.currentTarget.duration;
-    const durationInMilliSeconds = Math.ceil(durationInseconds) * 1000;
-    this.setState({ uploadedFileDurationMs: durationInMilliSeconds });
+    const durationSecs = event.currentTarget.duration;
+    const durationMs = secsToMs(Math.ceil(durationSecs));
+    this.setState({ uploadedFileDurationMs: durationMs });
     URL.revokeObjectURL(this.fileURL);
     this.compareDurations();
   }
