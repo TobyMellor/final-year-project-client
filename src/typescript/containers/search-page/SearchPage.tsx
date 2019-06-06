@@ -107,8 +107,8 @@ class SearchPage extends React.Component<SearchPageProps, SearchPageState> {
                           <SearchItem
                             id={track.id}
                             name={track.name}
-                            thumbnail={track.images[0].url}
-                            duration={track.duration}
+                            thumbnailURL={track.images[0].url}
+                            durationMs={track.duration}
                             key={track.id}
                             handleClick={this.handleClick}
                             active={track.id === selectedItemID}

@@ -4,8 +4,8 @@ import { msToMinutes } from '../../utils/misc';
 interface SearchItemProps {
   id: string;
   name: string;
-  thumbnail: string;
-  duration: string;
+  thumbnailURL: string;
+  durationMs: string;
   handleClick: (id: string) => void;
   active: boolean;
 }
@@ -20,7 +20,7 @@ const SearchItem: React.FC<SearchItemProps> = (props: SearchItemProps) => {
       <div className={`search-item ${props.active ? 'active' : ''}`} onClick={onItemClick}>
           <div className="thumbnail">
             <img
-              src={props.thumbnail}
+              src={props.thumbnailURL}
               alt="thumbnail"
               />
           </div>
@@ -29,7 +29,7 @@ const SearchItem: React.FC<SearchItemProps> = (props: SearchItemProps) => {
               {props.name}
             </div>
             <div className="duration">
-              Duration: {msToMinutes(parseInt(props.duration, 10))}
+              Duration: {msToMinutes(parseInt(props.durationMs, 10))}
             </div>
           </div>
       </div>
