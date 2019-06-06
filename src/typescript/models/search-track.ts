@@ -5,7 +5,7 @@ export type OutputTrack = {
   id: string;
   images: ImageInput[];
   name: string;
-  durationMs: string;
+  durationMs: number;
 };
 
 class SearchTrackModel {
@@ -20,7 +20,7 @@ class SearchTrackModel {
       id: track.id,
       images: track.album.images,
       name: track.name,
-      durationMs: track.duration_ms,
+      durationMs: parseInt(track.duration_ms, 10),
     };
   }
 
