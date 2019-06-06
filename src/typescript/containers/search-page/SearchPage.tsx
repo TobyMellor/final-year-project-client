@@ -16,7 +16,7 @@ interface SearchPageProps extends RouteComponentProps {
 
 type SearchPageState = {
   selectedItemID: string;
-  uploadedFileDuration: number;
+  uploadedFileDurationMs: number;
 };
 
 class SearchPage extends React.Component<SearchPageProps, SearchPageState> {
@@ -34,13 +34,13 @@ class SearchPage extends React.Component<SearchPageProps, SearchPageState> {
     this.delayedSearch = debounce(this.props.searchSpotify, 1000);
     this.state = {
       selectedItemID: null,
-      uploadedFileDuration: 0,
+      uploadedFileDurationMs: 0,
     };
     this.audioRef = React.createRef();
   }
 
   handleSearchChange(event: React.ChangeEvent<HTMLInputElement>) {
-    const searchText:string = event.target.value;
+    const searchText: string = event.target.value;
     if (searchText.length) {
       event.persist();
       this.delayedSearch(event.target.value);
@@ -66,14 +66,14 @@ class SearchPage extends React.Component<SearchPageProps, SearchPageState> {
   handlePlayThrough(event: any) {
     const durationInseconds = event.currentTarget.duration;
     const durationInMilliSeconds = Math.ceil(durationInseconds) * 1000;
-    this.setState({ uploadedFileDuration: durationInMilliSeconds });
+    this.setState({ uploadedFileDurationMs: durationInMilliSeconds });
     URL.revokeObjectURL(this.fileURL);
     this.compareDurations();
   }
 
   compareDurations() {
     const selectedItem: OutputTrack = this.props.searchResult.find(track => track.id === this.state.selectedItemID);
-    if (Math.abs(parseInt(selectedItem.duration, 10) - this.state.uploadedFileDuration) <= 10000) {
+    if (Math.abs(parseInt(selectedItem.duration, 10) - this.state.uploadedFileDurationMs) <= 10000) {
       // if the selected items doesnt differ by more than 1 second
       this.props.setSelectedTrackID(this.state.selectedItemID);
       this.props.history.push('/studio');
