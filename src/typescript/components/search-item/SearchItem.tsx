@@ -1,11 +1,11 @@
 import * as React from 'react';
-import { msToMinutes } from '../../utils/misc';
+import { msToMinutes } from '../../utils/conversions';
 
 interface SearchItemProps {
   id: string;
   name: string;
   thumbnailURL: string;
-  durationMs: string;
+  durationMs: number;
   handleClick: (id: string) => void;
   active: boolean;
 }
@@ -29,7 +29,7 @@ const SearchItem: React.FC<SearchItemProps> = (props: SearchItemProps) => {
               {props.name}
             </div>
             <div className="duration">
-              Duration: {msToMinutes(parseInt(props.durationMs, 10))}
+              Duration: {msToMinutes(props.durationMs)}
             </div>
           </div>
       </div>

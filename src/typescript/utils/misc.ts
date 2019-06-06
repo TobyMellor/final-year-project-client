@@ -102,9 +102,3 @@ export function getBeatFromMs(beats: BeatModel[], fromMs: number): BeatModel {
 
   throw new Error(Translator.errors.not_found);
 }
-
-export function msToMinutes(ms: number) {
-  const minutes = Math.floor(ms / 60000);
-  const seconds = ((ms % 60000) / 1000).toFixed(0);
-  return `${minutes}:${`0${seconds}`.slice(-2)}`;
-}
