@@ -70,7 +70,6 @@ class WebAudioService {
   }
 
   public static getInstance(): WebAudioService {
-    debugger;
     return this._instance || (this._instance = new this());
   }
 
