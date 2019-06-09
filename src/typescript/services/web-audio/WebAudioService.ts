@@ -30,14 +30,8 @@ class WebAudioService {
 
     this._audioContext = new AudioContext();
 
-    //   '4RVbK6cV0VqWdpCDcx3hiT', // Reborn
-    //   '3O8NlPh2LByMU9lSRSHedm', // Controlla
-    //   '6wVWJl64yoTzU27EI8ep20', // Crying Lightning
-    //   '3aUFrxO1B8EW63QchEl3wX',
-    //   '2hmHlBM0kPBm17Y7nVIW9f',
     //   '0wwPcA6wtMf6HUMpIRdeP7', // Hotline Bling
     //   '2zMMdC4xvRClYcWNFJBZ0j', // End Game
-    //   '1JbR9RDP3ogVNEWFgNXAjh' // Look what you made me do
 
     Dispatcher.getInstance()
               .on(FYPEvent.TrackChangeRequested, ({ track }: FYPEventPayload['TrackChangeRequested']) => {
@@ -59,7 +53,7 @@ class WebAudioService {
                 this.seek(percentage);
               });
 
-    const initialTrackID = '4RVbK6cV0VqWdpCDcx3hiT'; // TODO: Replace dynamically
+    const initialTrackID = '0wwPcA6wtMf6HUMpIRdeP7'; // TODO: Replace dynamically
     trackFactory.createTrack(initialTrackID)
                 .then((initialTrack: TrackModel) => {
                   Dispatcher.getInstance()

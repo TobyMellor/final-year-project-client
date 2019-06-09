@@ -1,4 +1,3 @@
-import Request from '../Request';
 import { GetATrackSuccessResponse, GetATrackResponseData } from '../../../types/spotify-responses';
 import TrackModel from '../../../models/audio-analysis/Track';
 import GetAnAudioAnalysis from './audio-analysis';
