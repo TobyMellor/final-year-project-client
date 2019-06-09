@@ -14,7 +14,6 @@ module.exports = {
   devtool: 'source-map',
   devServer: {
     contentBase: path.join(__dirname, 'dist'),
-    overlay: true,
     hot: true,
     stats: {
       colors: true,
