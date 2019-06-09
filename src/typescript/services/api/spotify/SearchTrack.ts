@@ -1,7 +1,6 @@
-import Request from '../Request';
 import { objectToQueryParams } from '../../../utils/conversions';
 import SearchTrackModel, { OutputTrack } from '../../../models/search-track';
-import { SearchTrackResponseData, Track, SearchTrackSuccessResponse } from '../../../types/spotify-responses';
+import { SearchTrackResponseData, SearchTrackSuccessResponse } from '../../../types/spotify-responses';
 import API from '../API';
 import SpotifyRequest from './SpotifyRequest';
 
@@ -17,7 +16,7 @@ class SearchTrack extends SpotifyRequest {
       new SearchTrack(query),
     ) as SearchTrackSuccessResponse;
     if (response && response.status === 200) {
-      const tracks: Track[] = response.data.tracks.items;
+      const tracks = response.data.tracks.items;
       return new SearchTrackModel(tracks).tracks;
     }
     return null;

@@ -1,5 +1,5 @@
 import ImageModel, { Input as ImageInput } from './Image';
-import { Track } from '../types/spotify-responses';
+import { SearchTrack } from '../types/spotify-responses';
 
 export type OutputTrack = {
   id: string;
@@ -9,28 +9,28 @@ export type OutputTrack = {
 };
 
 class SearchTrackModel {
-  private _tracks: Track[];
+  private _tracks: SearchTrack[];
 
-  constructor(tracks: Track[]) {
+  constructor(tracks: SearchTrack[]) {
     this._tracks = tracks;
   }
 
-  private sanitizeTrack(track: Track) {
+  private sanitizeTrack(track: SearchTrack) {
     return {
       id: track.id,
       images: track.album.images,
       name: track.name,
-      durationMs: parseInt(track.duration_ms, 10),
+      durationMs: track.duration_ms,
     };
   }
 
   public get tracks() {
-    const tracks: OutputTrack[] = this._tracks.map((track: Track) => this.sanitizeTrack(track));
+    const tracks: OutputTrack[] = this._tracks.map((track: SearchTrack) => this.sanitizeTrack(track));
     return tracks;
   }
 
   public getTrackByID(ID: string) {
-    const track: Track = this._tracks.find(track => track.id === ID);
+    const track = this._tracks.find(track => track.id === ID);
     return this.sanitizeTrack(track);
   }
 }
