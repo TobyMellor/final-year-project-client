@@ -1,18 +1,19 @@
 import {
   SEARCH_SPOTIFY_TRACK_SUCCESS,
   SEARCH_SPOTIFY_TRACK_FAILURE,
-  SET_SELECTED_SPOTIFY_TRACK_ID,
+  SET_SELECTED_SPOTIFY_TRACK,
 } from '../config/redux';
 import { SearchState } from '../types/redux-state';
 
 type ActionType = {
   type: string;
-  data: object;
+  data: any;
 };
 
 const initialState: SearchState = {
   tracks: [],
   selectedSpotifyTrackID: '',
+  selectedSpotifyTrackFileURL: '',
 };
 
 function searchReducer(state = initialState, action: ActionType) {
@@ -27,10 +28,11 @@ function searchReducer(state = initialState, action: ActionType) {
         ...state,
         tracks: [],
       };
-    case SET_SELECTED_SPOTIFY_TRACK_ID:
+    case SET_SELECTED_SPOTIFY_TRACK:
       return {
         ...state,
-        selectedSpotifyTrackID: action.data,
+        selectedSpotifyTrackID: action.data.ID,
+        selectedSpotifyTrackFileURL: action.data.fileURL,
       };
     default:
       return state;

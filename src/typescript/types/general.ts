@@ -185,6 +185,7 @@ export interface ButtonState {
 
 export type FYPEventPayload = {
   TrackChangeRequested: {
+    fileURL: string;
     track: TrackModel;
   };
   BranchesAnalyzed: {

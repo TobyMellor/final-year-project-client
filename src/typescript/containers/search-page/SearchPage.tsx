@@ -1,31 +1,31 @@
 import * as React from 'react';
 import { connect } from 'react-redux';
 import debounce from 'lodash-es/debounce';
-import { searchSpotifyTrack, setSelectedSpotifyTrackID } from '../../actions/search-actions';
+import { searchSpotifyTrack, setSelectedSpotifyTrack } from '../../actions/search-actions';
 import { CombinedState } from '../../types/redux-state';
 import SearchItem from '../../components/search-item/SearchItem';
-import { OutputTrack } from '../../models/search-track';
+import { RemoteTrack } from '../../models/search-track';
 import FileUploader from '../../components/file-uploader/FileUploader';
 import { withRouter, RouteComponentProps } from 'react-router';
-import { secsToMs } from '../../utils/conversions';
+import * as conversions from '../../utils/conversions';
 import config from '../../config';
 import Translator from '../../../translations/Translator';
 
 interface SearchPageProps extends RouteComponentProps {
-  searchResult: OutputTrack[];
+  searchResult: RemoteTrack[];
   searchSpotify: () => {};
-  setSelectedTrackID: (id: string) => {};
+  setSelectedTrack: (ID: string, fileURL: string) => {};
 }
 
 type SearchPageState = {
-  selectedItemID: string;
-  uploadedFileDurationMs: number;
+  selectedTrackID: string;
 };
 
 class SearchPage extends React.Component<SearchPageProps, SearchPageState> {
   private delayedSearch: any;
   private audioRef: React.RefObject<HTMLAudioElement>;
   private fileURL: string;
+
   constructor(props: null) {
     super(props);
     this.handleSearchChange = this.handleSearchChange.bind(this);
@@ -33,11 +33,9 @@ class SearchPage extends React.Component<SearchPageProps, SearchPageState> {
     this.handleFileChange = this.handleFileChange.bind(this);
     this.calculateAudioDuration = this.calculateAudioDuration.bind(this);
     this.handlePlayThrough = this.handlePlayThrough.bind(this);
-    this.compareDurations = this.compareDurations.bind(this);
     this.delayedSearch = debounce(this.props.searchSpotify, config.search.debounceMs);
     this.state = {
-      selectedItemID: null,
-      uploadedFileDurationMs: 0,
+      selectedTrackID: null,
     };
     this.audioRef = React.createRef();
   }
@@ -50,15 +48,17 @@ class SearchPage extends React.Component<SearchPageProps, SearchPageState> {
     }
   }
 
-  handleClick(id: string) {
-    this.setState({ selectedItemID: id });
+  handleClick(selectedTrackID: string) {
+    this.setState({ selectedTrackID });
   }
 
   handleFileChange(event: React.ChangeEvent<HTMLInputElement>) {
     const file = event.target.files[0];
     const audioNode = this.audioRef.current;
+
     this.fileURL = URL.createObjectURL(file);
     this.calculateAudioDuration();
+
     audioNode.setAttribute('src', this.fileURL);
   }
 
@@ -68,23 +68,32 @@ class SearchPage extends React.Component<SearchPageProps, SearchPageState> {
 
   handlePlayThrough(event: any) {
     const durationSecs = event.currentTarget.duration;
-    const durationMs = secsToMs(Math.ceil(durationSecs));
-    this.setState({ uploadedFileDurationMs: durationMs });
-    URL.revokeObjectURL(this.fileURL);
-    this.compareDurations();
+    const localTrackDurationMs = conversions.secsToMs(Math.ceil(durationSecs));
+    const selectedTrack = this.getSelectedTrack();
+
+    this.checkDurationAndSetTrack(selectedTrack, localTrackDurationMs);
   }
 
-  compareDurations() {
-    const selectedItem: OutputTrack = this.props.searchResult.find(track => track.id === this.state.selectedItemID);
-    const durationDifferenceMs = Math.abs(selectedItem.durationMs - this.state.uploadedFileDurationMs);
+  isDurationSimilar(selectedTrackDurationMs: number, localTrackDurationMs: number) {
+    const durationDifferenceMs = Math.abs(selectedTrackDurationMs - localTrackDurationMs);
+    return durationDifferenceMs <= config.search.minDurationSimilarityMs;
+  }
 
-    if (durationDifferenceMs <= config.search.minDurationSimilarityMs) {
-      // if the selected items doesnt differ by more than 5 second
-      this.props.setSelectedTrackID(this.state.selectedItemID);
+  checkDurationAndSetTrack(selectedTrack: RemoteTrack, localTrackDurationMs: number) {
+    const isDurationSimilar = this.isDurationSimilar(selectedTrack.durationMs, localTrackDurationMs);
+
+    if (isDurationSimilar) {
+      this.props.setSelectedTrack(selectedTrack.id, this.fileURL);
       this.props.history.push('/studio');
     } else {
+      URL.revokeObjectURL(this.fileURL);
       alert(Translator.errors.ui.too_different);
     }
+  }
+
+  getSelectedTrack() {
+    const selectedTrackID = this.state.selectedTrackID;
+    return this.props.searchResult.find(track => track.id === selectedTrackID);
   }
 
   componentWillUnmount() {
@@ -93,7 +102,7 @@ class SearchPage extends React.Component<SearchPageProps, SearchPageState> {
 
   render() {
     const { searchResult } = this.props;
-    const { selectedItemID } = this.state;
+    const { selectedTrackID } = this.state;
     return (
       <div>
         <div className="container">
@@ -118,13 +127,13 @@ class SearchPage extends React.Component<SearchPageProps, SearchPageState> {
                             durationMs={track.durationMs}
                             key={track.id}
                             handleClick={this.handleClick}
-                            active={track.id === selectedItemID}
+                            active={track.id === selectedTrackID}
                           />
                         ))
                       }
                     </div>
                     <div className="footer">
-                      <FileUploader handleFileChange={this.handleFileChange} disabled={!selectedItemID} />
+                      <FileUploader handleFileChange={this.handleFileChange} disabled={!selectedTrackID} />
                     </div>
                     <audio ref={this.audioRef} />
                   </div>
@@ -147,7 +156,7 @@ const mapStateToProps = (state:CombinedState) => {
 const mapDispatchToProps = (dispatch: any) => {
   return {
     searchSpotify: (query: string) => dispatch(searchSpotifyTrack(query)),
-    setSelectedTrackID: (id: string) => dispatch(setSelectedSpotifyTrackID(id)),
+    setSelectedTrack: (ID: string, fileURL: string) => dispatch(setSelectedSpotifyTrack(id, fileURL)),
   };
 };
 

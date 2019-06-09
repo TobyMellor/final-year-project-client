@@ -1,7 +1,7 @@
-import ImageModel, { Input as ImageInput } from './Image';
+import { Input as ImageInput } from './Image';
 import { SearchTrack } from '../types/spotify-responses';
 
-export type OutputTrack = {
+export type RemoteTrack = {
   id: string;
   images: ImageInput[];
   name: string;
@@ -25,7 +25,7 @@ class SearchTrackModel {
   }
 
   public get tracks() {
-    const tracks: OutputTrack[] = this._tracks.map((track: SearchTrack) => this.sanitizeTrack(track));
+    const tracks: RemoteTrack[] = this._tracks.map((track: SearchTrack) => this.sanitizeTrack(track));
     return tracks;
   }
 

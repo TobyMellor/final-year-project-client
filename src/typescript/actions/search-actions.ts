@@ -1,17 +1,17 @@
 import {
   SEARCH_SPOTIFY_TRACK_SUCCESS,
   SEARCH_SPOTIFY_TRACK_FAILURE,
-  SET_SELECTED_SPOTIFY_TRACK_ID,
+  SET_SELECTED_SPOTIFY_TRACK,
  } from '../config/redux';
 import SearchTrack from '../services/api/spotify/SearchTrack';
-import { Dispatch, AnyAction } from 'redux';
-import { OutputTrack } from '../models/search-track';
+import { AnyAction } from 'redux';
+import { RemoteTrack } from '../models/search-track';
 import {
-  SetSelectedSpotifyTrackIDType,
+  SetSelectedSpotifyTrackType,
   SearchSpotifyTrackFailureType,
   SearchSpotifyTrackSuccessType,
 } from '../types/redux-actions';
-import { ThunkAction, ThunkDispatch } from 'redux-thunk';
+import { ThunkDispatch } from 'redux-thunk';
 
 export function searchSpotifyTrack(query: string): ThunkDispatch<{}, {}, AnyAction> {
   return async (dispatch: ThunkDispatch<{}, {}, AnyAction>) => {
@@ -23,7 +23,7 @@ export function searchSpotifyTrack(query: string): ThunkDispatch<{}, {}, AnyActi
   };
 }
 
-export const searchSpotifyTrackSuccess = (data: OutputTrack[]): SearchSpotifyTrackSuccessType => {
+export const searchSpotifyTrackSuccess = (data: RemoteTrack[]): SearchSpotifyTrackSuccessType => {
   return {
     data,
     type: SEARCH_SPOTIFY_TRACK_SUCCESS,
@@ -36,9 +36,12 @@ export const searchSpotifyTrackFailure = (): SearchSpotifyTrackFailureType => {
   };
 };
 
-export const setSelectedSpotifyTrackID = (id: string): SetSelectedSpotifyTrackIDType => {
+export const setSelectedSpotifyTrack = (ID: string, fileURL: string): SetSelectedSpotifyTrackType => {
   return {
-    data: id,
-    type: SET_SELECTED_SPOTIFY_TRACK_ID,
+    data: {
+      ID,
+      fileURL,
+    },
+    type: SET_SELECTED_SPOTIFY_TRACK,
   };
 };

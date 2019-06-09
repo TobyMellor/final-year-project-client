@@ -16,6 +16,7 @@ import { CombinedState } from '../../types/redux-state';
 
 interface LandingPageProps {
   spotifyTrackID: string;
+  spotifyTrackFileURL: string;
 }
 
 interface LandingPageState {
@@ -44,6 +45,7 @@ class LandingPage extends React.Component<LandingPageProps, LandingPageState> {
       branchNavClearTimer: null,
       childTracks: [],
     };
+
     // When a new song has been loaded and analyzed
     Dispatcher.getInstance()
       .on(FYPEvent.TrackChanged, ({ track }: FYPEventPayload['TrackChanged']) => {
@@ -59,10 +61,13 @@ class LandingPage extends React.Component<LandingPageProps, LandingPageState> {
   }
 
   componentDidMount() {
-    trackFactory.createTrack(this.props.spotifyTrackID)
+    const { spotifyTrackID, spotifyTrackFileURL } = this.props;
+
+    trackFactory.createTrack(spotifyTrackID)
       .then((initialTrack: TrackModel) => {
         Dispatcher.getInstance()
           .dispatch(FYPEvent.TrackChangeRequested, {
+            fileURL: spotifyTrackFileURL,
             track: initialTrack,
           } as FYPEventPayload['TrackChangeRequested']);
       });
@@ -202,6 +207,7 @@ class LandingPage extends React.Component<LandingPageProps, LandingPageState> {
 const mapStateToProps = (state: CombinedState) => {
   return {
     spotifyTrackID: state.search.selectedSpotifyTrackID,
+    spotifyTrackFileURL: state.search.selectedSpotifyTrackFileURL,
   };
 };
 

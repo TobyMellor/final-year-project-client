@@ -1,10 +1,10 @@
 import {
   SAVE_SPOTIFY_ACCESS_TOKEN,
-  SET_SELECTED_SPOTIFY_TRACK_ID,
+  SET_SELECTED_SPOTIFY_TRACK,
   SEARCH_SPOTIFY_TRACK_FAILURE,
   SEARCH_SPOTIFY_TRACK_SUCCESS,
 } from '../config/redux';
-import { OutputTrack } from '../models/search-track';
+import { RemoteTrack } from '../models/search-track';
 
 export type SaveAccessTokenActionDataType = {
   accessToken: string;
@@ -18,14 +18,17 @@ export type SaveAccessTokenActionType = {
 
 export type SearchSpotifyTrackSuccessType = {
   type: typeof SEARCH_SPOTIFY_TRACK_SUCCESS;
-  data: OutputTrack[];
+  data: RemoteTrack[];
 };
 
 export type SearchSpotifyTrackFailureType = {
   type: typeof SEARCH_SPOTIFY_TRACK_FAILURE;
 };
 
-export type SetSelectedSpotifyTrackIDType = {
-  type: typeof SET_SELECTED_SPOTIFY_TRACK_ID;
-  data: string;
+export type SetSelectedSpotifyTrackType = {
+  type: typeof SET_SELECTED_SPOTIFY_TRACK;
+  data: {
+    ID: string;
+    fileURL: string;
+  };
 };

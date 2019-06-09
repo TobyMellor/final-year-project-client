@@ -1,5 +1,5 @@
 import { objectToQueryParams } from '../../../utils/conversions';
-import SearchTrackModel, { OutputTrack } from '../../../models/search-track';
+import SearchTrackModel, { RemoteTrack } from '../../../models/search-track';
 import { SearchTrackResponseData, SearchTrackSuccessResponse } from '../../../types/spotify-responses';
 import API from '../API';
 import SpotifyRequest from './SpotifyRequest';
@@ -11,7 +11,7 @@ class SearchTrack extends SpotifyRequest {
     this.query = query;
   }
 
-  static async request(query: string): Promise<OutputTrack[]> {
+  static async request(query: string): Promise<RemoteTrack[]> {
     const response = await API.get(
       new SearchTrack(query),
     ) as SearchTrackSuccessResponse;
