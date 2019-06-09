@@ -52,15 +52,6 @@ class WebAudioService {
               .on(FYPEvent.SeekRequested, ({ percentage }: FYPEventPayload['SeekRequested']) => {
                 this.seek(percentage);
               });
-
-    const initialTrackID = '0wwPcA6wtMf6HUMpIRdeP7'; // TODO: Replace dynamically
-    trackFactory.createTrack(initialTrackID)
-                .then((initialTrack: TrackModel) => {
-                  Dispatcher.getInstance()
-                            .dispatch(FYPEvent.TrackChangeRequested, {
-                              track: initialTrack,
-                            } as FYPEventPayload['TrackChangeRequested']);
-                });
   }
 
   public static getInstance(): WebAudioService {

@@ -174,7 +174,11 @@ export function getMockedSimilarBeats(
     beatPairs.push([beats[483], beats[491]]);
     beatPairs.push([beats[489], beats[505]]);
   } else if (trackID === endGameID) {
-    // TODO: Mock
+    beatPairs.push([beats[11], beats[27]]);
+    beatPairs.push([beats[83], beats[195]]);
+    beatPairs.push([beats[90], beats[218]]);
+    beatPairs.push([beats[83], beats[227]]);
+    beatPairs.push([beats[83], beats[243]]);
   }
 
   return beatPairs;

@@ -34,7 +34,7 @@ class SearchPage extends React.Component<SearchPageProps, SearchPageState> {
     this.calculateAudioDuration = this.calculateAudioDuration.bind(this);
     this.handlePlayThrough = this.handlePlayThrough.bind(this);
     this.compareDurations = this.compareDurations.bind(this);
-    this.delayedSearch = debounce(this.props.searchSpotify, 1000);
+    this.delayedSearch = debounce(this.props.searchSpotify, config.search.debounceMs);
     this.state = {
       selectedItemID: null,
       uploadedFileDurationMs: 0,
