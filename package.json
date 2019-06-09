@@ -8,7 +8,7 @@
     "build": "npm run clean && npm run webpack",
     "clean": "rm -rf dist && mkdir -p dist",
     "lint": "node ./node_modules/.bin/tslint --fix --config tslint.json --project tsconfig.json 'src/typescript/**/*.ts{,x}'",
-    "local": "webpack-dev-server --host 0.0.0.0 --port 8888 --mode=\"development\" --watch-content-base --progress --colors --content-base dist/",
+    "local": "node server",
     "prod": "npm run webpack && npm start",
     "test": "jest",
     "webpack": "node ./node_modules/.bin/webpack",
@@ -39,10 +39,14 @@
     "@types/uuid": "^3.4.4",
     "awesome-typescript-loader": "^5.2.1",
     "babel-jest": "^24.7.1",
+    "cookie-parser": "^1.4.4",
+    "cors": "^2.8.5",
     "css-loader": "^1.0.1",
+    "dotenv": "^8.0.0",
     "enzyme": "^3.9.0",
     "enzyme-adapter-react-16": "^1.12.0",
     "gl-matrix": "^2.8.1",
+    "html-webpack-harddisk-plugin": "^1.0.1",
     "html-webpack-plugin": "^3.2.0",
     "jest": "^24.7.1",
     "node-sass": "^4.11.0",
@@ -61,7 +65,8 @@
     "typescript": "^3.4.2",
     "webpack": "^4.29.6",
     "webpack-cli": "^3.3.0",
-    "webpack-dev-server": "^3.2.1"
+    "webpack-dev-server": "^3.2.1",
+    "webpack-hot-middleware": "^2.25.0"
   },
   "dependencies": {
     "axios": "^0.18.0",

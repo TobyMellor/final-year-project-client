@@ -1,3 +1,5 @@
+require('webpack-hot-middleware/client');
+
 import '../sass/vendor.scss';
 import '../sass/style.scss';
 
@@ -9,7 +11,7 @@ import store from './store';
 
 render(
   <Provider  store={store}>
-      <AppRoutes />
+    <AppRoutes />
   </Provider>,
   document.getElementById('root'),
 );

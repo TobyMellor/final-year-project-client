@@ -4,12 +4,12 @@ import CheckAuthentication from './components/check-authentication/CheckAuthenti
 import CaptureAccessToken from './containers/capture-access-token/CaptureAccessToken';
 
 const AppRoutes = () => (
-    <Router>
-        <Switch>
-            <Route path="/spotify-authorization-redirect" exact component={CaptureAccessToken} />
-            <Route path="/" component={CheckAuthentication} />
-        </Switch>
-    </Router>
+  <Router>
+    <Switch>
+      <Route path="/spotify-authorization-redirect" exact component={CaptureAccessToken} />
+      <Route path="/" component={CheckAuthentication} />
+    </Switch>
+  </Router>
 );
 
 export default AppRoutes;
