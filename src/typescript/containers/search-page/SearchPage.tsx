@@ -156,7 +156,7 @@ const mapStateToProps = (state:CombinedState) => {
 const mapDispatchToProps = (dispatch: any) => {
   return {
     searchSpotify: (query: string) => dispatch(searchSpotifyTrack(query)),
-    setSelectedTrack: (ID: string, fileURL: string) => dispatch(setSelectedSpotifyTrack(id, fileURL)),
+    setSelectedTrack: (ID: string, fileURL: string) => dispatch(setSelectedSpotifyTrack(ID, fileURL)),
   };
 };
 
