@@ -12,8 +12,7 @@ abstract class API {
     if (config.mock.shouldMockAPIResponses) {
       return request.mockResponse();
     }
-
-    return axios.get(request.getEndpoint(), request.getParams())
+    return axios.get(request.getEndpoint(), request.params)
       .catch(errorFn || defaultErrorFn);
   }
 }

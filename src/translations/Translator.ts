@@ -26,6 +26,7 @@ export default {
     },
     ui: {
       not_normalized: 'Attempted to render beats from un-normalized values!',
+      too_different: 'The uploaded track\'s duration must be within 5 seconds of Spotify\'s track duration!',
     },
     api: {
       mock_not_found: 'Could not find the desired Mock!',

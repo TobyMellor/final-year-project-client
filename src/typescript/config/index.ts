@@ -6,6 +6,7 @@ import drawables from './drawables';
 import fyp from './fyp';
 import mock from './mock';
 import scene from './scene';
+import search from './search';
 import ui from './ui';
 
 const config = {
@@ -17,6 +18,7 @@ const config = {
   fyp,
   mock,
   scene,
+  search,
   ui,
 };
 

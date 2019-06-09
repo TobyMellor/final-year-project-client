@@ -1,3 +1,16 @@
+type SpotifyErrorResponse = {
+  status: number;
+  message: string;
+};
+interface BaseSpotifyServerSuccessResponse {
+  config: object;
+  data: object;
+  headers: object;
+  request: object;
+  status: number;
+  statusText: string;
+}
+
 type Image = {
   height: number;
   url: string;
@@ -5,7 +18,8 @@ type Image = {
 };
 
 type ExternalIdentifiers = {
-  spotify: string;
+  isrc?: string;
+  spotify?: string;
 };
 
 type Copyright = {
@@ -33,7 +47,7 @@ type SimplifiedObjectModel = {
 
 interface SimplifiedTrack extends SimplifiedObjectModel {
   artists: SimplifiedObjectModel[];
-  available_markets: string[];
+  available_markets?: string[];
   disc_number: number;
   duration_ms: number;
   explicit: boolean;
@@ -50,11 +64,12 @@ interface SimplifiedArtist extends SimplifiedObjectModel {}
 interface SimplifiedAlbum extends SimplifiedObjectModel {
   album_type: string;
   artists: SimplifiedObjectModel[];
-  available_markets: string[];
-  external_ids: ExternalIdentifiers;
+  available_markets?: string[];
+  external_ids?: ExternalIdentifiers;
   images: Image[];
   release_date: string;
   release_date_precision: string;
+  total_tracks: number;
 }
 
 export interface GetAnAudioAnalysisResponseTimeInterval {
@@ -126,7 +141,7 @@ export interface GetAnAudioAnalysisResponseSegment extends GetAnAudioAnalysisRes
  *  }
  */
 
-export interface GetAnArtistResponse extends SimplifiedArtist {
+export interface GetAnArtistResponseData extends SimplifiedArtist {
   followers: {
     href: string;
     total: number;
@@ -134,6 +149,10 @@ export interface GetAnArtistResponse extends SimplifiedArtist {
   genres: string[];
   images: Image[];
   popularity: number;
+}
+
+export interface GetAnArtistSuccessResponse extends BaseSpotifyServerSuccessResponse {
+  data: GetAnArtistResponseData;
 }
 
 /**
@@ -216,11 +235,15 @@ export interface GetAnArtistResponse extends SimplifiedArtist {
  *  }
  */
 
-export interface GetAnAlbumResponse extends SimplifiedAlbum {
+export interface GetAnAlbumResponseData extends SimplifiedAlbum {
   copyrights: Copyright[];
   genres: string[];
   popularity: number;
   tracks: SimplifiedTracksPaginated[];
+}
+
+export interface GetAnAlbumSuccessResponse extends BaseSpotifyServerSuccessResponse {
+  data: GetAnAlbumResponseData;
 }
 
 /**
@@ -303,11 +326,15 @@ export interface GetAnAlbumResponse extends SimplifiedAlbum {
  *  }
  */
 
-export interface GetATrackResponse extends SimplifiedTrack {
+export interface GetATrackResponseData extends SimplifiedTrack {
   album: SimplifiedAlbum;
   external_ids: ExternalIdentifiers;
   is_local: boolean;
   popularity: number;
+}
+
+export interface GetATrackSuccessResponse extends BaseSpotifyServerSuccessResponse {
+  data: GetATrackResponseData;
 }
 
 /**
@@ -436,7 +463,7 @@ export interface GetATrackResponse extends SimplifiedTrack {
  * }
  */
 
-export interface GetAnAudioAnalysisResponse {
+export interface GetAnAudioAnalysisData {
   track: {
     end_of_fade_in: number,
     start_of_fade_out: number,
@@ -454,6 +481,10 @@ export interface GetAnAudioAnalysisResponse {
   tatums: GetAnAudioAnalysisResponseTimeInterval[];
   sections: GetAnAudioAnalysisResponseSection[];
   segments: GetAnAudioAnalysisResponseSegment[];
+}
+
+export interface GetAnAudioAnalysisSuccessResponse {
+  data: GetAnAudioAnalysisData;
 }
 
 /**
@@ -483,7 +514,7 @@ export interface GetAnAudioAnalysisResponse {
  * }
  */
 
-export interface GetAudioFeaturesResponse {
+export interface GetAudioFeaturesData {
   danceability: number;
   energy: number;
   key: number;
@@ -502,4 +533,206 @@ export interface GetAudioFeaturesResponse {
   analysis_url: string;
   duration_ms: number;
   time_signature: number;
+}
+
+export interface GetAudioFeaturesSuccessResponse extends BaseSpotifyServerSuccessResponse {
+  data: GetAudioFeaturesData;
+}
+
+/**
+ * GET https://api.spotify.com/v1/search
+ *
+ * EXAMPLE:
+ * {
+ *     tracks: {
+ *       href: 'https://api.spotify.com/v1/search?query=Muse&type=track&market=US&offset=0&limit=2',
+ *       items: [
+ *         {
+ *           album: {
+ *             album_type: 'album',
+ *             artists: [
+ *               {
+ *                 external_urls: {
+ *                   spotify: 'https://open.spotify.com/artist/12Chz98pHFMPJEknJQMWvI',
+ *                 },
+ *                 href: 'https://api.spotify.com/v1/artists/12Chz98pHFMPJEknJQMWvI',
+ *                 id: '12Chz98pHFMPJEknJQMWvI',
+ *                 name: 'Muse',
+ *                 type: 'artist',
+ *                 uri: 'spotify:artist:12Chz98pHFMPJEknJQMWvI',
+ *               },
+ *             ],
+ *             external_urls: {
+ *               spotify: 'https://open.spotify.com/album/0eFHYz8NmK75zSplL5qlfM',
+ *             },
+ *             href: 'https://api.spotify.com/v1/albums/0eFHYz8NmK75zSplL5qlfM',
+ *             id: '0eFHYz8NmK75zSplL5qlfM',
+ *             images: [
+ *               {
+ *                 height: 640,
+ *                 url: 'https://i.scdn.co/image/6e1be3ceda70250c701caee5a16bef205e94bc98',
+ *                 width: 640,
+ *               },
+ *               {
+ *                 height: 300,
+ *                 url: 'https://i.scdn.co/image/28752dcf4b27ba14c1fc62f04ff469aa53c113d7',
+ *                 width: 300,
+ *               },
+ *               {
+ *                 height: 64,
+ *                 url: 'https://i.scdn.co/image/26098aaa50a3450f0bac8f1a7d7677accf3f3cb6',
+ *                 width: 64,
+ *               },
+ *             ],
+ *             name: 'The Resistance',
+ *             release_date: '2009-09-10',
+ *             release_date_precision: 'day',
+ *             total_tracks: 11,
+ *             type: 'album',
+ *             uri: 'spotify:album:0eFHYz8NmK75zSplL5qlfM',
+ *           },
+ *           artists: [
+ *             {
+ *               external_urls: {
+ *                 spotify: 'https://open.spotify.com/artist/12Chz98pHFMPJEknJQMWvI',
+ *               },
+ *               href: 'https://api.spotify.com/v1/artists/12Chz98pHFMPJEknJQMWvI',
+ *               id: '12Chz98pHFMPJEknJQMWvI',
+ *               name: 'Muse',
+ *               type: 'artist',
+ *               uri: 'spotify:artist:12Chz98pHFMPJEknJQMWvI',
+ *             },
+ *           ],
+ *           disc_number: 1,
+ *           duration_ms: 304840,
+ *           explicit: false,
+ *           external_ids: {
+ *             isrc: 'GBAHT0900320',
+ *           },
+ *           external_urls: {
+ *             spotify: 'https://open.spotify.com/track/4VqPOruhp5EdPBeR92t6lQ',
+ *           },
+ *           href: 'https://api.spotify.com/v1/tracks/4VqPOruhp5EdPBeR92t6lQ',
+ *           id: '4VqPOruhp5EdPBeR92t6lQ',
+ *           is_local: false,
+ *           is_playable: true,
+ *           name: 'Uprising',
+ *           popularity: 75,
+ *           preview_url:
+ *           '...',
+ *           track_number: 1,
+ *           type: 'track',
+ *           uri: 'spotify:track:4VqPOruhp5EdPBeR92t6lQ',
+ *         },
+ *         {
+ *           album: {
+ *             album_type: 'album',
+ *             artists: [
+ *               {
+ *                 external_urls: {
+ *                   spotify: 'https://open.spotify.com/artist/12Chz98pHFMPJEknJQMWvI',
+ *                 },
+ *                 href: 'https://api.spotify.com/v1/artists/12Chz98pHFMPJEknJQMWvI',
+ *                 id: '12Chz98pHFMPJEknJQMWvI',
+ *                 name: 'Muse',
+ *                 type: 'artist',
+ *                 uri: 'spotify:artist:12Chz98pHFMPJEknJQMWvI',
+ *               },
+ *             ],
+ *             external_urls: {
+ *               spotify: 'https://open.spotify.com/album/0lw68yx3MhKflWFqCsGkIs',
+ *             },
+ *             href: 'https://api.spotify.com/v1/albums/0lw68yx3MhKflWFqCsGkIs',
+ *             id: '0lw68yx3MhKflWFqCsGkIs',
+ *             images: [
+ *               {
+ *                 height: 640,
+ *                 url: 'https://i.scdn.co/image/9e5288926fadb82f873ccf2b45300c3a6f65fa14',
+ *                 width: 640,
+ *               },
+ *               {
+ *                 height: 300,
+ *                 url: 'https://i.scdn.co/image/f1cad0d6974d6236abd07a59106e8450d85cae24',
+ *                 width: 300,
+ *               },
+ *               {
+ *                 height: 64,
+ *                 url: 'https://i.scdn.co/image/81a3f82578dc938c53efdcb405f6a3d3ebbf009f',
+ *                 width: 64,
+ *               },
+ *             ],
+ *             name: 'Black Holes And Revelations',
+ *             release_date: '2006-06-19',
+ *             release_date_precision: 'day',
+ *             total_tracks: 12,
+ *             type: 'album',
+ *             uri: 'spotify:album:0lw68yx3MhKflWFqCsGkIs',
+ *           },
+ *           artists: [
+ *             {
+ *               external_urls: {
+ *                 spotify: 'https://open.spotify.com/artist/12Chz98pHFMPJEknJQMWvI',
+ *               },
+ *               href: 'https://api.spotify.com/v1/artists/12Chz98pHFMPJEknJQMWvI',
+ *               id: '12Chz98pHFMPJEknJQMWvI',
+ *               name: 'Muse',
+ *               type: 'artist',
+ *               uri: 'spotify:artist:12Chz98pHFMPJEknJQMWvI',
+ *             },
+ *           ],
+ *           disc_number: 1,
+ *           duration_ms: 212439,
+ *           explicit: false,
+ *           external_ids: {
+ *             isrc: 'GBAHT0500593',
+ *           },
+ *           external_urls: {
+ *             spotify: 'https://open.spotify.com/track/3lPr8ghNDBLc2uZovNyLs9',
+ *           },
+ *           href: 'https://api.spotify.com/v1/tracks/3lPr8ghNDBLc2uZovNyLs9',
+ *           id: '3lPr8ghNDBLc2uZovNyLs9',
+ *           is_local: false,
+ *           is_playable: true,
+ *           name: 'Supermassive Black Hole',
+ *           popularity: 72,
+ *           preview_url:
+ *           '...',
+ *           track_number: 3,
+ *           type: 'track',
+ *           uri: 'spotify:track:3lPr8ghNDBLc2uZovNyLs9',
+ *         },
+ *       ],
+ *       limit: 2,
+ *       next: 'https://api.spotify.com/v1/search?query=Muse&type=track&market=US&offset=2&limit=2',
+ *       offset: 0,
+ *       previous: null,
+ *       total: 13717,
+ *     },
+ *   }
+ */
+export interface SearchTrackResponseData {
+  tracks: {
+    href: string;
+    items: SearchTrack[];
+    limit: number;
+    next: string;
+    offset: number;
+    previous: string | null;
+    total:  number;
+  };
+}
+
+export interface SearchTrack extends SimplifiedTrack {
+  album: SimplifiedAlbum;
+  external_ids?: ExternalIdentifiers;
+  is_local: boolean;
+  is_playable?: boolean;
+  popularity: number;
+}
+
+export interface SearchTrackSuccessResponse extends BaseSpotifyServerSuccessResponse {
+  data: SearchTrackResponseData;
+}
+export interface SearchTrackFailureResponse {
+  error: SpotifyErrorResponse;
 }

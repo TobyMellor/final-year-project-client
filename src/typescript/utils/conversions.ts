@@ -114,3 +114,15 @@ export function pointToPercentage(
 
   return percentage;
 }
+
+export function objectToQueryParams(params: object) {
+  return Object.keys(params).map(
+      (key: string) => `${key}=${(<{[key: string]: string | number}>params)[key]}`,
+    ).join('&');
+}
+
+export function msToMinutes(ms: number) {
+  const minutes = Math.floor(ms / 60000);
+  const seconds = ((ms % 60000) / 1000).toFixed(0);
+  return `${minutes}:${`0${seconds}`.slice(-2)}`;
+}

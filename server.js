@@ -1,12 +1,21 @@
 const express = require('express');
-const path = require('path');
 const dotenv = require('dotenv');
+const path = require('path');
 const request = require('request');
 const cors = require('cors');
 const querystring = require('querystring');
 const cookieParser = require('cookie-parser');
 const bodyParser = require('body-parser');
-const randomString = require('randomstring');
+const uuid = require('uuid/v4');
+
+const webpack = require('webpack');
+const webpackConfig = require('./webpack.config');
+const webpackCompiler = webpack(webpackConfig);
+const webpackDevMiddleware = require('webpack-dev-middleware')(webpackCompiler, { ...webpackConfig.devServer, 
+  noInfo: true,
+  publicPath: '/'});
+const webpackHotMiddleware = require('webpack-hot-middleware')(webpackCompiler);
+
 
 dotenv.config();
 
@@ -17,9 +26,11 @@ const SPOTIFY_CLIENT_SECRET = process.env.SPOTIFY_CLIENT_SECRET;
 const SPOTIFY_REDIRECT_URI = process.env.SPOTIFY_REDIRECT_URI;
 const SPOTIFY_AFTER_AUTHORIZATION_REDIRECT = '/spotify-authorization-redirect/';
 const stateKey = 'spotify_auth_state';
-const dist = path.join(__dirname, '..', 'dist');
+const dist = path.join(__dirname, 'dist');
 const tracks = path.join(dist, 'tracks');
 const app = express()
+  .use(webpackDevMiddleware)
+  .use(webpackHotMiddleware)
   .use('/dist', express.static(dist))
   .use('/tracks', express.static(tracks))
   .use(cors())
@@ -42,7 +53,7 @@ function getBaseAuthorizationOptions() {
 }
 
 app.get('/login', function(_, res) {
-  const state = randomString.generate(16);
+  const state = uuid().slice(0, 16);
   const scope = 'user-read-private user-read-email';
   res.cookie(stateKey, state);
   res.redirect(
@@ -53,7 +64,7 @@ app.get('/login', function(_, res) {
         scope: scope,
         redirect_uri: SPOTIFY_REDIRECT_URI,
         state: state
-      })
+      }),
   );
 });
 
@@ -82,7 +93,7 @@ app.get('/authorization_success', function(req, res, next) {
     request.post(authorizationOptions, function(err, response, body) {
       if (err) {
         next(err);
-      } else if (!err && response.statusCode === 200) {
+      } else if (response.statusCode === 200) {
         const accessToken = body.access_token,
           refreshToken = body.refresh_token;
         res.redirect(
@@ -123,9 +134,10 @@ app.post('/refresh-token', function(req, res, next) {
   });
 });
 
-app.get('*', (_, res) => {
-  res.sendFile(dist + '/index.html');
+app.use('*', function (_, res) {
+  res.sendFile(path.join(__dirname, 'dist', 'index.html'));
 });
+
 
 app.listen(PORT, HOST);
 console.log(`Running on http://${HOST}:${PORT}`);

@@ -30,18 +30,12 @@ class WebAudioService {
 
     this._audioContext = new AudioContext();
 
-    //   '4RVbK6cV0VqWdpCDcx3hiT', // Reborn
-    //   '3O8NlPh2LByMU9lSRSHedm', // Controlla
-    //   '6wVWJl64yoTzU27EI8ep20', // Crying Lightning
-    //   '3aUFrxO1B8EW63QchEl3wX',
-    //   '2hmHlBM0kPBm17Y7nVIW9f',
     //   '0wwPcA6wtMf6HUMpIRdeP7', // Hotline Bling
     //   '2zMMdC4xvRClYcWNFJBZ0j', // End Game
-    //   '1JbR9RDP3ogVNEWFgNXAjh' // Look what you made me do
 
     Dispatcher.getInstance()
-              .on(FYPEvent.TrackChangeRequested, ({ track }: FYPEventPayload['TrackChangeRequested']) => {
-                this.startLoadingNextTrack(track);
+              .on(FYPEvent.TrackChangeRequested, ({ track, fileURL }: FYPEventPayload['TrackChangeRequested']) => {
+                this.startLoadingNextTrack(track, fileURL);
               });
 
     // Once we've loaded the track and analyzed it
@@ -58,34 +52,25 @@ class WebAudioService {
               .on(FYPEvent.SeekRequested, ({ percentage }: FYPEventPayload['SeekRequested']) => {
                 this.seek(percentage);
               });
-
-    const initialTrackID = '4RVbK6cV0VqWdpCDcx3hiT'; // TODO: Replace dynamically
-    trackFactory.createTrack(initialTrackID)
-                .then((initialTrack: TrackModel) => {
-                  Dispatcher.getInstance()
-                            .dispatch(FYPEvent.TrackChangeRequested, {
-                              track: initialTrack,
-                            } as FYPEventPayload['TrackChangeRequested']);
-                });
   }
 
   public static getInstance(): WebAudioService {
     return this._instance || (this._instance = new this());
   }
 
-  private startLoadingNextTrack(track: TrackModel) {
+  private startLoadingNextTrack(track: TrackModel, fileURL: string) {
     this._nextTrack = track;
 
-    async function getAudioBuffer(audioContext: AudioContext, trackID: string) {
+    async function getAudioBuffer(audioContext: AudioContext, fileURL: string) {
       // Get the Audio Buffer for the corresponding mp3 file
-      const response = await fetch(`tracks/${trackID}.mp3`);
+      const response = await fetch(fileURL);
       const arrayBuffer = await response.arrayBuffer();
       const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
 
       return audioBuffer;
     }
 
-    this._nextTrackAudioBufferPromise = getAudioBuffer(this._audioContext, track.ID);
+    this._nextTrackAudioBufferPromise = getAudioBuffer(this._audioContext, fileURL);
   }
 
   private async finishLoadingNextTrack() {

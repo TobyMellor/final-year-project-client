@@ -1,31 +1,36 @@
-import SpotifyAPI from './SpotifyAPI';
-import Request from '../Request';
-import { GetAnAudioAnalysisResponse } from '../../../types/spotify-responses';
+import { GetAnAudioAnalysisSuccessResponse, GetAnAudioAnalysisData } from '../../../types/spotify-responses';
 import AudioAnalysisModel from '../../../models/audio-analysis/AudioAnalysis';
+import API from '../API';
+import SpotifyRequest from './SpotifyRequest';
 
-class GetAnAudioAnalysis extends Request {
+class GetAnAudioAnalysis extends SpotifyRequest {
   private ID: string;
 
   constructor(ID: string) {
     super();
-
     this.ID = ID;
   }
 
   static async request(ID: string): Promise<AudioAnalysisModel> {
-    const response = <GetAnAudioAnalysisResponse> await SpotifyAPI.get(
+    const response = <GetAnAudioAnalysisSuccessResponse> await API.get(
       new GetAnAudioAnalysis(ID),
     );
 
-    return new AudioAnalysisModel({ trackID: ID, ...response });
+    return new AudioAnalysisModel({ trackID: ID, ...response.data });
   }
 
-  async mockResponse(): Promise<AudioAnalysisModel> {
-    return require('../mocks/spotify/audio-analysis').getAnAudioAnalysisMock(this.ID);
+  async mockResponse(): Promise<GetAnAudioAnalysisSuccessResponse> {
+    const responseData: GetAnAudioAnalysisData =
+      await require('../mocks/spotify/audio-analysis').getAnAudioAnalysisMock(this.ID);
+
+    return {
+      ...this.mockSampleResponse,
+      data: responseData,
+    };
   }
 
   getEndpoint() {
-    return `audio-analysis/${this.ID}`;
+    return `${this.baseURL}/audio-analysis/${this.ID}`;
   }
 }
 

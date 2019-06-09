@@ -1,4 +1,4 @@
-import { GetAnAudioAnalysisResponse } from '../../types/spotify-responses';
+import { GetAnAudioAnalysisData } from '../../types/spotify-responses';
 import BarModel from './Bar';
 import BeatModel from './Beat';
 import SegmentModel from './Segment';
@@ -8,7 +8,7 @@ import * as conversions from '../../utils/conversions';
 import { TimeIdentifier } from '../../types/general';
 import * as trackFactory from '../../factories/track';
 
-interface Input extends GetAnAudioAnalysisResponse {
+interface Input extends GetAnAudioAnalysisData {
   trackID: string;
 }
 
