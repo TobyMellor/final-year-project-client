@@ -8,6 +8,8 @@ import { OutputTrack } from '../../models/search-track';
 import FileUploader from '../../components/file-uploader/FileUploader';
 import { withRouter, RouteComponentProps } from 'react-router';
 import { secsToMs } from '../../utils/conversions';
+import config from '../../config';
+import Translator from '../../../translations/Translator';
 
 interface SearchPageProps extends RouteComponentProps {
   searchResult: OutputTrack[];
@@ -74,10 +76,14 @@ class SearchPage extends React.Component<SearchPageProps, SearchPageState> {
 
   compareDurations() {
     const selectedItem: OutputTrack = this.props.searchResult.find(track => track.id === this.state.selectedItemID);
-    if (Math.abs(selectedItem.durationMs - this.state.uploadedFileDurationMs) <= 5000) {
+    const durationDifferenceMs = Math.abs(selectedItem.durationMs - this.state.uploadedFileDurationMs);
+
+    if (durationDifferenceMs <= config.search.minDurationSimilarityMs) {
       // if the selected items doesnt differ by more than 5 second
       this.props.setSelectedTrackID(this.state.selectedItemID);
       this.props.history.push('/studio');
+    } else {
+      alert(Translator.errors.ui.too_different);
     }
   }
 
