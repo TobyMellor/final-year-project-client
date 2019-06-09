@@ -1,4 +1,3 @@
-import Request from '../Request';
 import { GetAnAudioAnalysisSuccessResponse, GetAnAudioAnalysisData } from '../../../types/spotify-responses';
 import AudioAnalysisModel from '../../../models/audio-analysis/AudioAnalysis';
 import API from '../API';
@@ -16,12 +15,14 @@ class GetAnAudioAnalysis extends SpotifyRequest {
     const response = <GetAnAudioAnalysisSuccessResponse> await API.get(
       new GetAnAudioAnalysis(ID),
     );
+
     return new AudioAnalysisModel({ trackID: ID, ...response.data });
   }
 
   async mockResponse(): Promise<GetAnAudioAnalysisSuccessResponse> {
     const responseData: GetAnAudioAnalysisData =
       await require('../mocks/spotify/audio-analysis').getAnAudioAnalysisMock(this.ID);
+
     return {
       ...this.mockSampleResponse,
       data: responseData,

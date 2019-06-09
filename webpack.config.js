@@ -11,7 +11,7 @@ module.exports = {
 		extensions: ['.js', '.json', '.ts', '.tsx'],
 		symlinks: false,
 	},
-  devtool: 'cheap-module-source-map',
+  devtool: 'source-map',
   devServer: {
     contentBase: path.join(__dirname, 'dist'),
     overlay: true,

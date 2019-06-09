@@ -30,7 +30,8 @@ class GetATrack extends SpotifyRequest {
 
   async mockResponse(): Promise<GetATrackSuccessResponse> {
     const responseData: GetATrackResponseData =
-    await require('../mocks/spotify/tracks').getATrackMock(this.ID);
+      await require('../mocks/spotify/tracks').getATrackMock(this.ID);
+
     return {
       ...this.mockSampleResponse,
       data: responseData,
