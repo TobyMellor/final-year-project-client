@@ -10,7 +10,7 @@ import AppRoutes from './routes';
 import store from './store';
 
 render(
-  <Provider  store={store}>
+  <Provider store={store}>
     <AppRoutes />
   </Provider>,
   document.getElementById('root'),
